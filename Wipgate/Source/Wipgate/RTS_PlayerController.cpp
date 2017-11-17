@@ -1,7 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RTS_PlayerController.h"
+
+// Included for GEngine:
+#include "EngineGlobals.h"
+#include "Engine/Engine.h"
+
+//#include "GameFramework/Pawn.h"
+//
+//#include "Blueprint/UserWidget.h"
+//
+//#include "Runtime/UMG/Public/UMG.h"
+//#include "Slate.h"
+
 //#include "Runtime/Engine/Classes/Components/InputComponent.h"
+
+#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
 
 ARTS_PlayerController::ARTS_PlayerController()
 {
@@ -9,11 +23,43 @@ ARTS_PlayerController::ARTS_PlayerController()
 
 }
 
+void ARTS_PlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+
+	ensure(m_RTS_CameraPawn != nullptr);
+
+	//FInputModeGameAndUI inputMode;
+	//inputMode.SetHideCursorDuringCapture(false);
+	//inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	//SetInputMode(inputMode);
+
+
+	//CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), Main_UI_HUD);
+
+	//CurrentWidget->AddToViewport(1000); // Render on top of everything else
+
+	/*
+	GetRootWidget();
+
+	ConstructorHelpers::FObjectFinder<UBlueprint> BlueprintObj(TEXT("Blueprint'/Game/Path/SomeBlueprint.SomeBlueprint'"));
+	*/
+}
+
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 }
 
+void ARTS_PlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClick);
+}
+
 void ARTS_PlayerController::ActionMainClick()
 {
-	//UE_LOG(LogTemp, Log, TEXT("Action Main Click!"));
+	print("Main click wo ho!");
 }
