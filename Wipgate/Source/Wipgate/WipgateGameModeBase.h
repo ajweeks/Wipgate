@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Blueprint/UserWidget.h"
 #include "WipgateGameModeBase.generated.h"
 
 UCLASS()
@@ -17,12 +16,8 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "My category")
-	TSubclassOf<UUserWidget> Main_UI_HUD;
-
 private:
 
 
-	UUserWidget* CurrentWidget;
 	
 };

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "RTS_PlayerController.generated.h"
 
+class UUserWidget;
 class APawn;
 
 UCLASS()
@@ -20,8 +21,20 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget> MainHUD;
+	
+	UUserWidget* MainHUDInstance;
+
 private:
 	void ActionMainClick();
+	void ActionMoveFast();
+	void ActionZoomIn();
+	void AxisMoveForward();
+	void AxisMoveRight();
+	void AxisMouseX();
+	void AxisMouseY();
+
 
 	APawn* m_RTS_CameraPawn;
 

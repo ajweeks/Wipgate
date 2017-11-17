@@ -6,6 +6,10 @@
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 
+#include "GameFramework/GameModeBase.h"
+
+#include "Blueprint/UserWidget.h"
+
 //#include "GameFramework/Pawn.h"
 //
 //#include "Blueprint/UserWidget.h"
@@ -31,10 +35,35 @@ void ARTS_PlayerController::BeginPlay()
 
 	ensure(m_RTS_CameraPawn != nullptr);
 
-	//FInputModeGameAndUI inputMode;
-	//inputMode.SetHideCursorDuringCapture(false);
-	//inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-	//SetInputMode(inputMode);
+	FInputModeGameAndUI inputMode;
+	inputMode.SetHideCursorDuringCapture(false);
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	SetInputMode(inputMode);
+
+
+	AGameModeBase* gameMode = GetWorld()->GetAuthGameMode();
+
+
+	if (MainHUD) // Check that template was set in blueprint
+	{
+		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
+
+		if (MainHUDInstance)
+		{
+			MainHUDInstance->AddToViewport();
+		}
+		else
+		{
+			print("Failed to create main HUD widget!");
+		}
+
+		bShowMouseCursor = true;
+	}
+	else
+	{
+		//UE_LOG(LogPlayerController, Log, TEXT("Main HUD not set in game mode blueprint!"));
+		print("Main HUD not set in game mode blueprint!");
+	}
 
 
 	//CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), Main_UI_HUD);
