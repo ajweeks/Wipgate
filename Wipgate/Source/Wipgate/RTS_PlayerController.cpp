@@ -21,10 +21,10 @@
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
 
+DEFINE_LOG_CATEGORY(Wipgate_Log);
+
 ARTS_PlayerController::ARTS_PlayerController()
 {
-	//InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClick);
-
 }
 
 void ARTS_PlayerController::BeginPlay()
@@ -64,17 +64,6 @@ void ARTS_PlayerController::BeginPlay()
 		//UE_LOG(LogPlayerController, Log, TEXT("Main HUD not set in game mode blueprint!"));
 		print("Main HUD not set in game mode blueprint!");
 	}
-
-
-	//CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), Main_UI_HUD);
-
-	//CurrentWidget->AddToViewport(1000); // Render on top of everything else
-
-	/*
-	GetRootWidget();
-
-	ConstructorHelpers::FObjectFinder<UBlueprint> BlueprintObj(TEXT("Blueprint'/Game/Path/SomeBlueprint.SomeBlueprint'"));
-	*/
 }
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
@@ -86,9 +75,60 @@ void ARTS_PlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClick);
+	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFast);
+	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
+	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
+	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
+	InputComponent->BindAxis("Mouse X", this, &ARTS_PlayerController::AxisMouseX);
+	InputComponent->BindAxis("Mouse Y", this, &ARTS_PlayerController::AxisMouseY);
 }
 
 void ARTS_PlayerController::ActionMainClick()
 {
-	print("Main click wo ho!");
+	UE_LOG(Wipgate_Log, Log, TEXT("Main click"));
+}
+
+void ARTS_PlayerController::ActionMoveFast()
+{
+	UE_LOG(Wipgate_Log, Log, TEXT("Move fast"));
+}
+
+void ARTS_PlayerController::AxisZoom(float AxisValue)
+{
+	if (AxisValue != 0.0f)
+	{
+		UE_LOG(Wipgate_Log, Log, TEXT("Zoom: %f"), AxisValue);
+	}
+}
+
+void ARTS_PlayerController::AxisMoveRight(float AxisValue)
+{
+	if (AxisValue != 0.0f)
+	{
+		UE_LOG(Wipgate_Log, Log, TEXT("Move right: %f"), AxisValue);
+	}
+}
+
+void ARTS_PlayerController::AxisMoveForward(float AxisValue)
+{
+	if (AxisValue != 0.0f)
+	{
+		UE_LOG(Wipgate_Log, Log, TEXT("Move forward: %f"), AxisValue);
+	}
+}
+
+void ARTS_PlayerController::AxisMouseX(float AxisValue)
+{
+	if (AxisValue != 0.0f)
+	{
+		UE_LOG(Wipgate_Log, Log, TEXT("Mouse X: %f"), AxisValue);
+	}
+}
+
+void ARTS_PlayerController::AxisMouseY(float AxisValue)
+{
+	if (AxisValue != 0.0f)
+	{
+		UE_LOG(Wipgate_Log, Log, TEXT("Mouse Y: %f"), AxisValue);
+	}
 }

@@ -9,6 +9,8 @@
 class UUserWidget;
 class APawn;
 
+DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
+
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
 {
@@ -29,11 +31,11 @@ public:
 private:
 	void ActionMainClick();
 	void ActionMoveFast();
-	void ActionZoomIn();
-	void AxisMoveForward();
-	void AxisMoveRight();
-	void AxisMouseX();
-	void AxisMouseY();
+	void AxisZoom(float AxisValue);
+	void AxisMoveForward(float AxisValue);
+	void AxisMoveRight(float AxisValue);
+	void AxisMouseX(float AxisValue);
+	void AxisMouseY(float AxisValue);
 
 
 	APawn* m_RTS_CameraPawn;

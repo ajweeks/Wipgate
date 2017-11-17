@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "WipgateGameModeBase.generated.h"
 
 UCLASS()
-class WIPGATE_API AWipgateGameModeBase : public AGameModeBase
+class WIPGATE_API AWipgateGameModeBase : public AGameMode
 {
 	GENERATED_BODY()
 	
