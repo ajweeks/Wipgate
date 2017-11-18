@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "RTS_HUDBase.h"
 #include "RTS_PlayerController.generated.h"
 
 class UUserWidget;
@@ -29,8 +30,10 @@ public:
 	UUserWidget* MainHUDInstance;
 
 private:
-	void ActionMainClick();
-	void ActionMoveFast();
+	void ActionMainClickPressed();
+	void ActionMainClickReleased();
+	void ActionMoveFastPressed();
+	void ActionMoveFastReleased();
 	void AxisZoom(float AxisValue);
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
@@ -39,9 +42,21 @@ private:
 
 
 	APawn* m_RTS_CameraPawn;
+	URTS_HUDBase* m_RTSHUD;
 
-	/*TSubclassOf<class UUserWidget> Main_UI_HUD;
+	float m_FastMoveSpeed;
+	float m_FastMoveMultiplier;
+	float m_PanSensitivity;
+	float m_ZoomSpeed;
+	float m_MinArmDistance;
+	float m_MaxArmDistance;
+	float m_EdgeMoveSpeed;
+	float m_EdgeSize;
 
-	UPROPERTY()
-	class UUserWidget* CurrentWidget;*/
+	FVector2D m_ClickStartSS;
+	FVector2D m_ClickEndSS;
+
+	// TODO: Remove, not used
+	FVector m_ClickStartWS;
+	FVector m_ClickEndWS;
 };

@@ -2,6 +2,3 @@
 
 #include "RTS_HUDBase.h"
 
-
-
-
