@@ -41,6 +41,11 @@ private:
 	void AxisMouseY(float AxisValue);
 
 
+	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
+	void Vector2DMinMax(FVector2D& vec1, FVector2D& vec2);
+	FVector2D GetNormalizedMousePosition() const;
+	FVector2D GetMousePositionVector2D() const;
+
 	APawn* m_RTS_CameraPawn;
 	URTS_HUDBase* m_RTSHUD;
 

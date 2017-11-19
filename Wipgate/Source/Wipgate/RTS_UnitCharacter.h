@@ -44,7 +44,7 @@ public:
 
 	
 private:
-	UPROPERTY(EditAnywhere, Category = "Selection")
+	UPROPERTY(VisibleAnywhere, Category = "Selection")
 	bool Selected;
 	
 };

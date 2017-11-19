@@ -35,7 +35,7 @@ void ARTS_UnitCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ARTS_UnitCharacter::SetSelected_Implementation(bool selected)
 {
 	Selected = selected;
-	UE_LOG(RTS_Unit_Log, Log, TEXT("Unit selected: %b"), selected);
+	UE_LOG(RTS_Unit_Log, Log, TEXT("Unit selected: %s"), (selected ? TEXT("TRUE") : TEXT("FALSE")));
 
 }
 

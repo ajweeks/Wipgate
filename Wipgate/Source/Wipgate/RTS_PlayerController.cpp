@@ -77,27 +77,30 @@ void ARTS_PlayerController::SetupInputComponent()
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
+	if (IsInputKeyDown(EKeys::LeftMouseButton))
+	{
+		m_ClickEndSS = GetMousePositionVector2D();
+
+		int32 viewportSizeX, viewportSizeY;
+		GetViewportSize(viewportSizeX, viewportSizeY);
+		FVector2D viewportSize((float)viewportSizeX, (float)viewportSizeY);
+
+		m_RTSHUD->SelectionBoxPosition = m_ClickStartSS;
+		m_RTSHUD->SelectionBoxSize = (m_ClickEndSS - m_ClickStartSS) ;
+		m_RTSHUD->UpdateSelectionBox(m_RTSHUD->SelectionBoxPosition, m_RTSHUD->SelectionBoxSize);
+	}
 }
 
 void ARTS_PlayerController::ActionMainClickPressed()
 {
-	float mouseX, mouseY;
-	GetMousePosition(mouseX, mouseY);
+	m_ClickStartSS = GetMousePositionVector2D();
 
-	int32 viewportSizeX, viewportSizeY;
-	GetViewportSize(viewportSizeX, viewportSizeY);
-
-	m_ClickStartSS.X = mouseX / (float)viewportSizeX;
-	m_ClickStartSS.Y = mouseY / (float)viewportSizeY;
-
-	UE_LOG(Wipgate_Log, Log, TEXT("Click start SS: (%f, %f)"), m_ClickStartSS.X, m_ClickStartSS.Y);
-
+	// TODO: Remove
 	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
 	FHitResult hitResult;
 	if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
 	{
 		m_ClickStartWS = hitResult.Location;
-		UE_LOG(Wipgate_Log, Log, TEXT("Click start WS: (%f, %f, %f)"), m_ClickStartWS.X, m_ClickStartWS.Y, m_ClickStartWS.Z);
 	}
 }
 
@@ -108,23 +111,48 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	AGameStateBase* baseGameState = GetWorld()->GetGameState();
 	ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 
-	if (!IsInputKeyDown(EKeys::LeftShift))
+	if (!IsInputKeyDown(EKeys::LeftShift) && castedGameState->SelectedUnits.Num() > 0)
 	{
-		// Clear selected units array
+		// Selected units array must be cleared if shift isn't down
 		for (auto selectedUnit : castedGameState->SelectedUnits)
 		{
 			selectedUnit->SetSelected(false);
 		}
 		castedGameState->SelectedUnits.Empty();
+		UE_LOG(Wipgate_Log, Log, TEXT("Cleared selected units array"));
 	}
 
 	for (auto unit : castedGameState->Units)
 	{
 		FTransform unitTransform = unit->GetTransform();
+
+		// Draw unit bounding box
 		if (unit->ShowSelectionBox_DEBUG)
 		{
-			UKismetSystemLibrary::DrawDebugBox(nullptr, unitTransform.GetLocation(), unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
-			UE_LOG(Wipgate_Log, Log, TEXT("Unit location: (%f, %f, %f)"), unitTransform.GetLocation().X, unitTransform.GetLocation().Y, unitTransform.GetLocation().Z);
+			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitTransform.GetLocation(), unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
+		}
+
+		// Check if selection bounding box surrounds either min or max unit bounding box points
+		FVector unitBoundsMinWS = unitTransform.GetLocation() - unit->SelectionHitBox;
+		FVector unitBoundsMaxWS = unitTransform.GetLocation() + unit->SelectionHitBox;
+		
+		FVector2D unitBoundsMinSS;
+		ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
+
+		FVector2D unitBoundsMaxSS;
+		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
+
+		Vector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
+
+		FVector2D selectionBoxMin = m_ClickStartSS;
+		FVector2D selectionBoxMax = m_ClickEndSS;
+		Vector2DMinMax(selectionBoxMin, selectionBoxMax);
+
+		if (PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
+			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax))
+		{
+			unit->SetSelected(true);
+			castedGameState->SelectedUnits.AddUnique(unit);
 		}
 	}
 
@@ -179,4 +207,44 @@ void ARTS_PlayerController::AxisMouseY(float AxisValue)
 	{
 		UE_LOG(Wipgate_Log, Log, TEXT("Mouse Y: %f"), AxisValue);
 	}
+}
+
+bool ARTS_PlayerController::PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax)
+{
+	bool result = ((point.X > boundsMin.X && point.X < boundsMax.X) && 
+				   (point.Y > boundsMin.Y && point.Y < boundsMax.Y));
+	return result;
+}
+
+void ARTS_PlayerController::Vector2DMinMax(FVector2D& vec1, FVector2D& vec2)
+{
+	FVector2D vec1Copy = vec1;
+	FVector2D vec2Copy = vec2;
+
+	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
+	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
+	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+}
+
+FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
+{
+	float mouseX, mouseY;
+	GetMousePosition(mouseX, mouseY);
+
+	int32 viewportSizeX, viewportSizeY;
+	GetViewportSize(viewportSizeX, viewportSizeY);
+
+	FVector2D result(mouseX / (float)viewportSizeX,
+					 mouseY / (float)viewportSizeY);
+	return result;
+}
+
+FVector2D ARTS_PlayerController::GetMousePositionVector2D() const
+{
+	float mouseX, mouseY;
+	GetMousePosition(mouseX, mouseY);
+
+	FVector2D result(mouseX, mouseY);
+	return result;
 }
