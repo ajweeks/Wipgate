@@ -11,21 +11,11 @@ ARTS_UnitCharacter::ARTS_UnitCharacter()
 
 }
 
-// Called when the game starts or when spawned
 void ARTS_UnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-// Called every frame
-void ARTS_UnitCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
 void ARTS_UnitCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -35,8 +25,6 @@ void ARTS_UnitCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ARTS_UnitCharacter::SetSelected_Implementation(bool selected)
 {
 	Selected = selected;
-	UE_LOG(RTS_Unit_Log, Log, TEXT("Unit selected: %s"), (selected ? TEXT("TRUE") : TEXT("FALSE")));
-
 }
 
 bool ARTS_UnitCharacter::IsSelected() const

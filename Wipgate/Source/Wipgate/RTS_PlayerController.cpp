@@ -8,6 +8,11 @@
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/GameStateBase.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
+#include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
+#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
+#include "Runtime/Engine/Classes/Engine/RendererSettings.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
 
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
@@ -25,20 +30,36 @@ void ARTS_PlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Get references to camera and its components
 	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-
 	ensure(m_RTS_CameraPawn != nullptr);
 
+	TArray<UStaticMeshComponent*> meshComponents;
+	m_RTS_CameraPawn->GetComponents(meshComponents);
+
+	if (meshComponents.Num() > 0)
+	{
+		m_RTS_CameraPawnMeshComponent = meshComponents[0];
+	}
+	ensure(m_RTS_CameraPawnMeshComponent != nullptr);
+
+	TArray<USpringArmComponent*> springArmComponents;
+	m_RTS_CameraPawn->GetComponents(springArmComponents);
+	if (springArmComponents.Num() > 0)
+	{
+		m_RTS_CameraPawnSpringArmComponent = springArmComponents[0];
+	}
+	ensure(m_RTS_CameraPawnSpringArmComponent != nullptr);
+
+
+	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
 	FInputModeGameAndUI inputMode;
 	inputMode.SetHideCursorDuringCapture(false);
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
 	SetInputMode(inputMode);
 
-
-	//AGameModeBase* gameMode = GetWorld()->GetAuthGameMode();
-
-
-	if (MainHUD) // Check that template was set in blueprint
+	// Create and add HUD to viewport
+	if (MainHUD)
 	{
 		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
 
@@ -56,7 +77,7 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else
 	{
-		print("Main HUD not set in player controller BP!");
+		print("Main HUD template was not set in player controller BP!");
 	}
 }
 
@@ -71,55 +92,69 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
-	InputComponent->BindAxis("Mouse X", this, &ARTS_PlayerController::AxisMouseX);
-	InputComponent->BindAxis("Mouse Y", this, &ARTS_PlayerController::AxisMouseY);
 }
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
+	// Update selection box size if mouse is being dragged
 	if (IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = GetMousePositionVector2D();
 
-		int32 viewportSizeX, viewportSizeY;
-		GetViewportSize(viewportSizeX, viewportSizeY);
-		FVector2D viewportSize((float)viewportSizeX, (float)viewportSizeY);
+		FVector2D selectionBoxPosition = m_ClickStartSS;
+		FVector2D selectionBoxSize = (m_ClickEndSS - m_ClickStartSS);
+		m_RTSHUD->UpdateSelectionBox(selectionBoxPosition, selectionBoxSize);
+	}
 
-		m_RTSHUD->SelectionBoxPosition = m_ClickStartSS;
-		m_RTSHUD->SelectionBoxSize = (m_ClickEndSS - m_ClickStartSS) ;
-		m_RTSHUD->UpdateSelectionBox(m_RTSHUD->SelectionBoxPosition, m_RTSHUD->SelectionBoxSize);
+	// If mouse is at edge of screen, update camera pos
+	FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
+	FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
+	forwardVec.Z = 0; // Only move along XY plane
+	forwardVec.Normalize();
+
+	float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
+
+	FVector2D normMousePos = GetNormalizedMousePosition();
+	if (normMousePos.X > 1.0f - m_EdgeSize)
+	{
+		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+	}
+	else if (normMousePos.X < m_EdgeSize)
+	{
+		m_RTS_CameraPawn->AddActorWorldOffset(-rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+	}
+
+	if (normMousePos.Y > 1.0f - m_EdgeSize)
+	{
+		m_RTS_CameraPawn->AddActorWorldOffset(-forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+	}
+	else if (normMousePos.Y < m_EdgeSize)
+	{
+		m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
 	}
 }
 
 void ARTS_PlayerController::ActionMainClickPressed()
 {
 	m_ClickStartSS = GetMousePositionVector2D();
-
-	// TODO: Remove
-	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
-	FHitResult hitResult;
-	if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
-	{
-		m_ClickStartWS = hitResult.Location;
-	}
 }
 
 void ARTS_PlayerController::ActionMainClickReleased()
 {
+	// Hide selection box when mouse isn't being held
 	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 
 	AGameStateBase* baseGameState = GetWorld()->GetGameState();
 	ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 
+	// Selected units array must be cleared if shift isn't down
 	if (!IsInputKeyDown(EKeys::LeftShift) && castedGameState->SelectedUnits.Num() > 0)
 	{
-		// Selected units array must be cleared if shift isn't down
 		for (auto selectedUnit : castedGameState->SelectedUnits)
 		{
 			selectedUnit->SetSelected(false);
 		}
 		castedGameState->SelectedUnits.Empty();
-		UE_LOG(Wipgate_Log, Log, TEXT("Cleared selected units array"));
 	}
 
 	for (auto unit : castedGameState->Units)
@@ -129,16 +164,16 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		// Draw unit bounding box
 		if (unit->ShowSelectionBox_DEBUG)
 		{
+			// TODO: This renders nothing at the moment
 			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitTransform.GetLocation(), unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
 		}
 
-		// Check if selection bounding box surrounds either min or max unit bounding box points
+		// Check if this unit's min or max bounding box points lie within the selection box
 		FVector unitBoundsMinWS = unitTransform.GetLocation() - unit->SelectionHitBox;
-		FVector unitBoundsMaxWS = unitTransform.GetLocation() + unit->SelectionHitBox;
-		
 		FVector2D unitBoundsMinSS;
 		ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
 
+		FVector unitBoundsMaxWS = unitTransform.GetLocation() + unit->SelectionHitBox;
 		FVector2D unitBoundsMaxSS;
 		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
 
@@ -148,32 +183,52 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		FVector2D selectionBoxMax = m_ClickEndSS;
 		Vector2DMinMax(selectionBoxMin, selectionBoxMax);
 
-		if (PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
-			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax))
+		bool unitInSelectionBox = 
+			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
+			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
+
+
+		// Check if unit is under mouse cursor (for single clicks)
+		ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+		FHitResult hitResult;
+		bool unitUnderCursor = false;
+		if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
+		{
+			if (hitResult.Actor == unit)
+			{
+				unitUnderCursor = true;
+			}
+		}
+
+
+		if (unitInSelectionBox || unitUnderCursor)
 		{
 			unit->SetSelected(true);
 			castedGameState->SelectedUnits.AddUnique(unit);
 		}
 	}
-
-
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
 {
-	UE_LOG(Wipgate_Log, Log, TEXT("fast click pressed"));
+	m_FastMoveMultiplier = m_FastMoveSpeed;
 }
 
 void ARTS_PlayerController::ActionMoveFastReleased()
 {
-	UE_LOG(Wipgate_Log, Log, TEXT("fast click released"));
+	m_FastMoveMultiplier = 1.0f;
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
 {
 	if (AxisValue != 0.0f)
 	{
-		UE_LOG(Wipgate_Log, Log, TEXT("Zoom: %f"), AxisValue);
+		float deltaArmLength = -AxisValue * GetWorld()->DeltaTimeSeconds * m_ZoomSpeed * m_FastMoveMultiplier;
+
+		float newArmLength = m_RTS_CameraPawnSpringArmComponent->TargetArmLength + deltaArmLength;
+		newArmLength = FMath::Clamp(newArmLength, m_MinArmDistance, m_MaxArmDistance);
+
+		m_RTS_CameraPawnSpringArmComponent->TargetArmLength = newArmLength;
 	}
 }
 
@@ -181,7 +236,11 @@ void ARTS_PlayerController::AxisMoveRight(float AxisValue)
 {
 	if (AxisValue != 0.0f)
 	{
-		UE_LOG(Wipgate_Log, Log, TEXT("Move right: %f"), AxisValue);
+		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
+
+		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
+
+		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
 	}
 }
 
@@ -189,23 +248,13 @@ void ARTS_PlayerController::AxisMoveForward(float AxisValue)
 {
 	if (AxisValue != 0.0f)
 	{
-		UE_LOG(Wipgate_Log, Log, TEXT("Move forward: %f"), AxisValue);
-	}
-}
+		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
 
-void ARTS_PlayerController::AxisMouseX(float AxisValue)
-{
-	if (AxisValue != 0.0f)
-	{
-		UE_LOG(Wipgate_Log, Log, TEXT("Mouse X: %f"), AxisValue);
-	}
-}
+		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
+		forwardVec.Z = 0; // Only move along XY plane
+		forwardVec.Normalize();
 
-void ARTS_PlayerController::AxisMouseY(float AxisValue)
-{
-	if (AxisValue != 0.0f)
-	{
-		UE_LOG(Wipgate_Log, Log, TEXT("Mouse Y: %f"), AxisValue);
+		m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
 	}
 }
 
@@ -218,13 +267,13 @@ bool ARTS_PlayerController::PointInBounds2D(FVector2D point, FVector2D boundsMin
 
 void ARTS_PlayerController::Vector2DMinMax(FVector2D& vec1, FVector2D& vec2)
 {
+	FMath::Min(vec1, vec2);
+
 	FVector2D vec1Copy = vec1;
 	FVector2D vec2Copy = vec2;
 
-	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
-	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
-	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
-	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+	vec1 = FMath::Min(vec1Copy, vec2Copy);
+	vec2 = FMath::Max(vec1Copy, vec2Copy);
 }
 
 FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
@@ -245,6 +294,17 @@ FVector2D ARTS_PlayerController::GetMousePositionVector2D() const
 	float mouseX, mouseY;
 	GetMousePosition(mouseX, mouseY);
 
-	FVector2D result(mouseX, mouseY);
+	float viewportScaleF = UWidgetLayoutLibrary::GetViewportScale(GetWorld());
+
+	const FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	const float viewportScale = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass())->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
+
+	FVector2D result(mouseX * viewportScaleF, mouseY * viewportScaleF);
 	return result;
+}
+
+float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)
+{
+	float movementSpeedMultiplier = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_MoveSpeedZoomMultiplier * DeltaSeconds;
+	return movementSpeedMultiplier;
 }

@@ -9,6 +9,8 @@
 
 class UUserWidget;
 class APawn;
+class UStaticMeshComponent;
+class USpringArmComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
 
@@ -37,31 +39,32 @@ private:
 	void AxisZoom(float AxisValue);
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
-	void AxisMouseX(float AxisValue);
-	void AxisMouseY(float AxisValue);
 
 
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
-	void Vector2DMinMax(FVector2D& vec1, FVector2D& vec2);
+	void Vector2DMinMax(FVector2D& vec1, FVector2D& vec2); // Calls Min and Max for each component
 	FVector2D GetNormalizedMousePosition() const;
 	FVector2D GetMousePositionVector2D() const;
+	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
-	APawn* m_RTS_CameraPawn;
-	URTS_HUDBase* m_RTSHUD;
+	APawn* m_RTS_CameraPawn = nullptr;
+	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
+	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
+	URTS_HUDBase* m_RTSHUD = nullptr;
 
-	float m_FastMoveSpeed;
-	float m_FastMoveMultiplier;
-	float m_PanSensitivity;
-	float m_ZoomSpeed;
-	float m_MinArmDistance;
-	float m_MaxArmDistance;
-	float m_EdgeMoveSpeed;
-	float m_EdgeSize;
+	// TODO: Expose most of these to the user to set manually
+	float m_FastMoveSpeed = 5.0f; // How much faster to move when move fast key is held (shift)
+	float m_FastMoveMultiplier = 1.0f; // Equals m_FastMoveSpeed when move fast button is down, otherwise 1.0f
+	float m_PanSensitivity = 200.0f;
+	float m_MoveSpeedZoomMultiplier = 1.0f / 5.0f;
+
+	float m_ZoomSpeed = 3000.0f;
+	float m_MinArmDistance = 400.0f;
+	float m_MaxArmDistance = 4000.0f;
+	
+	float m_EdgeMoveSpeed = 3.0f;
+	float m_EdgeSize = 0.05f;
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
-
-	// TODO: Remove, not used
-	FVector m_ClickStartWS;
-	FVector m_ClickEndWS;
 };
