@@ -63,7 +63,7 @@ private:
 	float m_MaxArmDistance = 4000.0f;
 	
 	float m_EdgeMoveSpeed = 3.0f;
-	float m_EdgeSize = 0.05f;
+	float m_EdgeSize = 0.035f;
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;

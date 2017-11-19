@@ -2,17 +2,5 @@
 
 #include "WipgateGameModeBase.h"
 
-AWipgateGameModeBase::AWipgateGameModeBase()
-{
-
-}
-
-
-void AWipgateGameModeBase::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
 
 

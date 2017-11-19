@@ -14,15 +14,9 @@ class WIPGATE_API ARTS_UnitCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ARTS_UnitCharacter();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called to bind functionality to input
+public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintNativeEvent)
@@ -38,7 +32,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
 	bool ShowSelectionBox_DEBUG;
-
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Selection")

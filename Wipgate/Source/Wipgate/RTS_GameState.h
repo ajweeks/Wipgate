@@ -13,11 +13,11 @@ class WIPGATE_API ARTS_GameState : public AGameState
 	GENERATED_BODY()
 	
 public:
-	// Contains all units
+	// All units
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Units")
 	TArray<ARTS_UnitCharacter*> Units;
 
-	// Contains only selected units
+	// Only selected units
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Units")
 	TArray<ARTS_UnitCharacter*> SelectedUnits;
 
