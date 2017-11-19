@@ -289,17 +289,10 @@ FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
 	return result;
 }
 
-FVector2D ARTS_PlayerController::GetMousePositionVector2D() const
+FVector2D ARTS_PlayerController::GetMousePositionVector2D()
 {
-	float mouseX, mouseY;
-	GetMousePosition(mouseX, mouseY);
-
-	float viewportScaleF = UWidgetLayoutLibrary::GetViewportScale(GetWorld());
-
-	const FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-	const float viewportScale = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass())->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
-
-	FVector2D result(mouseX * viewportScaleF, mouseY * viewportScaleF);
+	FVector2D result = {};
+	float viewportScaleF = UWidgetLayoutLibrary::GetMousePositionScaledByDPI(this, result.X, result.Y);
 	return result;
 }
 
