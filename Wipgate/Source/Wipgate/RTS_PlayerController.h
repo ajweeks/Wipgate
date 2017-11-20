@@ -27,7 +27,7 @@ public:
 	virtual void SetupInputComponent() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-		TSubclassOf<UUserWidget> MainHUD;
+	TSubclassOf<UUserWidget> MainHUD;
 
 	UUserWidget* MainHUDInstance;
 
@@ -40,7 +40,6 @@ private:
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
 
-
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
 	void Vector2DMinMax(FVector2D& vec1, FVector2D& vec2);
 	FVector2D GetNormalizedMousePosition() const;
@@ -52,17 +51,25 @@ private:
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
 	URTS_HUDBase* m_RTSHUD = nullptr;
 
-	// TODO: Expose most of these to the user to set manually
+	UPROPERTY(EditAnywhere)
 	float m_FastMoveSpeed = 5.0f; // How much faster to move when move fast key is held (shift)
+	UPROPERTY(EditAnywhere)
 	float m_FastMoveMultiplier = 1.0f; // Equals m_FastMoveSpeed when move fast button is down, otherwise 1.0f
+	UPROPERTY(EditAnywhere)
 	float m_PanSensitivity = 200.0f;
+	UPROPERTY(EditAnywhere)
 	float m_MoveSpeedZoomMultiplier = 1.0f / 5.0f;
 
+	UPROPERTY(EditAnywhere)
 	float m_ZoomSpeed = 3000.0f;
+	UPROPERTY(EditAnywhere)
 	float m_MinArmDistance = 400.0f;
+	UPROPERTY(EditAnywhere)
 	float m_MaxArmDistance = 4000.0f;
 
+	UPROPERTY(EditAnywhere)
 	float m_EdgeMoveSpeed = 3.0f;
+	UPROPERTY(EditAnywhere)
 	float m_EdgeSize = 0.05f;
 
 
