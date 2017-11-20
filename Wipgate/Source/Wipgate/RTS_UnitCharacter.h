@@ -23,7 +23,7 @@ public:
 	void SetSelected(bool selected);
 	virtual void SetSelected_Implementation(bool selected);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintGetter)
 	bool IsSelected() const;
 
 

@@ -96,6 +96,13 @@ void ARTS_PlayerController::SetupInputComponent()
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
+	if (IsInputKeyDown(EKeys::Escape))
+	{
+		// TODO: Look into alternative to this
+		GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
+		return;
+	}
+
 	// Update selection box size if mouse is being dragged
 	if (IsInputKeyDown(EKeys::LeftMouseButton))
 	{
@@ -103,7 +110,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		FVector2D selectionBoxPosition = m_ClickStartSS;
 		FVector2D selectionBoxSize = (m_ClickEndSS - m_ClickStartSS);
-		m_RTSHUD->UpdateSelectionBox(selectionBoxPosition, selectionBoxSize);
+
+		if (m_RTSHUD)
+		{
+			m_RTSHUD->UpdateSelectionBox(selectionBoxPosition, selectionBoxSize);
+		}
 	}
 
 	// If mouse is at edge of screen, update camera pos
@@ -151,7 +162,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 	else
 	{
-		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn or its mesh isn't set! (no biggie - just weird is all (tell AJ if you see this error))"));
+		// Weird
 	}
 }
 
@@ -163,22 +174,29 @@ void ARTS_PlayerController::ActionMainClickPressed()
 void ARTS_PlayerController::ActionMainClickReleased()
 {
 	// Hide selection box when mouse isn't being held
-	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
-
-	AGameStateBase* baseGameState = GetWorld()->GetGameState();
-	ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
-
-	// Selected units array must be cleared if shift isn't down
-	if (!IsInputKeyDown(EKeys::LeftShift) && castedGameState->SelectedUnits.Num() > 0)
+	if (m_RTSHUD)
 	{
-		for (auto selectedUnit : castedGameState->SelectedUnits)
-		{
-			selectedUnit->SetSelected(false);
-		}
-		castedGameState->SelectedUnits.Empty();
+		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 	}
 
-	for (auto unit : castedGameState->Units)
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	ARTS_GameState* rtsGameState = Cast<ARTS_GameState>(baseGameState);
+
+	// TODO: Use bindable key here
+	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
+
+	// Selected units array must be cleared if shift isn't down
+	if (!isShiftDown && rtsGameState->SelectedUnits.Num() > 0)
+	{
+		for (int i  = 0; i < rtsGameState->SelectedUnits.Num(); ++i)
+		{
+			ARTS_UnitCharacter* selectedUnit = rtsGameState->SelectedUnits[i];
+			selectedUnit->SetSelected(false);
+		}
+		rtsGameState->SelectedUnits.Empty();
+	}
+
+	for (auto unit : rtsGameState->Units)
 	{
 		FVector unitLocation = unit->GetActorLocation();
 
@@ -232,11 +250,24 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			}
 		}
 
+		//const bool unitIsDead = unit->Is_Dead();
 
-		if (unitInSelectionBox || unitUnderCursor)
+		const bool unitWasSelected = unit->IsSelected();
+		bool unitClicked = unitUnderCursor;
+		bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
+
+		//if (!unitIsDead)
 		{
-			unit->SetSelected(true);
-			castedGameState->SelectedUnits.AddUnique(unit);
+			if (unitDeselected)
+			{
+				unit->SetSelected(false);
+				rtsGameState->SelectedUnits.Remove(unit);
+			}
+			else if (unitInSelectionBox || unitClicked)
+			{
+				unit->SetSelected(true);
+				rtsGameState->SelectedUnits.AddUnique(unit);
+			}
 		}
 	}
 }
@@ -253,7 +284,7 @@ void ARTS_PlayerController::ActionMoveFastReleased()
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
 {
-	if (AxisValue != 0.0f)
+	if (m_RTS_CameraPawnSpringArmComponent && AxisValue != 0.0f)
 	{
 		float deltaArmLength = -AxisValue * GetWorld()->DeltaTimeSeconds * m_ZoomSpeed * m_FastMoveMultiplier;
 
@@ -266,7 +297,7 @@ void ARTS_PlayerController::AxisZoom(float AxisValue)
 
 void ARTS_PlayerController::AxisMoveRight(float AxisValue)
 {
-	if (AxisValue != 0.0f)
+	if (m_RTS_CameraPawn && m_RTS_CameraPawnMeshComponent && AxisValue != 0.0f)
 	{
 		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
 
@@ -278,7 +309,7 @@ void ARTS_PlayerController::AxisMoveRight(float AxisValue)
 
 void ARTS_PlayerController::AxisMoveForward(float AxisValue)
 {
-	if (AxisValue != 0.0f)
+	if (m_RTS_CameraPawn && AxisValue != 0.0f)
 	{
 		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
 
@@ -330,6 +361,11 @@ FVector2D ARTS_PlayerController::GetMousePositionVector2D()
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)
 {
-	float movementSpeedMultiplier = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_MoveSpeedZoomMultiplier * DeltaSeconds;
-	return movementSpeedMultiplier;
+	if (m_RTS_CameraPawnSpringArmComponent)
+	{
+		float movementSpeedMultiplier = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_MoveSpeedZoomMultiplier * DeltaSeconds;
+		return movementSpeedMultiplier;
+	}
+
+	return 0.0f;
 }
