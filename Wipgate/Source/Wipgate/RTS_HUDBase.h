@@ -17,4 +17,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSelectionBox(FVector2D position, FVector2D size);
 
+	// TODO: Remove these carefully
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	FVector2D SelectionBoxPosition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	FVector2D SelectionBoxSize;
+
 };

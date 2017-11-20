@@ -4,13 +4,14 @@
 
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
+//#include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/GameStateBase.h"
-#include "Classes/Kismet/KismetSystemLibrary.h"
-#include "Classes/Components/StaticMeshComponent.h"
-#include "Classes/GameFramework/SpringArmComponent.h"
-#include "Classes/Engine/UserInterfaceSettings.h"
-#include "Classes/Engine/RendererSettings.h"
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
+#include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
+#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
+#include "Runtime/Engine/Classes/Engine/RendererSettings.h"
 #include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
 
 #include "RTS_GameState.h"
@@ -69,14 +70,14 @@ void ARTS_PlayerController::BeginPlay()
 		}
 		else
 		{
-			print("Failed to create main HUD widget!");
+			UE_LOG(Wipgate_Log, Error, TEXT("Failed to create main HUD widget!"));
 		}
 
 		bShowMouseCursor = true;
 	}
 	else
 	{
-		print("Main HUD template was not set in player controller BP!");
+		UE_LOG(Wipgate_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
 }
 
@@ -106,30 +107,51 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	// If mouse is at edge of screen, update camera pos
-	FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
-	FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
-	forwardVec.Z = 0; // Only move along XY plane
-	forwardVec.Normalize();
-
-	float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
-
-	FVector2D normMousePos = GetNormalizedMousePosition();
-	if (normMousePos.X > 1.0f - m_EdgeSize)
+	/* 
+		These two values need to be checked because Tick can be called
+		before they are set in BeginPlay somehow 
+		TODO: Look into call order - I think this function even gets called in the editor for some reason
+	*/
+	if (m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
-		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
+		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
+		forwardVec.Z = 0; // Only move along XY plane
+		forwardVec.Normalize();
+	
+		float camDistSpeedMultiplier = 0.0f;
+		UWorld* world = GetWorld();
+		if (!world)
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("World not found!"));
+		}
+		else
+		{
+			camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
+		}
+	
+		FVector2D normMousePos = GetNormalizedMousePosition();
+		if (normMousePos.X > 1.0f - m_EdgeSize)
+		{
+			m_RTS_CameraPawn->AddActorWorldOffset(rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		}
+		else if (normMousePos.X < m_EdgeSize)
+		{
+			m_RTS_CameraPawn->AddActorWorldOffset(-rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		}
+	
+		if (normMousePos.Y > 1.0f - m_EdgeSize)
+		{
+			m_RTS_CameraPawn->AddActorWorldOffset(-forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		}
+		else if (normMousePos.Y < m_EdgeSize)
+		{
+			m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		}
 	}
-	else if (normMousePos.X < m_EdgeSize)
+	else
 	{
-		m_RTS_CameraPawn->AddActorWorldOffset(-rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
-	}
-
-	if (normMousePos.Y > 1.0f - m_EdgeSize)
-	{
-		m_RTS_CameraPawn->AddActorWorldOffset(-forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
-	}
-	else if (normMousePos.Y < m_EdgeSize)
-	{
-		m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn or its mesh isn't set! (no biggie - just weird is all (tell AJ if you see this error))"));
 	}
 }
 
@@ -158,21 +180,25 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 	for (auto unit : castedGameState->Units)
 	{
-		FTransform unitTransform = unit->GetTransform();
+		FVector unitLocation = unit->GetActorLocation();
 
 		// Draw unit bounding box
 		if (unit->ShowSelectionBox_DEBUG)
 		{
-			// TODO: This renders nothing at the moment
-			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitTransform.GetLocation(), unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
+			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitLocation, unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
+		}
+
+		if (unit->SelectionHitBox == FVector::ZeroVector)
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
 		}
 
 		// Check if this unit's min or max bounding box points lie within the selection box
-		FVector unitBoundsMinWS = unitTransform.GetLocation() - unit->SelectionHitBox;
+		FVector unitBoundsMinWS = unitLocation - unit->SelectionHitBox;
 		FVector2D unitBoundsMinSS;
 		ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
 
-		FVector unitBoundsMaxWS = unitTransform.GetLocation() + unit->SelectionHitBox;
+		FVector unitBoundsMaxWS = unitLocation + unit->SelectionHitBox;
 		FVector2D unitBoundsMaxSS;
 		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
 
@@ -181,6 +207,13 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		FVector2D selectionBoxMin = m_ClickStartSS;
 		FVector2D selectionBoxMax = m_ClickEndSS;
 		Vector2DMinMax(selectionBoxMin, selectionBoxMax);
+
+		FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+		const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+		float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
+
+		unitBoundsMinSS /= viewportScale;
+		unitBoundsMaxSS /= viewportScale;
 
 		bool unitInSelectionBox = 
 			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
@@ -266,13 +299,13 @@ bool ARTS_PlayerController::PointInBounds2D(FVector2D point, FVector2D boundsMin
 
 void ARTS_PlayerController::Vector2DMinMax(FVector2D& vec1, FVector2D& vec2)
 {
-	FMath::Min(vec1, vec2);
-
 	FVector2D vec1Copy = vec1;
 	FVector2D vec2Copy = vec2;
 
-	vec1 = FMath::Min(vec1Copy, vec2Copy);
-	vec2 = FMath::Max(vec1Copy, vec2Copy);
+	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
+	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
+	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
 }
 
 FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
@@ -282,7 +315,7 @@ FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
 
 	int32 viewportSizeX, viewportSizeY;
 	GetViewportSize(viewportSizeX, viewportSizeY);
-
+	
 	FVector2D result(mouseX / (float)viewportSizeX,
 					 mouseY / (float)viewportSizeY);
 	return result;
