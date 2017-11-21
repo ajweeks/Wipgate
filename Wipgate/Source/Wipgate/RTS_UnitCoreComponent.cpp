@@ -19,10 +19,19 @@ void URTS_UnitCoreComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Attack
 	CurrentDamage = BaseDamage;
 	CurrentRateOfFire = BaseRateOfFire;
 	CurrentAttackRange = BaseAttackRange;
 	TimerRateOfFire = 0.f;
+
+	//Defense
+	CurrentArmor = BaseArmor;
+	CurrentHealth = BaseHealth;
+
+	//Vision
+	CurrentOuterCircleRange = BaseOuterCircleRange;
+	CurrentInnerCircleRange = BaseInnerCircleRange;
 }
 
 

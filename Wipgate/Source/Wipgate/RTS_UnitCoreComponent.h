@@ -44,5 +44,25 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentAttackRange = 250;
 
+	//DEFENSE PROPERTIES
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Defense")
+	int BaseArmor = 0;
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentArmor = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Defense")
+	int BaseHealth = 0;
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentHealth = 0;
+
+	//VISION PROPERTIES
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vision")
+	int BaseOuterCircleRange = 0;
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentOuterCircleRange = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vision")
+	int BaseInnerCircleRange = 0;
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentInnerCircleRange = 0;
+
 	
 };
