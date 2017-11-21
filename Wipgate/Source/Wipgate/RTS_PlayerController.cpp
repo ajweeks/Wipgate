@@ -13,6 +13,7 @@
 #include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
 #include "Runtime/Engine/Classes/Engine/RendererSettings.h"
 #include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
+#include "Runtime/Engine/Classes/Camera/CameraComponent.h"
 
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
@@ -34,12 +35,28 @@ void ARTS_PlayerController::BeginPlay()
 	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	ensure(m_RTS_CameraPawn != nullptr);
 
+
+	TArray<UCameraComponent*> cameraComponents;
+	m_RTS_CameraPawn->GetComponents(cameraComponents);
+	if (cameraComponents.Num() > 0)
+	{
+		m_RTS_CameraPawnCameraComponent = cameraComponents[0];
+	}
+	else
+	{
+		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+	}
+	ensure(m_RTS_CameraPawnCameraComponent != nullptr);
+
 	TArray<UStaticMeshComponent*> meshComponents;
 	m_RTS_CameraPawn->GetComponents(meshComponents);
-
 	if (meshComponents.Num() > 0)
 	{
 		m_RTS_CameraPawnMeshComponent = meshComponents[0];
+	}
+	else
+	{
+		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a mesh component!"));
 	}
 	ensure(m_RTS_CameraPawnMeshComponent != nullptr);
 
@@ -49,8 +66,15 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		m_RTS_CameraPawnSpringArmComponent = springArmComponents[0];
 	}
+	else
+	{
+		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a spring arm component!"));
+	}
 	ensure(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
+	ensure(m_RTS_GameState != nullptr);
 
 	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
 	FInputModeGameAndUI inputMode;
@@ -89,6 +113,7 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
+	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelection);
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -117,13 +142,17 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
+	if (m_MovingToTarget)
+	{
+		MoveToTarget();
+	}
 	// If mouse is at edge of screen, update camera pos
 	/* 
 		These two values need to be checked because Tick can be called
 		before they are set in BeginPlay somehow 
 		TODO: Look into call order - I think this function even gets called in the editor for some reason
 	*/
-	if (m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
+	else if (m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
@@ -173,30 +202,32 @@ void ARTS_PlayerController::ActionMainClickPressed()
 
 void ARTS_PlayerController::ActionMainClickReleased()
 {
+	if (!m_RTS_GameState)
+	{
+		return; // Game state hasn't been initialized yet, we can't do anything
+	}
+
 	// Hide selection box when mouse isn't being held
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 	}
 
-	AGameStateBase* baseGameState = GetWorld()->GetGameState();
-	ARTS_GameState* rtsGameState = Cast<ARTS_GameState>(baseGameState);
-
 	// TODO: Use bindable key here
 	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
 
 	// Selected units array must be cleared if shift isn't down
-	if (!isShiftDown && rtsGameState->SelectedUnits.Num() > 0)
+	if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
 	{
-		for (int i  = 0; i < rtsGameState->SelectedUnits.Num(); ++i)
+		for (int i  = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
 		{
-			ARTS_UnitCharacter* selectedUnit = rtsGameState->SelectedUnits[i];
+			ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
 			selectedUnit->SetSelected(false);
 		}
-		rtsGameState->SelectedUnits.Empty();
+		m_RTS_GameState->SelectedUnits.Empty();
 	}
 
-	for (auto unit : rtsGameState->Units)
+	for (auto unit : m_RTS_GameState->Units)
 	{
 		FVector unitLocation = unit->GetActorLocation();
 
@@ -220,11 +251,11 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		FVector2D unitBoundsMaxSS;
 		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
 
-		Vector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
+		FVector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
 
 		FVector2D selectionBoxMin = m_ClickStartSS;
 		FVector2D selectionBoxMax = m_ClickEndSS;
-		Vector2DMinMax(selectionBoxMin, selectionBoxMax);
+		FVector2DMinMax(selectionBoxMin, selectionBoxMax);
 
 		FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
 		const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
@@ -261,12 +292,12 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			if (unitDeselected)
 			{
 				unit->SetSelected(false);
-				rtsGameState->SelectedUnits.Remove(unit);
+				m_RTS_GameState->SelectedUnits.Remove(unit);
 			}
 			else if (unitInSelectionBox || unitClicked)
 			{
 				unit->SetSelected(true);
-				rtsGameState->SelectedUnits.AddUnique(unit);
+				m_RTS_GameState->SelectedUnits.AddUnique(unit);
 			}
 		}
 	}
@@ -280,6 +311,22 @@ void ARTS_PlayerController::ActionMoveFastPressed()
 void ARTS_PlayerController::ActionMoveFastReleased()
 {
 	m_FastMoveMultiplier = 1.0f;
+}
+
+void ARTS_PlayerController::ActionCenterOnSelection()
+{
+	if (!m_RTS_GameState || !m_RTS_CameraPawnCameraComponent)
+	{
+		return; // Game state hasn't been initialized yet, we can't do anything
+	}
+
+	if (m_RTS_GameState->SelectedUnits.Num() == 0)
+	{
+		return; // No selected units to center on
+	}
+
+	m_MovingToTarget = true;
+	MoveToTarget();
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
@@ -328,15 +375,30 @@ bool ARTS_PlayerController::PointInBounds2D(FVector2D point, FVector2D boundsMin
 	return result;
 }
 
-void ARTS_PlayerController::Vector2DMinMax(FVector2D& vec1, FVector2D& vec2)
+void ARTS_PlayerController::FVector2DMinMax(FVector2D& vec1, FVector2D& vec2)
 {
 	FVector2D vec1Copy = vec1;
 	FVector2D vec2Copy = vec2;
 
 	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
 	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+
 	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
 	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+}
+
+void ARTS_PlayerController::FVectorMinMax(FVector& vec1, FVector& vec2)
+{
+	FVector vec1Copy = vec1;
+	FVector vec2Copy = vec2;
+
+	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
+	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+	vec1.Z = FMath::Min(vec1Copy.Z, vec2Copy.Z);
+
+	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
+	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+	vec2.Z = FMath::Max(vec1Copy.Z, vec2Copy.Z);
 }
 
 FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
@@ -344,12 +406,12 @@ FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
 	float mouseX, mouseY;
 	GetMousePosition(mouseX, mouseY);
 
-	int32 viewportSizeX, viewportSizeY;
-	GetViewportSize(viewportSizeX, viewportSizeY);
-	
-	FVector2D result(mouseX / (float)viewportSizeX,
-					 mouseY / (float)viewportSizeY);
-	return result;
+int32 viewportSizeX, viewportSizeY;
+GetViewportSize(viewportSizeX, viewportSizeY);
+
+FVector2D result(mouseX / (float)viewportSizeX,
+	mouseY / (float)viewportSizeY);
+return result;
 }
 
 FVector2D ARTS_PlayerController::GetMousePositionVector2D()
@@ -368,4 +430,70 @@ float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float Delta
 	}
 
 	return 0.0f;
+}
+
+void ARTS_PlayerController::MoveToTarget()
+{
+	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
+	const int32 selectedUnitCount = m_RTS_GameState->SelectedUnits.Num();
+
+	if (selectedUnitCount == 0)
+	{
+		m_MovingToTarget = false;
+		return;
+	}
+
+	FVector minUnitLocation = FVector::ZeroVector;
+	FVector maxUnitLocation = FVector::ZeroVector;
+	FVector averageUnitLocation = FVector::ZeroVector;
+
+	for (int32 i = 0; i < selectedUnitCount; ++i)
+	{
+		ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[i];
+		FVector unitLocation = unit->GetActorLocation();
+		averageUnitLocation += unitLocation;
+
+		FVector unitLocationCopy = unitLocation; // TODO: Is this needed?
+
+		FVectorMinMax(minUnitLocation, unitLocationCopy);
+		unitLocationCopy = unitLocation;
+		FVectorMinMax(unitLocationCopy, maxUnitLocation);
+	}
+
+	averageUnitLocation /= selectedUnitCount;
+
+	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
+	m_TargetLocation = FVector(averageUnitLocation.X, averageUnitLocation.Y, oldCameraLocation.Z);
+	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
+	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
+
+	FVector newCamLocation = oldCameraLocation + camMovement;
+
+	if (newCamLocation.X > m_TargetLocation.X && dCamLocation.X > 0.0f ||
+		newCamLocation.X < m_TargetLocation.X && dCamLocation.X < 0.0f)
+	{
+		// We passed the target in the X direction
+		newCamLocation.X = m_TargetLocation.X;
+	}
+	if (newCamLocation.Y > m_TargetLocation.Y && dCamLocation.Y > 0.0f ||
+		newCamLocation.Y < m_TargetLocation.Y && dCamLocation.Y < 0.0f)
+	{
+		// We passed the target in the Y direction
+		newCamLocation.Y = m_TargetLocation.Y;
+	}
+	if (newCamLocation.Z > m_TargetLocation.Z && dCamLocation.Z > 0.0f ||
+		newCamLocation.Z < m_TargetLocation.Z && dCamLocation.Z < 0.0f)
+	{
+		// We passed the target in the Z direction
+		newCamLocation.Z = m_TargetLocation.Z;
+	}
+
+	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
+
+	if (m_TargetLocation.Equals(oldCameraLocation, 5.0f))
+	{
+		m_MovingToTarget = false;
+	}
+
+	// TODO: Zoom camera in/out on selection
 }

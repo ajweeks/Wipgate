@@ -9,8 +9,10 @@
 
 class UUserWidget;
 class APawn;
+class UCameraComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
+class ARTS_GameState;
 
 DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
 
@@ -36,42 +38,59 @@ private:
 	void ActionMainClickReleased();
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
+	void ActionCenterOnSelection();
 	void AxisZoom(float AxisValue);
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
 
+	// TODO: Move these to the general function library
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
-	void Vector2DMinMax(FVector2D& vec1, FVector2D& vec2);
+	void FVector2DMinMax(FVector2D& vec1, FVector2D& vec2);
+	void FVectorMinMax(FVector& vec1, FVector& vec2);
 	FVector2D GetNormalizedMousePosition() const;
 	FVector2D GetMousePositionVector2D();
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
+	void MoveToTarget();
+
 	APawn* m_RTS_CameraPawn = nullptr;
+	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
 	URTS_HUDBase* m_RTSHUD = nullptr;
+	ARTS_GameState* m_RTS_GameState = nullptr;
 
-	UPROPERTY(EditAnywhere)
-	float m_FastMoveSpeed = 5.0f; // How much faster to move when move fast key is held (shift)
-	UPROPERTY(EditAnywhere)
-	float m_FastMoveMultiplier = 1.0f; // Equals m_FastMoveSpeed when move fast button is down, otherwise 1.0f
-	UPROPERTY(EditAnywhere)
-	float m_PanSensitivity = 200.0f;
-	UPROPERTY(EditAnywhere)
+	
+	// How much faster to move when move fast key is held (shift)
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float m_FastMoveSpeed = 5.0f;
+	// Equals Fast Move Speed when shift is down, otherwise 1.0f
+	float m_FastMoveMultiplier = 1.0f;
+	// Higer values = faster movement when more zoomed out
+	UPROPERTY(EditAnywhere, Category = "Movement")
 	float m_MoveSpeedZoomMultiplier = 1.0f / 5.0f;
 
-	UPROPERTY(EditAnywhere)
-	float m_ZoomSpeed = 3000.0f;
-	UPROPERTY(EditAnywhere)
-	float m_MinArmDistance = 400.0f;
-	UPROPERTY(EditAnywhere)
-	float m_MaxArmDistance = 4000.0f;
+	// How quickly to zoom in/out when scrolling
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float m_ZoomSpeed = 6000.0f;
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float m_MinArmDistance = 100.0f;
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float m_MaxArmDistance = 5000.0f;
 
-	UPROPERTY(EditAnywhere)
-	float m_EdgeMoveSpeed = 3.0f;
-	UPROPERTY(EditAnywhere)
-	float m_EdgeSize = 0.05f;
+	// How quickly to move when the mouse is at the edge of the screen
+	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
+	float m_EdgeMoveSpeed = 10.0f;
+	// Percentage of screen from outer edges that mouse cursor will cause movement in
+	UPROPERTY(EditAnywhere, meta = (UIMin = "0.001", UIMax = "0.05"), Category = "Movement")
+	float m_EdgeSize = 0.005f;
 
+	// Higher values = faster selection centering
+	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
+	float m_SelectionCenterMaxMoveSpeed = 25.0f;
+
+	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
+	FVector m_TargetLocation;
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
