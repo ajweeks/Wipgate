@@ -32,7 +32,7 @@ public:
 	AAbility();
 
 	/* sandbox method */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability Functions")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Functions")
 		void Activate();
 	UFUNCTION(BlueprintCallable, Category = "Ability Functions")
 		void Select();
