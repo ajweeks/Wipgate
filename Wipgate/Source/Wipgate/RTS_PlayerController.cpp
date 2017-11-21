@@ -113,7 +113,6 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
-	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelection);
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -142,7 +141,13 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	if (m_MovingToTarget)
+	
+	// TODO: Find out how to use input mapped key
+	if (IsInputKeyDown(EKeys::SpaceBar))
+	{
+		ActionCenterOnSelection();
+	}
+	else if (m_MovingToTarget)
 	{
 		MoveToTarget();
 	}
@@ -447,6 +452,8 @@ void ARTS_PlayerController::MoveToTarget()
 	FVector maxUnitLocation = FVector::ZeroVector;
 	FVector averageUnitLocation = FVector::ZeroVector;
 
+	float maxUnitVelocityMag = 0.0f;
+
 	for (int32 i = 0; i < selectedUnitCount; ++i)
 	{
 		ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[i];
@@ -458,6 +465,12 @@ void ARTS_PlayerController::MoveToTarget()
 		FVectorMinMax(minUnitLocation, unitLocationCopy);
 		unitLocationCopy = unitLocation;
 		FVectorMinMax(unitLocationCopy, maxUnitLocation);
+
+		const float unitVelocityMag = unit->GetVelocity().Size();
+		if (unitVelocityMag > maxUnitVelocityMag)
+		{
+			maxUnitVelocityMag = unitVelocityMag;
+		}
 	}
 
 	averageUnitLocation /= selectedUnitCount;
@@ -489,8 +502,9 @@ void ARTS_PlayerController::MoveToTarget()
 	}
 
 	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
-
-	if (m_TargetLocation.Equals(oldCameraLocation, 5.0f))
+	
+	float locationTolerance = 5.0f + maxUnitVelocityMag ;
+	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
 	{
 		m_MovingToTarget = false;
 	}
