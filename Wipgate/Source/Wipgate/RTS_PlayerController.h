@@ -60,7 +60,12 @@ private:
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
 
-	
+
+	UPROPERTY(EditAnywhere, Category = "Misc")
+	FVector m_StartingLocation;
+	UPROPERTY(EditAnywhere, Category = "Misc")
+	FQuat m_StartingRotation;
+
 	// How much faster to move when move fast key is held (shift)
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float m_FastMoveSpeed = 5.0f;

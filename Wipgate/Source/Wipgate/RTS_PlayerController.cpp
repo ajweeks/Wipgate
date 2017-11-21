@@ -33,8 +33,10 @@ void ARTS_PlayerController::BeginPlay()
 
 	// Get references to camera and its components
 	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-	ensure(m_RTS_CameraPawn != nullptr);
+	check(m_RTS_CameraPawn != nullptr);
 
+	m_RTS_CameraPawn->SetActorLocation(m_StartingLocation);
+	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
 
 	TArray<UCameraComponent*> cameraComponents;
 	m_RTS_CameraPawn->GetComponents(cameraComponents);
@@ -46,7 +48,7 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a camera component!"));
 	}
-	ensure(m_RTS_CameraPawnCameraComponent != nullptr);
+	check(m_RTS_CameraPawnCameraComponent != nullptr);
 
 	TArray<UStaticMeshComponent*> meshComponents;
 	m_RTS_CameraPawn->GetComponents(meshComponents);
@@ -58,7 +60,7 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a mesh component!"));
 	}
-	ensure(m_RTS_CameraPawnMeshComponent != nullptr);
+	check(m_RTS_CameraPawnMeshComponent != nullptr);
 
 	TArray<USpringArmComponent*> springArmComponents;
 	m_RTS_CameraPawn->GetComponents(springArmComponents);
@@ -70,11 +72,11 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a spring arm component!"));
 	}
-	ensure(m_RTS_CameraPawnSpringArmComponent != nullptr);
+	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
 	AGameStateBase* baseGameState = GetWorld()->GetGameState();
 	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
-	ensure(m_RTS_GameState != nullptr);
+	check(m_RTS_GameState != nullptr);
 
 	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
 	FInputModeGameAndUI inputMode;
