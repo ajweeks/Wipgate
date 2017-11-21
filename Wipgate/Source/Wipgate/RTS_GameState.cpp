@@ -6,9 +6,12 @@ DEFINE_LOG_CATEGORY(RTS_Gamestate_log);
 
 void ARTS_GameState::RemoveUnit(ARTS_UnitCharacter* unit)
 {
-	unit->SetSelected(false);
-	Units.Remove(unit);
-	SelectedUnits.Remove(unit);
+	if(unit)
+	{
+		unit->SetSelected(false);
+		Units.Remove(unit);
+		SelectedUnits.Remove(unit);
 
-	UE_LOG(LogTemp, Display, TEXT("ARTS_GameState::RemoveUnit > Removed unit from Units array. %i remaining."),Units.Num());
+		UE_LOG(LogTemp, Display, TEXT("ARTS_GameState::RemoveUnit > Removed unit from Units array. %i remaining."), Units.Num());
+	}
 }
