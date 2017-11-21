@@ -250,13 +250,13 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			}
 		}
 
-		//const bool unitIsDead = unit->Is_Dead();
+		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
 
 		const bool unitWasSelected = unit->IsSelected();
 		bool unitClicked = unitUnderCursor;
 		bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
 
-		//if (!unitIsDead)
+		if (!unitIsDead)
 		{
 			if (unitDeselected)
 			{

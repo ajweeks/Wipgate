@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "RTS_UnitCoreComponent.h"
 #include "RTS_UnitCharacter.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
@@ -32,6 +33,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
 	bool ShowSelectionBox_DEBUG;
+
+	UPROPERTY(BlueprintReadWrite)
+	URTS_UnitCoreComponent* m_UnitCoreComponent = nullptr;
 	
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
