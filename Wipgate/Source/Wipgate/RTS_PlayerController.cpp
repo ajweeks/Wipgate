@@ -93,6 +93,7 @@ void ARTS_PlayerController::BeginPlay()
 		{
 			MainHUDInstance->AddToViewport();
 			m_RTSHUD = Cast<URTS_HUDBase>(MainHUDInstance);
+			m_RTSHUD->PlayerController = this;
 		}
 		else
 		{
@@ -118,6 +119,16 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
+}
+
+bool ARTS_PlayerController::IsEdgeMovementEnabled() const
+{
+	return m_EdgeMovementEnabled;
+}
+
+void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
+{
+	m_EdgeMovementEnabled = enabled;
 }
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
@@ -159,7 +170,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			before they are set in BeginPlay somehow 
 			TODO: Look into call order - I think this function even gets called in the editor for some reason
 		*/
-	else if (!m_DisableEdgeMovement && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
+	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();

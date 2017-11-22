@@ -28,6 +28,12 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
 
+	UFUNCTION(BlueprintCallable)
+	bool IsEdgeMovementEnabled() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetEdgeMovementEnabled(bool enabled);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
@@ -61,7 +67,7 @@ private:
 	ARTS_GameState* m_RTS_GameState = nullptr;
 	
 	UPROPERTY(EditAnywhere, Category = "Misc")
-	bool m_DisableEdgeMovement = false;
+	bool m_EdgeMovementEnabled = true;
 
 	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")

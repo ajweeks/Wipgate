@@ -28,4 +28,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	FVector2D SelectionBoxSize;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Misc")
+	ARTS_PlayerController* PlayerController = nullptr;
+
 };

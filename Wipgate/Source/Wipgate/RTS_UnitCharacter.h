@@ -29,7 +29,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
-	FVector SelectionHitBox;
+	FVector SelectionHitBox = FVector(30.0f, 30.0f, 100.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
 	bool ShowSelectionBox_DEBUG;
