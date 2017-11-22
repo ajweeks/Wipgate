@@ -1,8 +1,6 @@
 
 #include "Ability.h"
-
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
-#include "Runtime/Engine/Classes/Particles/ParticleSystem.h"
+#include "UnitEffect.h"
 
 AAbility::AAbility()
 {
@@ -22,12 +20,13 @@ void AAbility::Select()
 		UE_LOG(LogTemp, Warning, TEXT("Selected"))
 	}
 	// display cursor/decals
+}
 
-	UParticleSystem* ps = NewObject<UParticleSystem>(this, TEXT("PE_Hit"));
-	FTransform trans;
-	trans.SetLocation(FVector(0, 0, 10));
-	UParticleSystemComponent* part =  UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ps, trans, true);
-	UE_LOG(LogTemp, Warning, TEXT("Particle spawned"));
+UUnitEffect * AAbility::CreateUnitEffect(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration)
+{
+	UUnitEffect* unitEffect = NewObject<UUnitEffect>(this);
+	unitEffect->Initialize(stat, type, intensity, duration);
+	return unitEffect;
 }
 
 void AAbility::BeginPlay()

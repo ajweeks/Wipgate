@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Runtime/Core//Public/Math/Vector2D.h"
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "UnitEffect.h"
 #include "Ability.generated.h"
 
 UENUM(BlueprintType)
@@ -31,21 +31,26 @@ class WIPGATE_API AAbility : public AActor
 public:
 	AAbility();
 
-	/* sandbox method */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Functions")
+	/* sandbox methods */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Activate();
-	UFUNCTION(BlueprintCallable, Category = "Ability Functions")
+	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
 		void Select();
-	UFUNCTION(BlueprintCallable, Category = "Ability Functions")
+	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
 		virtual void Passive() {};
+
+protected:
+	/* protected non virtuals */
+	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
+		UUnitEffect* CreateUnitEffect(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
 
 protected:
 	/* general ability functionality */
 	// get enemies/allies
 	// get nearest
 	// sort near to far
-	void PlaySound() {};
-	void SpawnParticle() {};
+	// void PlaySound() {};
+	// void SpawnParticle() {};
 	// animation
 
 	///* protected members */
@@ -71,5 +76,8 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	const float m_Interval = 0.5f;
 
 };
