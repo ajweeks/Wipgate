@@ -42,4 +42,3 @@ void URTS_UnitCoreComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	// ...
 }
-

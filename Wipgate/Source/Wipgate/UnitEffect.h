@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Engine/UserDefinedStruct.h"
 #include "UnitEffect.generated.h"
 
 class UParticleSystem;
@@ -24,22 +24,19 @@ enum class EUnitEffectType : uint8
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class WIPGATE_API UUnitEffect : public UActorComponent
+class WIPGATE_API UUnitEffect : public UUserDefinedStruct
 {
 	GENERATED_BODY()
 
 public:	
-	UUnitEffect();
+	UUnitEffect() {};
 	
 	void Initialize(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
-
-protected:
-	virtual void BeginPlay() override;
-
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
-private:
+public:
+	float m_Elapsed = 0;
+	bool m_IsFinished = false;
+
 	float m_Intensity;
 	float m_Duration;
 	EUnitEffectStat m_AffectedStat;

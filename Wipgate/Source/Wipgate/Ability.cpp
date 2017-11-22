@@ -22,7 +22,7 @@ void AAbility::Select()
 	// display cursor/decals
 }
 
-UUnitEffect * AAbility::CreateUnitEffect(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration)
+UUnitEffect* AAbility::CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type, const int intensity, const int duration)
 {
 	UUnitEffect* unitEffect = NewObject<UUnitEffect>(this);
 	unitEffect->Initialize(stat, type, intensity, duration);

@@ -42,7 +42,7 @@ public:
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
-		UUnitEffect* CreateUnitEffect(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
+		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type, const int intensity, const int duration);
 
 protected:
 	/* general ability functionality */
