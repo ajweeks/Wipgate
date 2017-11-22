@@ -7,6 +7,7 @@
 #include "RTS_HUDBase.generated.h"
 
 class ARTS_PlayerController;
+class ARTS_UnitCharacter;
 
 UCLASS(Blueprintable)
 class WIPGATE_API URTS_HUDBase : public UUserWidget
@@ -16,6 +17,9 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSelectionBox(FVector2D position, FVector2D size);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& selectedUnits);
 
 	// TODO: Remove these carefully
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
