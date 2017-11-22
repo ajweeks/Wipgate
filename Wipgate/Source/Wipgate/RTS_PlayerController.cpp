@@ -153,12 +153,12 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		MoveToTarget();
 	}
-	// If mouse is at edge of screen, update camera pos
-	/* 
-		These two values need to be checked because Tick can be called
-		before they are set in BeginPlay somehow 
-		TODO: Look into call order - I think this function even gets called in the editor for some reason
-	*/
+		// If mouse is at edge of screen, update camera pos
+		/* 
+			These two values need to be checked because Tick can be called
+			before they are set in BeginPlay somehow 
+			TODO: Look into call order - I think this function even gets called in the editor for some reason
+		*/
 	else if (m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
@@ -199,6 +199,12 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	else
 	{
 		// Weird
+	}
+
+	bool showViewportOnMinimap = true;
+	if (showViewportOnMinimap)
+	{
+
 	}
 }
 
@@ -308,6 +314,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			}
 		}
 	}
+
+	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
