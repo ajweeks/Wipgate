@@ -159,7 +159,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			before they are set in BeginPlay somehow 
 			TODO: Look into call order - I think this function even gets called in the editor for some reason
 		*/
-	else if (m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
+	else if (!m_DisableEdgeMovement && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
@@ -195,10 +195,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 			m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
 		}
-	}
-	else
-	{
-		// Weird
 	}
 
 	bool showViewportOnMinimap = true;
@@ -315,7 +311,10 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		}
 	}
 
-	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+	}
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
