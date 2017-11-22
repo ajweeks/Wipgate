@@ -23,6 +23,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ApplyDamage_CPP(int damage, bool applyArmor = true);
 
 	//ISDEAD
 	UPROPERTY(BlueprintReadWrite)
@@ -46,11 +48,11 @@ public:
 
 	//DEFENSE PROPERTIES
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Defense")
-	int BaseArmor = 0;
+	int BaseArmor = 2;
 	UPROPERTY(BlueprintReadWrite)
 	int CurrentArmor = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Defense")
-	int BaseHealth = 0;
+	int BaseHealth = 100;
 	UPROPERTY(BlueprintReadWrite)
 	int CurrentHealth = 0;
 
