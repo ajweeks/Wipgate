@@ -59,10 +59,14 @@ private:
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
+	
+	UPROPERTY(EditAnywhere, Category = "Misc")
+	bool m_DisableEdgeMovement = false;
 
-
+	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	FVector m_StartingLocation;
+	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	FQuat m_StartingRotation;
 
