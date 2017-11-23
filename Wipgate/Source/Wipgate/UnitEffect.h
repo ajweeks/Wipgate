@@ -9,8 +9,10 @@ class UParticleSystem;
 UENUM(BlueprintType)
 enum class EUnitEffectStat : uint8
 {
-	HEALING 	UMETA(DisplayName = "Healing"),
-	DAMAGE 		UMETA(DisplayName = "Damage"),
+	HEALING 		UMETA(DisplayName = "Healing"),
+	DAMAGE 			UMETA(DisplayName = "Damage"),
+	ARMOR			UMETA(DisplayName = "Armor"),
+	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
 };
 
 UENUM(BlueprintType)
@@ -32,17 +34,20 @@ public:
 	UUnitEffect() {};
 	
 	void Initialize(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
+	UFUNCTION(BlueprintCallable)
+	void SetTickParticle(UParticleSystem* particle) { m_TickParticles = particle; }
 	
 public:
 	float m_Elapsed = 0;
+	int m_Ticks = 0;
 	bool m_IsFinished = false;
 
-	float m_Intensity;
-	float m_Duration;
+	int m_Intensity;
+	int m_Duration;
 	EUnitEffectStat m_AffectedStat;
 	EUnitEffectType m_Type;
 
 	UParticleSystem* m_StartParticles = nullptr;
-	UParticleSystem* m_DuringParticles = nullptr;
+	UParticleSystem* m_TickParticles = nullptr;
 	UParticleSystem* m_EndParticles = nullptr;
 };
