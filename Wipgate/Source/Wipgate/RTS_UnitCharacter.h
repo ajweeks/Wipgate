@@ -49,9 +49,12 @@ public:
 	TArray<UUnitEffect*> m_UnitEffects;
 	
 private:
+	/* private functions */
+	void ApplyEffect(UUnitEffect * effect);
+
+	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
 	bool Selected;
 	
 	const int EFFECT_INTERVAL = 1;
-	float m_ElapsedInterval = 1.f;
 };
