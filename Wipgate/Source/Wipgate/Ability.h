@@ -9,17 +9,18 @@
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	E_TARGET_UNIT 	UMETA(DisplayName = "Target Unit"),
-	E_TARGET_ENEMY 	UMETA(DisplayName = "Target Enemy"),
-	E_TARGET_ALLY 	UMETA(DisplayName = "Target Ally"),
+	E_TARGET_UNIT 		UMETA(DisplayName = "Target Unit"),
+	E_TARGET_ENEMY 		UMETA(DisplayName = "Target Enemy"),
+	E_TARGET_ALLY 		UMETA(DisplayName = "Target Ally"),
 	E_TARGET_GROUND 	UMETA(DisplayName = "Target Ground"),
+	E_SELF				UMETA(DisplayName = "Self")
 };
 
 UENUM(BlueprintType)
 enum class EAbilityState : uint8
 {
 	E_AVAILABLE 	UMETA(DisplayName = "Available"),
-	E_SELECTED 	UMETA(DisplayName = "Selected"),
+	E_SELECTED 		UMETA(DisplayName = "Selected"),
 	E_ON_COOLDOWN 	UMETA(DisplayName = "On cooldown"),
 };
 
@@ -34,15 +35,18 @@ public:
 	/* sandbox methods */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Activate();
-	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
+		void Passive();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Select();
-	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
-		virtual void Passive() {};
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
+		void Deselect();
 
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
-		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type, const int intensity, const int duration);
+		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type,
+			const float delay, const int magnitude, const int duration);
 
 protected:
 	/* general ability functionality */
@@ -68,7 +72,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		float m_CastTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		EAbilityType m_Type;
+		EAbilityType m_Type = EAbilityType::E_TARGET_UNIT;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		EAbilityState m_State = EAbilityState::E_AVAILABLE;
 

@@ -31,33 +31,21 @@ void ARTS_UnitCharacter::Tick(float DeltaTime)
 	for (auto e : m_UnitEffects)
 	{
 		e->m_Elapsed += DeltaTime;
-		// TODO: no intervals for more gradual effects like snares
 
-		// tick effects every second
-		if (e->m_Type == EUnitEffectType::LINEAR)
+		// only apply effect after delay
+		if (e->m_Elapsed < 0)
+			continue;
+
+		switch (e->m_Type)
 		{
-			if (e->m_Elapsed > EFFECT_INTERVAL)
-			{
-				// increment ticks each interval
-				e->m_Ticks++;
-				if (e->m_IsFinished)
-					continue;
-
-				// only apply effect if it was not finished yet
-				ApplyEffect(e);
-
-				e->m_Elapsed = 0;
-			}
-		}
-
-		// effects without tick
-		if (e->m_Type == EUnitEffectType::AT_START)
-		{
-			if (e->m_AffectedStat == EUnitEffectStat::ARMOR)
-			{
-				m_UnitCoreComponent->CurrentArmor += e->m_Intensity;
-				e->m_IsFinished = true;
-			}
+		case EUnitEffectType::OVER_TIME:
+			ApplyEffectLinear(e);
+			break;
+		case EUnitEffectType::INSTANT:
+			ApplyEffectOnce(e);
+			break;
+		default:
+			break;
 		}
 
 		if (e->m_Ticks >= e->m_Duration)
@@ -68,7 +56,7 @@ void ARTS_UnitCharacter::Tick(float DeltaTime)
 	for (size_t i = m_UnitEffects.Num() - 1; i < m_UnitEffects.Num(); i--)
 	{
 		if (m_UnitEffects[i]->m_IsFinished)
-			m_UnitEffects.RemoveAt(i);
+			RemoveUnitEffect(m_UnitEffects[i]);
 	}
 }
 
@@ -87,35 +75,89 @@ void ARTS_UnitCharacter::AddUnitEffect(UUnitEffect * effect)
 	m_UnitEffects.Add(effect);
 }
 
-void ARTS_UnitCharacter::ApplyEffect(UUnitEffect * effect)
+void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 {
-	if (effect->m_AffectedStat == EUnitEffectStat::DAMAGE)
+	if (!m_UnitEffects.Contains(effect))
+		return;
+
+	if (effect->m_Type == EUnitEffectType::INSTANT)
 	{
-		if (effect->m_Type == EUnitEffectType::LINEAR)
+		switch (effect->m_AffectedStat)
 		{
-			m_UnitCoreComponent->ApplyDamage_CPP(effect->m_Intensity / (effect->m_Duration / EFFECT_INTERVAL), false);
-			if (effect->m_TickParticles)
-				UGameplayStatics::SpawnEmitterAttached(effect->m_TickParticles, RootComponent);
+		case EUnitEffectStat::ARMOR:
+			m_UnitCoreComponent->CurrentArmor -= effect->m_Magnitude;
+			break;
+		case EUnitEffectStat::MOVEMENT_SPEED:
+			break;
+		default:
+			break;
 		}
 	}
 
-	if (effect->m_AffectedStat == EUnitEffectStat::HEALING)
+	m_UnitEffects.Remove(effect);
+}
+
+void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
+{
+	if (effect->m_Elapsed > EFFECT_INTERVAL)
 	{
-		if (effect->m_Type == EUnitEffectType::LINEAR)
+		// increment ticks each interval
+		effect->m_Ticks++;
+		if (effect->m_IsFinished)
+			return;
+
+		// only apply effect if it was not finished yet
+		switch (effect->m_AffectedStat)
 		{
-			m_UnitCoreComponent->CurrentHealth += effect->m_Intensity / (effect->m_Duration / EFFECT_INTERVAL);
-			if (effect->m_TickParticles)
-				UGameplayStatics::SpawnEmitterAttached(effect->m_TickParticles, RootComponent);
+		case EUnitEffectStat::ARMOR:
+			//m_UnitCoreComponent->CurrentArmor += effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL);
+			break;
+		case EUnitEffectStat::DAMAGE:
+			m_UnitCoreComponent->ApplyDamage_CPP(effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL), false);
+			break;
+		case EUnitEffectStat::HEALING:
+			m_UnitCoreComponent->CurrentHealth += effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL);
+			break;
+		case EUnitEffectStat::MOVEMENT_SPEED:
+			break;
+		default:
+			break;
+		}
+
+		// spawn particles and reset time
+		if (effect->m_TickParticles)
+			UGameplayStatics::SpawnEmitterAttached(effect->m_TickParticles, RootComponent);
+		effect->m_Elapsed = 0;
+	}
+}
+
+void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
+{
+	if (effect->m_Ticks == 0)
+	{
+		effect->m_Ticks++;
+		switch (effect->m_AffectedStat)
+		{
+		case EUnitEffectStat::ARMOR:
+			m_UnitCoreComponent->CurrentArmor += effect->m_Magnitude;
+			break;
+
+		case EUnitEffectStat::DAMAGE:
+			m_UnitCoreComponent->ApplyDamage_CPP(effect->m_Magnitude, false);
+			break;
+
+		case EUnitEffectStat::HEALING:
+			m_UnitCoreComponent->ApplyHealing(effect->m_Magnitude);
+			break;
+
+		case EUnitEffectStat::MOVEMENT_SPEED:
+			break;
+
+		default:
+			break;
 		}
 	}
 
-	if (effect->m_AffectedStat == EUnitEffectStat::ARMOR)
-	{
-		if (effect->m_Type == EUnitEffectType::AT_START)
-		{
-			m_UnitCoreComponent->CurrentArmor += effect->m_Intensity / (effect->m_Duration / EFFECT_INTERVAL);
-			if(effect->m_TickParticles)
-				UGameplayStatics::SpawnEmitterAttached(effect->m_TickParticles, RootComponent);
-		}
-	}
+	if (effect->m_Elapsed > effect->m_Duration)
+		effect->m_IsFinished = true;
 }
