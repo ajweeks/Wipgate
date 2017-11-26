@@ -36,9 +36,12 @@ public:
 	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
 	UFUNCTION(BlueprintCallable)
 	void SetTickParticle(UParticleSystem* particle) { m_TickParticles = particle; }
-	
+	//UFUNCTION(BlueprintCallable)
+	//UUnitEffect* GetCopy();
+
 public:
 	float m_Elapsed = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Status")
 	int m_Ticks = 0;
 	bool m_IsFinished = false;
 

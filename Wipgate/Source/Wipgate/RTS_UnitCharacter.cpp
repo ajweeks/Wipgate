@@ -80,20 +80,20 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 	if (!m_UnitEffects.Contains(effect))
 		return;
 
-	if (effect->m_Type == EUnitEffectType::INSTANT)
+	switch (effect->m_AffectedStat)
 	{
-		switch (effect->m_AffectedStat)
-		{
-		case EUnitEffectStat::ARMOR:
+	case EUnitEffectStat::ARMOR:
+		if(effect->m_Type == EUnitEffectType::OVER_TIME)
+			m_UnitCoreComponent->CurrentArmor -= (effect->m_Magnitude / effect->m_Duration) * effect->m_Ticks;
+		else
 			m_UnitCoreComponent->CurrentArmor -= effect->m_Magnitude;
-			break;
-		case EUnitEffectStat::MOVEMENT_SPEED:
-			break;
-		default:
-			break;
-		}
+		break;
+	case EUnitEffectStat::MOVEMENT_SPEED:
+		break;
+	default:
+		break;
 	}
-
+	
 	m_UnitEffects.Remove(effect);
 }
 
@@ -110,7 +110,7 @@ void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 		switch (effect->m_AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			//m_UnitCoreComponent->CurrentArmor += effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL);
+			m_UnitCoreComponent->CurrentArmor += effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL);
 			break;
 		case EUnitEffectStat::DAMAGE:
 			m_UnitCoreComponent->ApplyDamage_CPP(effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL), false);
@@ -136,6 +136,9 @@ void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
 	if (effect->m_Ticks == 0)
 	{
 		effect->m_Ticks++;
+		if (effect->m_TickParticles)
+			UGameplayStatics::SpawnEmitterAttached(effect->m_TickParticles, RootComponent);
+
 		switch (effect->m_AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
