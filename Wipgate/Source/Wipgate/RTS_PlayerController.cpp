@@ -148,7 +148,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (IsInputKeyDown(EKeys::LeftMouseButton))
+	if (!m_SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = GetMousePositionVector2D();
 
@@ -240,91 +240,94 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 	}
 
-	// TODO: Use bindable key here
-	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
-
-	// Selected units array must be cleared if shift isn't down
-	if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
+	if (!m_SelectedAbility)
 	{
-		for (int i  = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+		// TODO: Use bindable key here
+		const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
+
+		// Selected units array must be cleared if shift isn't down
+		if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
 		{
-			ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
-			selectedUnit->SetSelected(false);
-		}
-		m_RTS_GameState->SelectedUnits.Empty();
-	}
-
-	for (auto unit : m_RTS_GameState->Units)
-	{
-		FVector unitLocation = unit->GetActorLocation();
-
-		// Draw unit bounding box
-		if (unit->ShowSelectionBox_DEBUG)
-		{
-			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitLocation, unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
-		}
-
-		if (unit->SelectionHitBox == FVector::ZeroVector)
-		{
-			UE_LOG(Wipgate_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
-		}
-
-		// Check if this unit's min or max bounding box points lie within the selection box
-		FVector unitBoundsMinWS = unitLocation - unit->SelectionHitBox;
-		FVector2D unitBoundsMinSS;
-		ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
-
-		FVector unitBoundsMaxWS = unitLocation + unit->SelectionHitBox;
-		FVector2D unitBoundsMaxSS;
-		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
-
-		FVector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
-
-		FVector2D selectionBoxMin = m_ClickStartSS;
-		FVector2D selectionBoxMax = m_ClickEndSS;
-		FVector2DMinMax(selectionBoxMin, selectionBoxMax);
-
-		FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-		const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
-		float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
-
-		unitBoundsMinSS /= viewportScale;
-		unitBoundsMaxSS /= viewportScale;
-
-		bool unitInSelectionBox = 
-			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
-			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
-
-
-		// Check if unit is under mouse cursor (for single clicks)
-		ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-		FHitResult hitResult;
-		bool unitUnderCursor = false;
-		if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
-		{
-			if (hitResult.Actor == unit)
+			for (int i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
 			{
-				unitUnderCursor = true;
+				ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
+				selectedUnit->SetSelected(false);
 			}
+			m_RTS_GameState->SelectedUnits.Empty();
 		}
 
-		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
-
-		const bool unitWasSelected = unit->IsSelected();
-		bool unitClicked = unitUnderCursor;
-		bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
-
-		if (!unitIsDead)
+		for (auto unit : m_RTS_GameState->Units)
 		{
-			if (unitDeselected)
+			FVector unitLocation = unit->GetActorLocation();
+
+			// Draw unit bounding box
+			if (unit->ShowSelectionBox_DEBUG)
 			{
-				unit->SetSelected(false);
-				m_RTS_GameState->SelectedUnits.Remove(unit);
+				UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitLocation, unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
 			}
-			else if (unitInSelectionBox || unitClicked)
+
+			if (unit->SelectionHitBox == FVector::ZeroVector)
 			{
-				unit->SetSelected(true);
-				m_RTS_GameState->SelectedUnits.AddUnique(unit);
+				UE_LOG(Wipgate_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
+			}
+
+			// Check if this unit's min or max bounding box points lie within the selection box
+			FVector unitBoundsMinWS = unitLocation - unit->SelectionHitBox;
+			FVector2D unitBoundsMinSS;
+			ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
+
+			FVector unitBoundsMaxWS = unitLocation + unit->SelectionHitBox;
+			FVector2D unitBoundsMaxSS;
+			ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
+
+			FVector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
+
+			FVector2D selectionBoxMin = m_ClickStartSS;
+			FVector2D selectionBoxMax = m_ClickEndSS;
+			FVector2DMinMax(selectionBoxMin, selectionBoxMax);
+
+			FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+			const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+			float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
+
+			unitBoundsMinSS /= viewportScale;
+			unitBoundsMaxSS /= viewportScale;
+
+			bool unitInSelectionBox =
+				PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
+				PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
+
+
+			// Check if unit is under mouse cursor (for single clicks)
+			ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+			FHitResult hitResult;
+			bool unitUnderCursor = false;
+			if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
+			{
+				if (hitResult.Actor == unit)
+				{
+					unitUnderCursor = true;
+				}
+			}
+
+			const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
+
+			const bool unitWasSelected = unit->IsSelected();
+			bool unitClicked = unitUnderCursor;
+			bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
+
+			if (!unitIsDead)
+			{
+				if (unitDeselected)
+				{
+					unit->SetSelected(false);
+					m_RTS_GameState->SelectedUnits.Remove(unit);
+				}
+				else if (unitInSelectionBox || unitClicked)
+				{
+					unit->SetSelected(true);
+					m_RTS_GameState->SelectedUnits.AddUnique(unit);
+				}
 			}
 		}
 	}
@@ -344,6 +347,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			if (m_RTS_GameState->SelectedUnits.Num() == 1)
 			{
 				ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+
+				
 				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
 				{
 					unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
@@ -382,7 +387,7 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 
 	if (m_SelectedAbility)
 	{
-		if (m_RTS_GameState->SelectedUnits.Num() != 0)
+		if (m_RTS_GameState->SelectedUnits.Num() == 0)
 		{
 			UE_LOG(Wipgate_Log, Error, TEXT("No unit selected when secondary click pressed"));
 		}
