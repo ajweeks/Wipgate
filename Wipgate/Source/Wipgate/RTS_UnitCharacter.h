@@ -8,6 +8,8 @@
 #include "UnitEffect.h"
 #include "RTS_UnitCharacter.generated.h"
 
+class UImage;
+
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
 
 UCLASS()
@@ -47,6 +49,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> m_UnitEffects;
+
+	UImage* Icon = nullptr;
 	
 private:
 	/* private functions */
