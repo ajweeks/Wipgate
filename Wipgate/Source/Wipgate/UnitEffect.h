@@ -5,6 +5,7 @@
 #include "UnitEffect.generated.h"
 
 class UParticleSystem;
+class UParticleSystemComponent;
 
 UENUM(BlueprintType)
 enum class EUnitEffectStat : uint8
@@ -35,7 +36,11 @@ public:
 	
 	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
 	UFUNCTION(BlueprintCallable)
-	void SetTickParticle(UParticleSystem* particle) { m_TickParticles = particle; }
+	void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant);
+	UFUNCTION(BlueprintCallable)
+	void StartParticleConstant(USceneComponent* comp);
+	void StopParticleConstant();
+
 	//UFUNCTION(BlueprintCallable)
 	//UUnitEffect* GetCopy();
 
@@ -59,4 +64,6 @@ public:
 	UParticleSystem* m_StartParticles = nullptr;
 	UParticleSystem* m_TickParticles = nullptr;
 	UParticleSystem* m_EndParticles = nullptr;
+	UParticleSystem* m_ConstantParticles = nullptr;
+	UParticleSystemComponent * m_ParticleComponent = nullptr;
 };
