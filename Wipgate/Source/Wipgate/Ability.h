@@ -49,17 +49,11 @@ protected:
 			const float delay, const int magnitude, const int duration);
 
 protected:
-	/* general ability functionality */
-	// get enemies/allies
-	// get nearest
-	// sort near to far
-	// void PlaySound() {};
-	// void SpawnParticle() {};
-	// animation
-
-	///* protected members */
-	//AActor m_Caster;
-	//AActor m_Target;
+	/* protected members */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		AActor* m_Caster;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		AActor* m_Target;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector2D m_TargetPos;
 
@@ -80,8 +74,4 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-
-private:
-	const float m_Interval = 0.5f;
-
 };
