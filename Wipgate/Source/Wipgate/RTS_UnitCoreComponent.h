@@ -25,6 +25,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ApplyDamage_CPP(int damage, bool applyArmor = true);
+	void ApplyHealing(int healing);
 
 	//ISDEAD
 	UPROPERTY(BlueprintReadWrite)

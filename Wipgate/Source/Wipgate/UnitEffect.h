@@ -18,11 +18,11 @@ enum class EUnitEffectStat : uint8
 UENUM(BlueprintType)
 enum class EUnitEffectType : uint8
 {
-	LINEAR 		UMETA(DisplayName = "Apply gradually over time"),
-	FADING 		UMETA(DisplayName = "Reduce over time"),
-	INTENSIFY 	UMETA(DisplayName = "Increase over time"),
-	AT_START 	UMETA(DisplayName = "Apply at start"),
-	AT_END		UMETA(DisplayName = "Apply at end")
+	OVER_TIME 		UMETA(DisplayName = "Over time"),
+	//FADING 		UMETA(DisplayName = "Reduce over time"),
+	//INTENSIFY 	UMETA(DisplayName = "Increase over time"),
+	INSTANT 	UMETA(DisplayName = "Apply at start"),
+	//AT_END		UMETA(DisplayName = "Apply at end")
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -33,18 +33,27 @@ class WIPGATE_API UUnitEffect : public UUserDefinedStruct
 public:	
 	UUnitEffect() {};
 	
-	void Initialize(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
+	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
 	UFUNCTION(BlueprintCallable)
 	void SetTickParticle(UParticleSystem* particle) { m_TickParticles = particle; }
-	
+	//UFUNCTION(BlueprintCallable)
+	//UUnitEffect* GetCopy();
+
 public:
 	float m_Elapsed = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Status")
 	int m_Ticks = 0;
 	bool m_IsFinished = false;
 
-	int m_Intensity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	int m_Magnitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	float m_Delay;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
 	int m_Duration;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
 	EUnitEffectStat m_AffectedStat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
 	EUnitEffectType m_Type;
 
 	UParticleSystem* m_StartParticles = nullptr;

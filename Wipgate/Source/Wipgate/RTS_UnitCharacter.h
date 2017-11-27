@@ -33,6 +33,8 @@ public:
 	TArray<UUnitEffect*> GetUnitEffects() const;
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void AddUnitEffect(UUnitEffect* effect);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+	void RemoveUnitEffect(UUnitEffect* effect);
 
 public:
 	/* Public blueprint editable variables */
@@ -50,7 +52,8 @@ public:
 	
 private:
 	/* private functions */
-	void ApplyEffect(UUnitEffect * effect);
+	void ApplyEffectLinear(UUnitEffect* effect);
+	void ApplyEffectOnce (UUnitEffect* effect);
 
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
