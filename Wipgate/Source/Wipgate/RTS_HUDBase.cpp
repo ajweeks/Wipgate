@@ -1,11 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RTS_HUDBase.h"
-#include "Runtime/Engine/Classes/Engine/Engine.h"
-#include "Runtime/UMG/Public/Components/PanelSlot.h"
-#include "Runtime/UMG/Public/Components/GridSlot.h"
-#include "Runtime/UMG/Public/Components/GridPanel.h"
-#include "Runtime/UMG/Public/Blueprint/WidgetTree.h"
+
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
+#include "Components/PanelSlot.h"
+#include "Engine/Engine.h"
+
 #include "RTS_UnitCharacter.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
@@ -14,19 +15,19 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::Tick(MyGeometry, InDeltaTime);
 
-	if (SelectedUnitIconSize == FVector2D::ZeroVector)
-	{
-		UE_LOG(RTS_HUD_BASE_LOG, Error, TEXT("Selected unit icon size not set!"));
-		return;
-	}
-
 	if (!SelectedUnitIconGridRef)
 	{
 		UE_LOG(RTS_HUD_BASE_LOG, Error, TEXT("Selected unit icons grid not set! (Should be set in HUD BP's constructor)"));
 		return;
 	}
 
-	if (SelectedUnitsRef.Num() > 0)
+	if (!CommandCardGridRef)
+	{
+		UE_LOG(RTS_HUD_BASE_LOG, Error, TEXT("Command card grid not set! (Should be set in HUD BP's constructor)"));
+		return;
+	}
+
+	if (SelectedUnitsRef.Num() > 1) // If one unit was selected, there won't be an icon for it
 	{
 		FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
 		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedUnitIconGridRef->GetCachedGeometry().GetAbsoluteSize();
@@ -54,23 +55,28 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 
 	if (ClearArray)
 	{
-		for (auto oldSelectedUnit : SelectedUnitsRef)
+		if (SelectedUnitsRef.Num() > 1)
 		{
-			RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
-			oldSelectedUnit->Icon = nullptr;
+			for (auto oldSelectedUnit : SelectedUnitsRef)
+			{
+				RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
+				oldSelectedUnit->Icon = nullptr;
+			}
 		}
 
-		for (auto newSelectedUnit : SelectedUnits)
+		if (SelectedUnits.Num() > 1)
 		{
-			newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-			AddUnitIconToGrid(newSelectedUnit->Icon);
+			for (auto newSelectedUnit : SelectedUnits)
+			{
+				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+				AddUnitIconToGrid(newSelectedUnit->Icon);
+			}
 		}
 
 		SelectedUnitsRef = SelectedUnits;
 	}
 
-	// TODO: Handle == 1 seperately
-	if (newSelectedUnitIconCount >= 1)
+	if (newSelectedUnitIconCount > 1)
 	{
 		for (int32 i = 0; i < newSelectedUnitIconCount; ++i)
 		{
@@ -94,9 +100,5 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 
 			UpdateUnitIcon(unit->Icon, col, row, color);
 		}
-	}
-	else if (newSelectedUnitIconCount == 1)
-	{
-		// TODO: Change if statement to `> 1` and show individual unit's stats
 	}
 }

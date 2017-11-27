@@ -4,19 +4,24 @@
 
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
-//#include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Blueprint/UserWidget.h"
+#include "Camera/CameraComponent.h"
+#include "Components/Button.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
+#include "Engine/UserInterfaceSettings.h"
+#include "Engine/RendererSettings.h"
 #include "GameFramework/GameStateBase.h"
-#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
-#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
-#include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
-#include "Runtime/Engine/Classes/Engine/RendererSettings.h"
-#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
-#include "Runtime/Engine/Classes/Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
+#include "Ability.h"
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
@@ -114,6 +119,8 @@ void ARTS_PlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClickPressed);
 	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
+	InputComponent->BindAction("Secondary Click", IE_Pressed, this, &ARTS_PlayerController::ActionSecondaryClickPressed);
+	InputComponent->BindAction("Secondary Click", IE_Released, this, &ARTS_PlayerController::ActionSecondaryClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -325,7 +332,76 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+
+		if (m_SelectedAbility)
+		{
+			m_SelectedAbility->Activate();
+		}
+		else
+		{
+			m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+
+			if (m_RTS_GameState->SelectedUnits.Num() == 1)
+			{
+				ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+				{
+					unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+					int col = i;
+					int row = 1;
+					FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+					m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+
+					if (i == 0)
+					{
+						unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton1Press);
+					}
+					else if (i == 1)
+					{
+						unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton2Press);
+					}
+					else if (i == 2)
+					{
+						unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton3Press);
+					}
+
+					//UGridSlot* butonGridSlot = m_RTSHUD->CommandCardGridRef->AddChildToGrid(unit->AbilityButtons[i]);
+					//butonGridSlot->Column = i;
+				}
+			}
+		}
 	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickPressed()
+{
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+	}
+
+	if (m_SelectedAbility)
+	{
+		if (m_RTS_GameState->SelectedUnits.Num() != 0)
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("No unit selected when secondary click pressed"));
+		}
+		else
+		{
+			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+			for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+			{
+				unit->AbilityButtons[i] = nullptr;
+			}
+		}
+
+		m_SelectedAbility->Deselect();
+		m_SelectedAbility = nullptr;
+	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickReleased()
+{
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()

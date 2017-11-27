@@ -13,6 +13,7 @@ class UCameraComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
 class ARTS_GameState;
+class AAbility;
 
 DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
 
@@ -34,14 +35,28 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEdgeMovementEnabled(bool enabled);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityButton1Press();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityButton2Press();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityButton3Press();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
 	UUserWidget* MainHUDInstance;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AAbility* m_SelectedAbility = nullptr;
 
 private:
 	void ActionMainClickPressed();
 	void ActionMainClickReleased();
+	void ActionSecondaryClickPressed();
+	void ActionSecondaryClickReleased();
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
@@ -65,7 +80,7 @@ private:
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	bool m_EdgeMovementEnabled = true;
 

@@ -9,6 +9,7 @@
 #include "RTS_UnitCharacter.generated.h"
 
 class UImage;
+class UButton;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
 
@@ -53,7 +54,8 @@ public:
 	TArray<UUnitEffect*> m_UnitEffects;
 
 	UImage* Icon = nullptr;
-	
+	TArray<UButton*> AbilityButtons; // Set to nullptrs when not visible
+
 private:
 	/* private functions */
 	void ApplyEffectLinear(UUnitEffect* effect);
