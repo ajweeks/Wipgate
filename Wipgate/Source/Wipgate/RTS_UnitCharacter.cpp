@@ -73,6 +73,13 @@ TArray<UUnitEffect*> ARTS_UnitCharacter::GetUnitEffects() const
 void ARTS_UnitCharacter::AddUnitEffect(UUnitEffect * effect)
 {
 	m_UnitEffects.Add(effect);
+
+	// start particle systems
+	if (effect->m_StartParticles)
+		UGameplayStatics::SpawnEmitterAttached(effect->m_StartParticles, RootComponent);
+
+	if (effect->m_ConstantParticles)
+		effect->StartParticleConstant(RootComponent);
 }
 
 void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
@@ -93,8 +100,14 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 	default:
 		break;
 	}
-	
 	m_UnitEffects.Remove(effect);
+
+	// stop particle systems
+	if (effect->m_EndParticles)
+		UGameplayStatics::SpawnEmitterAttached(effect->m_EndParticles, RootComponent);
+
+	if (effect->m_ConstantParticles)
+		effect->StopParticleConstant();
 }
 
 void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
@@ -116,7 +129,7 @@ void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 			m_UnitCoreComponent->ApplyDamage_CPP(effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL), false);
 			break;
 		case EUnitEffectStat::HEALING:
-			m_UnitCoreComponent->CurrentHealth += effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL);
+			m_UnitCoreComponent->ApplyHealing(effect->m_Magnitude / (effect->m_Duration / EFFECT_INTERVAL));
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			break;

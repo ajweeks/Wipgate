@@ -1,4 +1,6 @@
 #include "UnitEffect.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Particles/ParticleSystemComponent.h"
 
 void UUnitEffect::Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration)
 {
@@ -8,6 +10,26 @@ void UUnitEffect::Initialize(const EUnitEffectStat stat, const EUnitEffectType t
 	m_Elapsed = -delay; // start delay negative so effect can start at 0
 	m_Magnitude = magnitude;
 	m_Duration = duration;
+}
+
+void UUnitEffect::SetParticles(UParticleSystem * tick, UParticleSystem * start, UParticleSystem * end, UParticleSystem* constant)
+{
+	m_TickParticles = tick;
+	m_StartParticles = start;
+	m_EndParticles = end;
+	m_ConstantParticles = constant;
+}
+
+void UUnitEffect::StartParticleConstant(USceneComponent* comp)
+{
+	if(!m_ParticleComponent)
+		m_ParticleComponent = UGameplayStatics::SpawnEmitterAttached(m_ConstantParticles, comp);
+}
+
+void UUnitEffect::StopParticleConstant()
+{
+	if(m_ParticleComponent)
+		m_ParticleComponent->Deactivate();
 }
 
 //UUnitEffect * UUnitEffect::GetCopy()
