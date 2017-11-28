@@ -229,16 +229,13 @@ void ARTS_PlayerController::ActionMainClickPressed()
 
 void ARTS_PlayerController::ActionMainClickReleased()
 {
-	if (!m_RTS_GameState)
+	if (!m_RTS_GameState || !m_RTSHUD)
 	{
 		return; // Game state hasn't been initialized yet, we can't do anything
 	}
 
 	// Hide selection box when mouse isn't being held
-	if (m_RTSHUD)
-	{
-		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
-	}
+	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 
 	// TODO: Use bindable key here
 	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
@@ -309,14 +306,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 
 		// Check if unit is under mouse cursor (for single clicks)
-		bool unitUnderCursor = false;
-		if (hitResultHit)
-		{
-			if (hitResult.Actor == unit)
-			{
-				unitUnderCursor = true;
-			}
-		}
+		bool unitUnderCursor = (hitResult.Actor.Get() == unit);
 
 		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
 
@@ -326,13 +316,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 		if (m_SelectedAbility)
 		{
-			if (m_SelectedAbility->Type == EAbilityType::E_SELF)
+			EAbilityType abilityType = m_SelectedAbility->Type;
+			EAlignment unitAlignment = unit->m_UnitCoreComponent->TeamAlignment;
+			switch (abilityType)
 			{
-				m_SelectedAbility->Activate();
-				m_SelectedAbility->Deselect();
-				m_SelectedAbility = nullptr;
-			}
-			else if (m_SelectedAbility->Type == EAbilityType::E_TARGET_GROUND)
+			case EAbilityType::E_SELF:
+			{
+				UE_LOG(Wipgate_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
+			} break;
+			case EAbilityType::E_TARGET_GROUND:
 			{
 				if (groundUnderCursor)
 				{
@@ -344,14 +336,11 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					// TODO: Play sound indicating invalid target location
 				}
-			}
-			else if (m_SelectedAbility->Type == EAbilityType::E_TARGET_UNIT)
+			} break;
+			case EAbilityType::E_TARGET_UNIT:
 			{
-				// TODO: Check unit alignment here
-
 				if (unitClicked)
 				{
-					// Activate our ability on this unit if this ability targets units
 					m_SelectedAbility->SetTarget(unit);
 					m_SelectedAbility->Activate();
 					m_SelectedAbility->Deselect();
@@ -361,9 +350,48 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					// TODO: Play sound indicating invalid target location
 				}
+			} break;
+			case EAbilityType::E_TARGET_ALLY:
+			{
+				if (unitClicked)
+				{
+					if (unitAlignment == EAlignment::E_FRIENDLY)
+					{
+						m_SelectedAbility->SetTarget(unit);
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
+					else
+					{
+						// TODO: Play sound indicating invalid target location
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			} break;
+			case EAbilityType::E_TARGET_ENEMY:
+			{
+				if (unitClicked)
+				{
+					if (unitAlignment == EAlignment::E_ENEMY)
+					{
+						m_SelectedAbility->SetTarget(unit);
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
+					else
+					{
+						// TODO: Play sound indicating invalid target location
+					}
+				}
+			} break;
 			}
 		}
-		else
+		else // No ability is selected
 		{
 			if (!unitIsDead)
 			{
@@ -390,60 +418,66 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		}
 	}
 
-	if (m_RTSHUD)
+	// Ensure unit whos is showing their ability buttons is still selected
+	if (m_UnitShowingAbilities)
 	{
-		m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
-
-		if (m_SelectedAbility)
+		if ((m_RTS_GameState->SelectedUnits.Num() != 1) ||
+			(m_RTS_GameState->SelectedUnits[0] != m_UnitShowingAbilities))
 		{
-			m_SelectedAbility->Activate();
-			m_SelectedAbility->Deselect();
-			m_SelectedAbility = nullptr;
-		}
-		else
-		{
-			if (m_UnitShowingAbilities == nullptr)
+			for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
 			{
-				if (m_RTS_GameState->SelectedUnits.Num() == 1)
+				m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
+			}
+			m_UnitShowingAbilities = nullptr;
+			m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+		}
+	}
+
+
+	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+
+	if (m_SelectedAbility)
+	{
+		m_SelectedAbility->Activate();
+		m_SelectedAbility->Deselect();
+		m_SelectedAbility = nullptr;
+	}
+	else
+	{
+		if (m_UnitShowingAbilities == nullptr && m_RTS_GameState->SelectedUnits.Num() == 1)
+		{
+			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+			m_UnitShowingAbilities = unit;
+
+			// TODO: Check if unit is specialist here
+			bool unitIsSpecialist = true;
+
+			if (unitIsSpecialist)
+			{
+				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
 				{
-					ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
-					m_UnitShowingAbilities = unit;
-
-					// TODO: Only proceed if this unit is a specialist
-				
-					for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+					if (!unit->AbilityButtons[i])
 					{
-						if (!unit->AbilityButtons[i])
-						{
-							unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
-							int col = i;
-							int row = 1;
-							FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-							m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+						unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+						int col = i;
+						int row = 1;
+						FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
 
-							if (i == 0)
-							{
-								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-							}
-							else if (i == 1)
-							{
-								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-							}
-							else if (i == 2)
-							{
-								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
-							}
+						if (i == 0)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+						}
+						else if (i == 1)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+						}
+						else if (i == 2)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
 						}
 					}
 				}
-				else
-				{
-					m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
-				}
-			}
-			else
-			{
-
 			}
 		}
 	}
@@ -451,26 +485,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
-	//if (m_RTSHUD)
-	//{
-	//	m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
-	//}
-
 	if (m_SelectedAbility)
 	{
-		//if (m_RTS_GameState->SelectedUnits.Num() == 0)
-		//{
-		//	UE_LOG(Wipgate_Log, Error, TEXT("No unit selected when secondary click pressed"));
-		//}
-		//else
-		//{
-		//	ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
-		//	for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
-		//	{
-		//		unit->AbilityButtons[i] = nullptr;
-		//	}
-		//}
-
 		m_SelectedAbility->Deselect();
 		m_SelectedAbility = nullptr;
 	}
