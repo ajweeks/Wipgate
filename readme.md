@@ -17,9 +17,9 @@ Stay up to date on our progress here on our [blog](https://baggedmilkstudios.wor
 
 Here's some a few of our artist's WIP models in the mean time:
 
-![](https://cdn.discordapp.com/attachments/352040836386652170/384651646283546624/mount_AO_2.png)
+![](https://i.imgur.com/DHSnQpT.png)
 
-![](https://cdn.discordapp.com/attachments/352040836386652170/384651636577927168/commander_AO.png)
+![](https://i.imgur.com/E2A47GS.jpg)
 
 ---
 
