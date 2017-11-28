@@ -98,7 +98,7 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 				color = UnitHealthColor_Dead;
 			}
 
-			UpdateUnitIcon(unit->Icon, col, row, color);
+			UpdateUnitIconProperties(unit->Icon, col, row, color);
 		}
 	}
 }

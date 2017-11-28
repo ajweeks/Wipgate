@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 	EAbilityState State = EAbilityState::E_AVAILABLE;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	float CastRange;
+
 	void SetTarget(AActor* Target);
 
 protected:
@@ -72,6 +75,7 @@ protected:
 		float m_CooldownPassive;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		float m_CastTime;
+
 
 	virtual void BeginPlay() override;
 

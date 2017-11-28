@@ -311,7 +311,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 
 		// Check if unit is under mouse cursor (for single clicks)
-		bool unitUnderCursor = (hitResult.Actor.Get() == unit);
+		AActor* actorUnderCursor = hitResult.Actor.Get();
+		bool unitUnderCursor = (actorUnderCursor == unit);
 
 		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
 
@@ -323,6 +324,12 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		{
 			EAbilityType abilityType = m_SelectedAbility->Type;
 			EAlignment unitAlignment = unit->m_UnitCoreComponent->TeamAlignment;
+			const float abilityRangeSqr = m_SelectedAbility->CastRange*m_SelectedAbility->CastRange;
+			if (abilityRangeSqr == 0.0f && abilityType != EAbilityType::E_SELF)
+			{
+				UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
+			}
+
 			switch (abilityType)
 			{
 			case EAbilityType::E_SELF:
@@ -333,9 +340,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (groundUnderCursor)
 				{
-					m_SelectedAbility->Activate();
-					m_SelectedAbility->Deselect();
-					m_SelectedAbility = nullptr;
+					checkSlow(m_UnitShowingAbilities);
+
+					float unitDistSqr = FVector::DistSquared(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
+					if (unitDistSqr < abilityRangeSqr)
+					{
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
 				}
 				else
 				{
@@ -346,10 +359,16 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (unitClicked)
 				{
-					m_SelectedAbility->SetTarget(unit);
-					m_SelectedAbility->Activate();
-					m_SelectedAbility->Deselect();
-					m_SelectedAbility = nullptr;
+					checkSlow(m_UnitShowingAbilities);
+
+					float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+					if (unitDistSqr < abilityRangeSqr)
+					{
+						m_SelectedAbility->SetTarget(unit);
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
 				}
 				else
 				{
@@ -362,10 +381,16 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_FRIENDLY)
 					{
-						m_SelectedAbility->SetTarget(unit);
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						checkSlow(m_UnitShowingAbilities);
+
+						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDistSqr < abilityRangeSqr)
+						{
+							m_SelectedAbility->SetTarget(unit);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
 					}
 					else
 					{
@@ -383,10 +408,16 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_ENEMY)
 					{
-						m_SelectedAbility->SetTarget(unit);
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						checkSlow(m_UnitShowingAbilities);
+
+						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDistSqr < (m_SelectedAbility->CastRange*m_SelectedAbility->CastRange))
+						{
+							m_SelectedAbility->SetTarget(unit);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
 					}
 					else
 					{
@@ -467,7 +498,9 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						int col = i;
 						int row = 1;
 						FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i]);
+
+						m_RTSHUD->UpdateAbilityButtonProperties(unit->AbilityButtons[i], col, row, bgCol);
 
 						if (i == 0)
 						{
