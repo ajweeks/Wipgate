@@ -4,19 +4,24 @@
 
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
-//#include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Blueprint/UserWidget.h"
+#include "Camera/CameraComponent.h"
+#include "Components/Button.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
+#include "Engine/UserInterfaceSettings.h"
+#include "Engine/RendererSettings.h"
 #include "GameFramework/GameStateBase.h"
-#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
-#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
-#include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
-#include "Runtime/Engine/Classes/Engine/RendererSettings.h"
-#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
-#include "Runtime/Engine/Classes/Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
+#include "Ability.h"
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
@@ -114,6 +119,8 @@ void ARTS_PlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClickPressed);
 	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
+	InputComponent->BindAction("Secondary Click", IE_Pressed, this, &ARTS_PlayerController::ActionSecondaryClickPressed);
+	InputComponent->BindAction("Secondary Click", IE_Released, this, &ARTS_PlayerController::ActionSecondaryClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -141,7 +148,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (IsInputKeyDown(EKeys::LeftMouseButton))
+	if (!m_SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = GetMousePositionVector2D();
 
@@ -236,15 +243,18 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	// TODO: Use bindable key here
 	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
 
-	// Selected units array must be cleared if shift isn't down
-	if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
+	if (!m_SelectedAbility)
 	{
-		for (int i  = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+		// Selected units array must be cleared if shift isn't down
+		if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
 		{
-			ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
-			selectedUnit->SetSelected(false);
+			for (int i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+			{
+				ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
+				selectedUnit->SetSelected(false);
+			}
+			m_RTS_GameState->SelectedUnits.Empty();
 		}
-		m_RTS_GameState->SelectedUnits.Empty();
 	}
 
 	for (auto unit : m_RTS_GameState->Units)
@@ -284,7 +294,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		unitBoundsMinSS /= viewportScale;
 		unitBoundsMaxSS /= viewportScale;
 
-		bool unitInSelectionBox = 
+		bool unitInSelectionBox =
 			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
 			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
 
@@ -311,13 +321,24 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		{
 			if (unitDeselected)
 			{
-				unit->SetSelected(false);
-				m_RTS_GameState->SelectedUnits.Remove(unit);
+				if (!m_SelectedAbility)
+				{
+					unit->SetSelected(false);
+					m_RTS_GameState->SelectedUnits.Remove(unit);
+				}
 			}
 			else if (unitInSelectionBox || unitClicked)
 			{
-				unit->SetSelected(true);
-				m_RTS_GameState->SelectedUnits.AddUnique(unit);
+				if (m_SelectedAbility) // TODO: && m_SelectedAbility->m_Type == EAbilityType::E_TARGET_ENEMY)
+				{
+					m_SelectedAbility->Activate();
+					m_SelectedAbility->Deselect();
+				}
+				else
+				{
+					unit->SetSelected(true);
+					m_RTS_GameState->SelectedUnits.AddUnique(unit);
+				}
 			}
 		}
 	}
@@ -325,7 +346,83 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+
+		if (m_SelectedAbility)
+		{
+			m_SelectedAbility->Activate();
+			m_SelectedAbility->Deselect();
+		}
+		else
+		{
+			m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+
+			if (m_RTS_GameState->SelectedUnits.Num() == 1)
+			{
+				ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+
+				// TODO: Only proceed if this unit is a specialist
+				
+				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+				{
+					if (!unit->AbilityButtons[i])
+					{
+						unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+						int col = i;
+						int row = 1;
+						FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+
+						if (i == 0)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton1Press);
+						}
+						else if (i == 1)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton2Press);
+						}
+						else if (i == 2)
+						{
+							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityButton3Press);
+						}
+
+						//UGridSlot* butonGridSlot = m_RTSHUD->CommandCardGridRef->AddChildToGrid(unit->AbilityButtons[i]);
+						//butonGridSlot->Column = i;
+					}
+				}
+			}
+		}
 	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickPressed()
+{
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+	}
+
+	if (m_SelectedAbility)
+	{
+		if (m_RTS_GameState->SelectedUnits.Num() == 0)
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("No unit selected when secondary click pressed"));
+		}
+		else
+		{
+			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+			for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+			{
+				unit->AbilityButtons[i] = nullptr;
+			}
+		}
+
+		m_SelectedAbility->Deselect();
+		m_SelectedAbility = nullptr;
+	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickReleased()
+{
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
