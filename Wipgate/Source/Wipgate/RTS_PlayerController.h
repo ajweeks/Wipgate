@@ -61,6 +61,7 @@ private:
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
 
+	void ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray);
 	void ActionSelectionGroup1();
 	void ActionCreateSelectionGroup1();
 	void ActionSelectionGroup2();

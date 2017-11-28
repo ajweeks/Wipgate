@@ -606,20 +606,24 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	m_MovingToTarget = true;
 	MoveToTarget();
 }
-
-void ARTS_PlayerController::ActionSelectionGroup1()
+void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray)
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
 	{
 		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
 	}
 
-	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup1;
+	m_RTS_GameState->SelectedUnits = selectionGroupArray;
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
 	{
 		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
 	}
+}
+
+void ARTS_PlayerController::ActionSelectionGroup1()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup1()
@@ -629,17 +633,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup1()
 
 void ARTS_PlayerController::ActionSelectionGroup2()
 {
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
-	}
-
-	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup2;
-
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
-	}
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup2()
@@ -649,17 +643,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup2()
 
 void ARTS_PlayerController::ActionSelectionGroup3()
 {
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
-	}
-
-	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup3;
-
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
-	}
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup3()
@@ -669,17 +653,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup3()
 
 void ARTS_PlayerController::ActionSelectionGroup4()
 {
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
-	}
-
-	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup4;
-
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
-	}
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup4()
@@ -689,17 +663,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup4()
 
 void ARTS_PlayerController::ActionSelectionGroup5()
 {
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
-	}
-
-	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup5;
-
-	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
-	{
-		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
-	}
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup5()
