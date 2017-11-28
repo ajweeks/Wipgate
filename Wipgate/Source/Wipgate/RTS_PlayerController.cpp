@@ -128,6 +128,17 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Ability Construct", IE_Released, this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
 	InputComponent->BindAction("Ability Passive", IE_Released, this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
 
+	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
+	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
+	InputComponent->BindAction("Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup2);
+	InputComponent->BindAction("Create Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup2);
+	InputComponent->BindAction("Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup3);
+	InputComponent->BindAction("Create Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup3);
+	InputComponent->BindAction("Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup4);
+	InputComponent->BindAction("Create Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
+	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
+	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
+
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -594,6 +605,106 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 
 	m_MovingToTarget = true;
 	MoveToTarget();
+}
+
+void ARTS_PlayerController::ActionSelectionGroup1()
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup1;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup1()
+{
+	m_RTS_GameState->SelectionGroup1 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup2()
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup2;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup2()
+{
+	m_RTS_GameState->SelectionGroup2 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup3()
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup3;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup3()
+{
+	m_RTS_GameState->SelectionGroup3 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup4()
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup4;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup4()
+{
+	m_RTS_GameState->SelectionGroup4 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup5()
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = m_RTS_GameState->SelectionGroup5;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup5()
+{
+	m_RTS_GameState->SelectionGroup5 = m_RTS_GameState->SelectedUnits;
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)

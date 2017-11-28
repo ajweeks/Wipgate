@@ -17,14 +17,31 @@ class WIPGATE_API ARTS_GameState : public AGameState
 public:
 	//FUNCTIONS
 	UFUNCTION(BlueprintCallable)
-	void RemoveUnit(ARTS_UnitCharacter* unit);
+		void RemoveUnit(ARTS_UnitCharacter* unit);
 
 	// All units
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Units")
-	TArray<ARTS_UnitCharacter*> Units;
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> Units;
 
 	// Only selected units
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Units")
-	TArray<ARTS_UnitCharacter*> SelectedUnits;
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectedUnits;
+
+
+	// Selection groups
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectionGroup1;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectionGroup2;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectionGroup3;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectionGroup4;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Units")
+		TArray<ARTS_UnitCharacter*> SelectionGroup5;
 
 };
