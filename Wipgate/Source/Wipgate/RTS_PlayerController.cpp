@@ -324,8 +324,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		{
 			EAbilityType abilityType = m_SelectedAbility->Type;
 			EAlignment unitAlignment = unit->m_UnitCoreComponent->TeamAlignment;
-			const float abilityRangeSqr = m_SelectedAbility->CastRange*m_SelectedAbility->CastRange;
-			if (abilityRangeSqr == 0.0f && abilityType != EAbilityType::E_SELF)
+			const float abilityRange = m_SelectedAbility->CastRange;
+			if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
 			{
 				UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
 			}
@@ -340,14 +340,24 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (groundUnderCursor)
 				{
-					checkSlow(m_UnitShowingAbilities);
-
-					float unitDistSqr = FVector::DistSquared(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
-					if (unitDistSqr < abilityRangeSqr)
+					if (!m_UnitShowingAbilities)
 					{
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted ground"));
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
 					}
 				}
 				else
@@ -359,15 +369,25 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (unitClicked)
 				{
-					checkSlow(m_UnitShowingAbilities);
-
-					float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-					if (unitDistSqr < abilityRangeSqr)
+					if (!m_UnitShowingAbilities)
 					{
-						m_SelectedAbility->SetTarget(unit);
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before unit click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted unit"));
+							m_SelectedAbility->SetTarget(unit);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
 					}
 				}
 				else
@@ -381,15 +401,25 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_FRIENDLY)
 					{
-						checkSlow(m_UnitShowingAbilities);
-
-						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-						if (unitDistSqr < abilityRangeSqr)
+						if (!m_UnitShowingAbilities)
 						{
-							m_SelectedAbility->SetTarget(unit);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted friendly"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
+							else
+							{
+								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							}
 						}
 					}
 					else
@@ -408,15 +438,21 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_ENEMY)
 					{
-						checkSlow(m_UnitShowingAbilities);
-
-						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-						if (unitDistSqr < (m_SelectedAbility->CastRange*m_SelectedAbility->CastRange))
+						if (!m_UnitShowingAbilities)
 						{
-							m_SelectedAbility->SetTarget(unit);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted enemy"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
 						}
 					}
 					else
