@@ -81,6 +81,8 @@ private:
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
 
+	ARTS_UnitCharacter* m_UnitShowingAbilities = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	bool m_EdgeMovementEnabled = true;
 
