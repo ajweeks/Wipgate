@@ -45,13 +45,26 @@ public:
 	FVector SelectionHitBox = FVector(30.0f, 30.0f, 100.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
-	bool ShowSelectionBox_DEBUG;
+	float SelectionBrightness = 5.f;
 
 	UPROPERTY(BlueprintReadWrite)
-	URTS_UnitCoreComponent* m_UnitCoreComponent = nullptr;
+	URTS_UnitCoreComponent* UnitCoreComponent = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool ShowRange = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	float RangeHeight = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool ShowUnitStats = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool ShowSelectionBox = false;
+
 
 	UPROPERTY(BlueprintReadWrite)
-	TArray<UUnitEffect*> m_UnitEffects;
+	TArray<UUnitEffect*> UnitEffects;
 
 	UImage* Icon = nullptr;
 	TArray<UButton*> AbilityButtons; // Set to nullptrs when not visible

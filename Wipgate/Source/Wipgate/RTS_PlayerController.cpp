@@ -273,7 +273,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		FVector unitLocation = unit->GetActorLocation();
 
 		// Draw unit bounding box
-		if (unit->ShowSelectionBox_DEBUG)
+		if (unit->ShowSelectionBox)
 		{
 			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitLocation, unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
 		}
@@ -314,7 +314,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		AActor* actorUnderCursor = hitResult.Actor.Get();
 		bool unitUnderCursor = (actorUnderCursor == unit);
 
-		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
+		const bool unitIsDead = unit->UnitCoreComponent->IsDead;
 
 		const bool unitWasSelected = unit->IsSelected();
 		bool unitClicked = unitUnderCursor;
@@ -323,7 +323,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		if (m_SelectedAbility)
 		{
 			EAbilityType abilityType = m_SelectedAbility->Type;
-			EAlignment unitAlignment = unit->m_UnitCoreComponent->TeamAlignment;
+			EAlignment unitAlignment = unit->UnitCoreComponent->TeamAlignment;
 			const float abilityRangeSqr = m_SelectedAbility->CastRange*m_SelectedAbility->CastRange;
 			if (abilityRangeSqr == 0.0f && abilityType != EAbilityType::E_SELF)
 			{

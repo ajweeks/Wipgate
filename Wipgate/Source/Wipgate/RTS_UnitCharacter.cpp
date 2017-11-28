@@ -30,7 +30,7 @@ void ARTS_UnitCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	/* Apply effects */
-	for (auto e : m_UnitEffects)
+	for (auto e : UnitEffects)
 	{
 		e->Elapsed += DeltaTime;
 
@@ -55,10 +55,10 @@ void ARTS_UnitCharacter::Tick(float DeltaTime)
 	}
 
 	/* Clean up effects */
-	for (size_t i = m_UnitEffects.Num() - 1; i < m_UnitEffects.Num(); i--)
+	for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
 	{
-		if (m_UnitEffects[i]->IsFinished)
-			RemoveUnitEffect(m_UnitEffects[i]);
+		if (UnitEffects[i]->IsFinished)
+			RemoveUnitEffect(UnitEffects[i]);
 	}
 }
 
@@ -69,12 +69,12 @@ bool ARTS_UnitCharacter::IsSelected() const
 
 TArray<UUnitEffect*> ARTS_UnitCharacter::GetUnitEffects() const
 {
-	return m_UnitEffects;
+	return UnitEffects;
 }
 
 void ARTS_UnitCharacter::AddUnitEffect(UUnitEffect * effect)
 {
-	m_UnitEffects.Add(effect);
+	UnitEffects.Add(effect);
 
 	// start particle systems
 	if (effect->StartParticles)
@@ -86,23 +86,23 @@ void ARTS_UnitCharacter::AddUnitEffect(UUnitEffect * effect)
 
 void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 {
-	if (!m_UnitEffects.Contains(effect))
+	if (!UnitEffects.Contains(effect))
 		return;
 
 	switch (effect->AffectedStat)
 	{
 	case EUnitEffectStat::ARMOR:
 		if(effect->Type == EUnitEffectType::OVER_TIME)
-			m_UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+			UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
 		else
-			m_UnitCoreComponent->CurrentArmor -= effect->Magnitude;
+			UnitCoreComponent->CurrentArmor -= effect->Magnitude;
 		break;
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		break;
 	default:
 		break;
 	}
-	m_UnitEffects.Remove(effect);
+	UnitEffects.Remove(effect);
 
 	// stop particle systems
 	if (effect->EndParticles)
@@ -125,13 +125,13 @@ void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			m_UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
 		case EUnitEffectStat::DAMAGE:
-			m_UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
 			break;
 		case EUnitEffectStat::HEALING:
-			m_UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+			UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			break;
@@ -157,15 +157,15 @@ void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			m_UnitCoreComponent->CurrentArmor += effect->Magnitude;
+			UnitCoreComponent->CurrentArmor += effect->Magnitude;
 			break;
 
 		case EUnitEffectStat::DAMAGE:
-			m_UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
+			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
 			break;
 
 		case EUnitEffectStat::HEALING:
-			m_UnitCoreComponent->ApplyHealing(effect->Magnitude);
+			UnitCoreComponent->ApplyHealing(effect->Magnitude);
 			break;
 
 		case EUnitEffectStat::MOVEMENT_SPEED:

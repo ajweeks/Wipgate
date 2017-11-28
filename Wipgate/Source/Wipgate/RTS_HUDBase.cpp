@@ -82,7 +82,7 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 		{
 			ARTS_UnitCharacter* unit = SelectedUnitsRef[i];
 			checkSlow(unit);
-			URTS_UnitCoreComponent* unitCoreComponent = unit->m_UnitCoreComponent;
+			URTS_UnitCoreComponent* unitCoreComponent = unit->UnitCoreComponent;
 			checkSlow(unitCoreComponent);
 
 			int col = i % m_MaxUnitImageCount.X;
