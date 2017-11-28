@@ -257,6 +257,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		}
 	}
 
+	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult hitResult;
+	bool groundUnderCursor = false;
+	bool hitResultHit = GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	if (hitResult.bBlockingHit && !hitResult.Actor.Get()->ActorHasTag("Unit"))
+	{
+		groundUnderCursor = true; // Not 100% accurate but should work for now
+	}
+
 	for (auto unit : m_RTS_GameState->Units)
 	{
 		FVector unitLocation = unit->GetActorLocation();
@@ -300,19 +309,12 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 
 		// Check if unit is under mouse cursor (for single clicks)
-		ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-		FHitResult hitResult;
 		bool unitUnderCursor = false;
-		bool groundUnderCursor = false;
-		if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
+		if (hitResultHit)
 		{
 			if (hitResult.Actor == unit)
 			{
 				unitUnderCursor = true;
-			}
-			else if (hitResult.bBlockingHit)
-			{
-				groundUnderCursor = true; // Not 100% accurate but should work for now
 			}
 		}
 
@@ -327,12 +329,20 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			if (m_SelectedAbility->Type == EAbilityType::E_SELF)
 			{
 				m_SelectedAbility->Activate();
+				m_SelectedAbility->Deselect();
+				m_SelectedAbility = nullptr;
 			}
 			else if (m_SelectedAbility->Type == EAbilityType::E_TARGET_GROUND)
 			{
 				if (groundUnderCursor)
 				{
-
+					m_SelectedAbility->Activate();
+					m_SelectedAbility->Deselect();
+					m_SelectedAbility = nullptr;
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
 				}
 			}
 			else if (m_SelectedAbility->Type == EAbilityType::E_TARGET_UNIT)
@@ -347,6 +357,10 @@ void ARTS_PlayerController::ActionMainClickReleased()
 					m_SelectedAbility->Deselect();
 					m_SelectedAbility = nullptr;
 				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
 			}
 		}
 		else
@@ -355,6 +369,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (unitDeselected)
 				{
+					if (unit == m_UnitShowingAbilities)
+					{
+						for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
+						{
+							m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
+						}
+						m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+						m_UnitShowingAbilities = nullptr;
+					}
 					unit->SetSelected(false);
 					m_RTS_GameState->SelectedUnits.Remove(unit);
 				}
@@ -379,38 +402,48 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		}
 		else
 		{
-			m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
-
-			if (m_RTS_GameState->SelectedUnits.Num() == 1)
+			if (m_UnitShowingAbilities == nullptr)
 			{
-				ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
-
-				// TODO: Only proceed if this unit is a specialist
-				
-				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+				if (m_RTS_GameState->SelectedUnits.Num() == 1)
 				{
-					if (!unit->AbilityButtons[i])
-					{
-						unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
-						int col = i;
-						int row = 1;
-						FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+					ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+					m_UnitShowingAbilities = unit;
 
-						if (i == 0)
+					// TODO: Only proceed if this unit is a specialist
+				
+					for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
+					{
+						if (!unit->AbilityButtons[i])
 						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-						}
-						else if (i == 1)
-						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-						}
-						else if (i == 2)
-						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+							unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+							int col = i;
+							int row = 1;
+							FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+							m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i], col, row, bgCol);
+
+							if (i == 0)
+							{
+								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+							}
+							else if (i == 1)
+							{
+								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+							}
+							else if (i == 2)
+							{
+								unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+							}
 						}
 					}
 				}
+				else
+				{
+					m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+				}
+			}
+			else
+			{
+
 			}
 		}
 	}
