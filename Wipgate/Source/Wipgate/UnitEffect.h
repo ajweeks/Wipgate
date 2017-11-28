@@ -45,25 +45,25 @@ public:
 	//UUnitEffect* GetCopy();
 
 public:
-	float m_Elapsed = 0;
+	float Elapsed = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Status")
-	int m_Ticks = 0;
-	bool m_IsFinished = false;
+	int Ticks = 0;
+	bool IsFinished = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	int m_Magnitude;
+	int Magnitude;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	float m_Delay;
+	float Delay;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	int m_Duration;
+	int Duration;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	EUnitEffectStat m_AffectedStat;
+	EUnitEffectStat AffectedStat;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	EUnitEffectType m_Type;
+	EUnitEffectType Type;
 
-	UParticleSystem* m_StartParticles = nullptr;
-	UParticleSystem* m_TickParticles = nullptr;
-	UParticleSystem* m_EndParticles = nullptr;
-	UParticleSystem* m_ConstantParticles = nullptr;
-	UParticleSystemComponent * m_ParticleComponent = nullptr;
+	UParticleSystem* StartParticles = nullptr;
+	UParticleSystem* TickParticles = nullptr;
+	UParticleSystem* EndParticles = nullptr;
+	UParticleSystem* ConstantParticles = nullptr;
+	UParticleSystemComponent * ParticleComponent = nullptr;
 };
