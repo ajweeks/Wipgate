@@ -1,5 +1,4 @@
 ## Wipgate
----
 
 Wipgate (name-pending) is an RTS-roguelite mix being developed by the following:
 
@@ -21,6 +20,8 @@ Here's some a few of our artist's WIP models in the mean time:
 ![](https://cdn.discordapp.com/attachments/352040836386652170/384651646283546624/mount_AO_2.png)
 
 ![](https://cdn.discordapp.com/attachments/352040836386652170/384651636577927168/commander_AO.png)
+
+---
 
 ###### Copyright &copy; 2017 Bagged Milk Studios
 
