@@ -34,6 +34,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
+	// Unit icons (shows currently selection)
 	UFUNCTION(BlueprintImplementableEvent)
 	void AddUnitIconToGrid(UImage* Icon);
 
@@ -41,13 +42,18 @@ public:
 	void RemoveUnitIconFromGrid(UImage* Icon);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateUnitIcon(UImage* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+	void UpdateUnitIconProperties(UImage* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+
+	// Ability buttons (command card)
+	UFUNCTION(BlueprintImplementableEvent)
+	void AddAbilityButtonToCommandCardGrid(UButton* Button);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void AddAbilityButtonToCommandCardGrid(UButton* Button, int Column, int Row, FLinearColor BackgroundColor);
+	void UpdateAbilityButtonProperties(UButton* Button, int Column, int Row, FLinearColor BackgroundColor);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ClearAbilityButtonsFromCommandCardGrid();
+
 
 
 	// TODO: Remove these two members carefully
