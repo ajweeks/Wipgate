@@ -42,11 +42,17 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Deselect();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	EAbilityType Type = EAbilityType::E_TARGET_UNIT;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	EAbilityState State = EAbilityState::E_AVAILABLE;
+
+	void SetTarget(AActor* Target);
+
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
-		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type,
-			const float delay, const int magnitude, const int duration);
+	UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration);
 
 protected:
 	/* protected members */
@@ -54,6 +60,7 @@ protected:
 		AActor* m_Caster;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		AActor* m_Target;
+	// TODO: Remove
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector2D m_TargetPos;
 
@@ -65,10 +72,6 @@ protected:
 		float m_CooldownPassive;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		float m_CastTime;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		EAbilityType m_Type = EAbilityType::E_TARGET_UNIT;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		EAbilityState m_State = EAbilityState::E_AVAILABLE;
 
 	virtual void BeginPlay() override;
 
