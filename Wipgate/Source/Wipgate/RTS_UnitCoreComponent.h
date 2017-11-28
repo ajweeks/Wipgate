@@ -6,6 +6,13 @@
 #include "Components/ActorComponent.h"
 #include "RTS_UnitCoreComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class EAlignment : uint8
+{
+	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
+	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
+	E_ENEMY 		UMETA(DisplayName = "Enemy"),
+};
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class WIPGATE_API URTS_UnitCoreComponent : public UActorComponent
@@ -26,6 +33,14 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ApplyDamage_CPP(int damage, bool applyArmor = true);
 	void ApplyHealing(int healing);
+
+	//ALIGNMENT PROPERTIES
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	EAlignment TeamAlignment;
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	FName TeamName;
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	FColor TeamColor;
 
 	//ISDEAD
 	UPROPERTY(BlueprintReadWrite)
