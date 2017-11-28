@@ -128,6 +128,17 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Ability Construct", IE_Released, this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
 	InputComponent->BindAction("Ability Passive", IE_Released, this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
 
+	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
+	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
+	InputComponent->BindAction("Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup2);
+	InputComponent->BindAction("Create Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup2);
+	InputComponent->BindAction("Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup3);
+	InputComponent->BindAction("Create Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup3);
+	InputComponent->BindAction("Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup4);
+	InputComponent->BindAction("Create Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
+	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
+	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
+
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -324,8 +335,8 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		{
 			EAbilityType abilityType = m_SelectedAbility->Type;
 			EAlignment unitAlignment = unit->UnitCoreComponent->TeamAlignment;
-			const float abilityRangeSqr = m_SelectedAbility->CastRange*m_SelectedAbility->CastRange;
-			if (abilityRangeSqr == 0.0f && abilityType != EAbilityType::E_SELF)
+			const float abilityRange = m_SelectedAbility->CastRange;
+			if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
 			{
 				UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
 			}
@@ -340,14 +351,24 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (groundUnderCursor)
 				{
-					checkSlow(m_UnitShowingAbilities);
-
-					float unitDistSqr = FVector::DistSquared(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
-					if (unitDistSqr < abilityRangeSqr)
+					if (!m_UnitShowingAbilities)
 					{
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted ground"));
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
 					}
 				}
 				else
@@ -359,15 +380,25 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			{
 				if (unitClicked)
 				{
-					checkSlow(m_UnitShowingAbilities);
-
-					float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-					if (unitDistSqr < abilityRangeSqr)
+					if (!m_UnitShowingAbilities)
 					{
-						m_SelectedAbility->SetTarget(unit);
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before unit click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted unit"));
+							m_SelectedAbility->SetTarget(unit);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
 					}
 				}
 				else
@@ -381,15 +412,25 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_FRIENDLY)
 					{
-						checkSlow(m_UnitShowingAbilities);
-
-						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-						if (unitDistSqr < abilityRangeSqr)
+						if (!m_UnitShowingAbilities)
 						{
-							m_SelectedAbility->SetTarget(unit);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted friendly"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
+							else
+							{
+								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							}
 						}
 					}
 					else
@@ -408,15 +449,21 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unitAlignment == EAlignment::E_ENEMY)
 					{
-						checkSlow(m_UnitShowingAbilities);
-
-						float unitDistSqr = FVector::DistSquared(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-						if (unitDistSqr < (m_SelectedAbility->CastRange*m_SelectedAbility->CastRange))
+						if (!m_UnitShowingAbilities)
 						{
-							m_SelectedAbility->SetTarget(unit);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted enemy"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
 						}
 					}
 					else
@@ -558,6 +605,70 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 
 	m_MovingToTarget = true;
 	MoveToTarget();
+}
+void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray)
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+
+	m_RTS_GameState->SelectedUnits = selectionGroupArray;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+}
+
+void ARTS_PlayerController::ActionSelectionGroup1()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup1()
+{
+	m_RTS_GameState->SelectionGroup1 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup2()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup2()
+{
+	m_RTS_GameState->SelectionGroup2 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup3()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup3()
+{
+	m_RTS_GameState->SelectionGroup3 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup4()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup4()
+{
+	m_RTS_GameState->SelectionGroup4 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup5()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup5()
+{
+	m_RTS_GameState->SelectionGroup5 = m_RTS_GameState->SelectedUnits;
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)

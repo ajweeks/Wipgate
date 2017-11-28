@@ -43,39 +43,37 @@ public:
 		void Deselect();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-	EAbilityType Type = EAbilityType::E_TARGET_UNIT;
+		EAbilityType Type = EAbilityType::E_TARGET_UNIT;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-	EAbilityState State = EAbilityState::E_AVAILABLE;
+		EAbilityState State = EAbilityState::E_AVAILABLE;
 
+	/* --- Ability parameters --- */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-	float CastRange;
+		float CastRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		int Charges;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float Cooldown;
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		float CooldownElapsed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float CooldownPassive;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float CastTime;
 
 	void SetTarget(AActor* Target);
 
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
-	UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration);
+		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration);
 
 protected:
 	/* protected members */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
 		AActor* m_Caster;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
 		AActor* m_Target;
-	// TODO: Remove
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector2D m_TargetPos;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		int m_Charges;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CooldownActive;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CooldownPassive;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CastTime;
-
 
 	virtual void BeginPlay() override;
 

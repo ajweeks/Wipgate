@@ -60,6 +60,19 @@ private:
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
+
+	void ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray);
+	void ActionSelectionGroup1();
+	void ActionCreateSelectionGroup1();
+	void ActionSelectionGroup2();
+	void ActionCreateSelectionGroup2();
+	void ActionSelectionGroup3();
+	void ActionCreateSelectionGroup3();
+	void ActionSelectionGroup4();
+	void ActionCreateSelectionGroup4();
+	void ActionSelectionGroup5();
+	void ActionCreateSelectionGroup5();
+
 	void AxisZoom(float AxisValue);
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
