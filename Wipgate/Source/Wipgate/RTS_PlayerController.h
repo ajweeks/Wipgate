@@ -36,13 +36,13 @@ public:
 	void SetEdgeMovementEnabled(bool enabled);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnAbilityButton1Press();
+	void OnAbilityActiveButtonPress();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnAbilityButton2Press();
+	void OnAbilityConstructButtonPress();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnAbilityButton3Press();
+	void OnAbilityPassiveButtonPress();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;

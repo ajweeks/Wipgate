@@ -7,11 +7,15 @@ AAbility::AAbility()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-UUnitEffect* AAbility::CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type, 
-	const float delay, const int magnitude, const int duration)
+void AAbility::SetTarget(AActor* Target)
+{
+	m_Target = Target;
+}
+
+UUnitEffect* AAbility::CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration)
 {
 	UUnitEffect* unitEffect = NewObject<UUnitEffect>(this);
-	unitEffect->Initialize(stat, type, delay, magnitude, duration);
+	unitEffect->Initialize(stat, effectType, delay, magnitude, duration);
 	return unitEffect;
 }
 
