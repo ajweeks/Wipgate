@@ -19,5 +19,8 @@ class WIPGATE_API UGeneralFunctionLibrary_CPP : public UBlueprintFunctionLibrary
 	static UUnitEffect* CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 			const float delay, const int magnitude, const int duration);
 	
+	//Returns the project version set in the 'Project Settings' > 'Description' section of the editor
+	UFUNCTION(BlueprintPure, Category = "Project")
+		static FString GetProjectVersion();
 	
 };

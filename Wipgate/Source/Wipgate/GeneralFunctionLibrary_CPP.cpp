@@ -9,3 +9,15 @@ UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, con
 	unitEffect->Initialize(stat, type, delay, magnitude, duration);
 	return unitEffect;
 }
+
+FString UGeneralFunctionLibrary_CPP::GetProjectVersion()
+{
+	FString ProjectVersion;
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("ProjectVersion"),
+		ProjectVersion,
+		GGameIni
+	);
+	return ProjectVersion;
+}
