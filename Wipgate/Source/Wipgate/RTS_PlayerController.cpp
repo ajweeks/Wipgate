@@ -274,7 +274,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	FHitResult hitResult;
 	bool groundUnderCursor = false;
 	bool hitResultHit = GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	if (hitResult.bBlockingHit && !hitResult.Actor.Get()->ActorHasTag("Unit"))
+	if (hitResult.bBlockingHit && hitResult.Actor.Get() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
 	{
 		groundUnderCursor = true; // Not 100% accurate but should work for now
 	}
