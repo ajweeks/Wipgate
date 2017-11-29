@@ -79,6 +79,7 @@ private:
 
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
+	void UpdateAbilityButtons();
 
 	// TODO: Move these to the general function library
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
