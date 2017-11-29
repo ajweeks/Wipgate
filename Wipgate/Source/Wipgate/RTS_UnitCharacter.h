@@ -6,10 +6,11 @@
 #include "GameFramework/Character.h"
 #include "RTS_UnitCoreComponent.h"
 #include "UnitEffect.h"
+#include "AbilityIcon.h"
 #include "RTS_UnitCharacter.generated.h"
 
 class UImage;
-class UButton;
+class AbilityIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
 
@@ -67,7 +68,9 @@ public:
 	TArray<UUnitEffect*> UnitEffects;
 
 	UImage* Icon = nullptr;
-	TArray<UButton*> AbilityButtons; // Set to nullptrs when not visible
+
+	const int NUM_ABILITIES = 3;
+	TArray<FAbilityIcon> AbilityIcons; // Set to nullptrs when not visible
 
 private:
 	/* private functions */

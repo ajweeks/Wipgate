@@ -10,6 +10,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/Button.h"
+#include "Components/ProgressBar.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
@@ -22,6 +23,7 @@
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
 #include "Ability.h"
+#include "AbilityIcon.h"
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
@@ -235,6 +237,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	if (showViewportOnMinimap)
 	{
 
+	}
+
+	if (m_UnitShowingAbilities)
+	{
+		UpdateAbilityButtons();
 	}
 }
 
@@ -677,12 +684,13 @@ void ARTS_PlayerController::ClearAbilityButtons()
 {
 	if (m_UnitShowingAbilities)
 	{
-		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
 		{
-			m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
+			m_UnitShowingAbilities->AbilityIcons[i].Button = nullptr;
+			m_UnitShowingAbilities->AbilityIcons[i].ProgressBar = nullptr;
 		}
 		m_UnitShowingAbilities = nullptr;
-		m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+		m_RTSHUD->ClearAbilityIconsFromCommandCardGrid();
 	}
 }
 
@@ -690,30 +698,54 @@ void ARTS_PlayerController::CreateAbilityButtons()
 {
 	if (m_UnitShowingAbilities)
 	{
-		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
 		{
-			if (!m_UnitShowingAbilities->AbilityButtons[i])
+			FAbilityIcon& abilityIcon = m_UnitShowingAbilities->AbilityIcons[i];
+			if (!abilityIcon.Button)
 			{
-				m_UnitShowingAbilities->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+				abilityIcon.ProgressBar = m_RTSHUD->ConstructWidget<UProgressBar>();
+				abilityIcon.Button = m_RTSHUD->ConstructWidget<UButton>();
 				int col = i;
 				int row = 1;
-				FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-				m_RTSHUD->AddAbilityButtonToCommandCardGrid(m_UnitShowingAbilities->AbilityButtons[i]);
+				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-				m_RTSHUD->UpdateAbilityButtonProperties(m_UnitShowingAbilities->AbilityButtons[i], col, row, bgCol);
+				m_RTSHUD->AddAbilityIconToCommandCardGrid(abilityIcon.Button, abilityIcon.ProgressBar);
+
+				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_UnitShowingAbilities);
 
 				if (i == 0)
 				{
-					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
 				}
 				else if (i == 1)
 				{
-					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
 				}
 				else if (i == 2)
 				{
-					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
 				}
+			}
+		}
+	}
+}
+
+void ARTS_PlayerController::UpdateAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
+		{
+			FAbilityIcon& abilityIcon = m_UnitShowingAbilities->AbilityIcons[i];
+			if (abilityIcon.Button && abilityIcon.ProgressBar)
+			{
+				int col = i;
+				int row = 1;
+				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
+				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
+
+				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_UnitShowingAbilities);
 			}
 		}
 	}
