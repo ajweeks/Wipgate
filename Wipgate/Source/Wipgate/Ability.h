@@ -42,23 +42,25 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Deselect();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		EAbilityType Type = EAbilityType::E_TARGET_UNIT;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
 		EAbilityState State = EAbilityState::E_AVAILABLE;
 
 	/* --- Ability parameters --- */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		float CastRange;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		int Charges;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		float Cooldown;
-	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(BlueprintReadWrite, Category = "Ability state")
 		float CooldownElapsed;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		float CooldownPassive;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+	UPROPERTY(BlueprintReadWrite, Category = "Ability state")
+		float CooldownPassiveElapsed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		float CastTime;
 
 	void SetTarget(AActor* Target);

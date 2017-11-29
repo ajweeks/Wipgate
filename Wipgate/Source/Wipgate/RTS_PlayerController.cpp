@@ -374,7 +374,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						}
 						else
 						{
-							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							//print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
 						}
 					}
 				}

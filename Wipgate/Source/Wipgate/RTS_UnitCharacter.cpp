@@ -98,8 +98,24 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 		else
 			UnitCoreComponent->CurrentArmor -= effect->Magnitude;
 		break;
+
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		break;
+
+	case EUnitEffectStat::ATTACK_DAMAGE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			UnitCoreComponent->CurrentDamage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		else
+			UnitCoreComponent->CurrentDamage -= effect->Magnitude;
+		break;
+
+	case EUnitEffectStat::ATTACK_RATE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			UnitCoreComponent->CurrentRateOfFire -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		else
+			UnitCoreComponent->CurrentRateOfFire -= effect->Magnitude;
+		break;
+
 	default:
 		break;
 	}
@@ -127,6 +143,12 @@ void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 		{
 		case EUnitEffectStat::ARMOR:
 			UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			break;
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			UnitCoreComponent->CurrentDamage += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			break;
+		case EUnitEffectStat::ATTACK_RATE:
+			UnitCoreComponent->CurrentRateOfFire += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
 		case EUnitEffectStat::DAMAGE:
 			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
@@ -159,6 +181,14 @@ void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
 		{
 		case EUnitEffectStat::ARMOR:
 			UnitCoreComponent->CurrentArmor += effect->Magnitude;
+			break;
+
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			UnitCoreComponent->CurrentDamage += effect->Magnitude;
+			break;
+
+		case EUnitEffectStat::ATTACK_RATE:
+			UnitCoreComponent->CurrentRateOfFire += effect->Magnitude;
 			break;
 
 		case EUnitEffectStat::DAMAGE:
