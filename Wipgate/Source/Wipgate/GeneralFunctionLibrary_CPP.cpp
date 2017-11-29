@@ -21,3 +21,27 @@ FString UGeneralFunctionLibrary_CPP::GetProjectVersion()
 	);
 	return ProjectVersion;
 }
+
+FString UGeneralFunctionLibrary_CPP::GetProjectName()
+{
+	FString ProjectName;
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("ProjectName"),
+		ProjectName,
+		GGameIni
+	);
+	return ProjectName;
+}
+
+FString UGeneralFunctionLibrary_CPP::GetProjectDescription()
+{
+	FString ProjectDescription;
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("Description"),
+		ProjectDescription,
+		GGameIni
+	);
+	return ProjectDescription;
+}
