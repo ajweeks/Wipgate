@@ -471,6 +471,10 @@ void ARTS_PlayerController::ActionMainClickReleased()
 								m_SelectedAbility->Deselect();
 								m_SelectedAbility = nullptr;
 							}
+							else
+							{
+								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							}
 						}
 					}
 					else
