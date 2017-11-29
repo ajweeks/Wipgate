@@ -6,6 +6,13 @@
 #include "Components/ActorComponent.h"
 #include "RTS_UnitCoreComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class EAlignment : uint8
+{
+	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
+	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
+	E_ENEMY 		UMETA(DisplayName = "Enemy"),
+};
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class WIPGATE_API URTS_UnitCoreComponent : public UActorComponent
@@ -25,6 +32,15 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ApplyDamage_CPP(int damage, bool applyArmor = true);
+	void ApplyHealing(int healing);
+
+	//ALIGNMENT PROPERTIES
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	EAlignment TeamAlignment;
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	FName TeamName;
+	UPROPERTY(BlueprintReadWrite, Category = "Alignment")
+	FColor TeamColor;
 
 	//ISDEAD
 	UPROPERTY(BlueprintReadWrite)
@@ -36,12 +52,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int CurrentDamage = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	float BaseRateOfFire = 10.f;
+	float BaseRateOfFire = 1.f;
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentRateOfFire = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 	float TimerRateOfFire = 0.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BaseAttackRange = 250;
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentAttackRange = 250;
@@ -57,14 +73,14 @@ public:
 	int CurrentHealth = 0;
 
 	//VISION PROPERTIES
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vision")
-	int BaseOuterCircleRange = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vision")
+	float BaseOuterCircleRange = 350;
 	UPROPERTY(BlueprintReadWrite)
-	int CurrentOuterCircleRange = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vision")
-	int BaseInnerCircleRange = 0;
+	float CurrentOuterCircleRange = 350;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vision")
+	float BaseInnerCircleRange = 150;
 	UPROPERTY(BlueprintReadWrite)
-	int CurrentInnerCircleRange = 0;
+	float CurrentInnerCircleRange = 150;
 
 	
 };

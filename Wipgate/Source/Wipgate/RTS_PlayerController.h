@@ -13,6 +13,7 @@ class UCameraComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
 class ARTS_GameState;
+class AAbility;
 
 DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
 
@@ -34,20 +35,51 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEdgeMovementEnabled(bool enabled);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityActiveButtonPress();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityConstructButtonPress();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAbilityPassiveButtonPress();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
 	UUserWidget* MainHUDInstance;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AAbility* m_SelectedAbility = nullptr;
 
 private:
 	void ActionMainClickPressed();
 	void ActionMainClickReleased();
+	void ActionSecondaryClickPressed();
+	void ActionSecondaryClickReleased();
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
+
+	void ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray);
+	void ActionSelectionGroup1();
+	void ActionCreateSelectionGroup1();
+	void ActionSelectionGroup2();
+	void ActionCreateSelectionGroup2();
+	void ActionSelectionGroup3();
+	void ActionCreateSelectionGroup3();
+	void ActionSelectionGroup4();
+	void ActionCreateSelectionGroup4();
+	void ActionSelectionGroup5();
+	void ActionCreateSelectionGroup5();
+
 	void AxisZoom(float AxisValue);
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
+
+	void ClearAbilityButtons();
+	void CreateAbilityButtons();
+	void UpdateAbilityButtons();
 
 	// TODO: Move these to the general function library
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
@@ -65,7 +97,9 @@ private:
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
-	
+
+	ARTS_UnitCharacter* m_UnitShowingAbilities = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	bool m_EdgeMovementEnabled = true;
 

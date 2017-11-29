@@ -42,3 +42,10 @@ void URTS_UnitCoreComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	// ...
 }
+
+void URTS_UnitCoreComponent::ApplyHealing(int healing)
+{
+	CurrentHealth += healing;
+	if (CurrentHealth > BaseHealth)
+		CurrentHealth = BaseHealth;
+}

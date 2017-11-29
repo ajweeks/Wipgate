@@ -4,19 +4,26 @@
 
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
-//#include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Blueprint/UserWidget.h"
+#include "Camera/CameraComponent.h"
+#include "Components/Button.h"
+#include "Components/ProgressBar.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
+#include "Engine/UserInterfaceSettings.h"
+#include "Engine/RendererSettings.h"
 #include "GameFramework/GameStateBase.h"
-#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
-#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
-#include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "Runtime/Engine/Classes/Engine/UserInterfaceSettings.h"
-#include "Runtime/Engine/Classes/Engine/RendererSettings.h"
-#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
-#include "Runtime/Engine/Classes/Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
+#include "Ability.h"
+#include "AbilityIcon.h"
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
@@ -114,8 +121,26 @@ void ARTS_PlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClickPressed);
 	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
+	InputComponent->BindAction("Secondary Click", IE_Pressed, this, &ARTS_PlayerController::ActionSecondaryClickPressed);
+	InputComponent->BindAction("Secondary Click", IE_Released, this, &ARTS_PlayerController::ActionSecondaryClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
+
+	InputComponent->BindAction("Ability Active", IE_Released, this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+	InputComponent->BindAction("Ability Construct", IE_Released, this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+	InputComponent->BindAction("Ability Passive", IE_Released, this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+
+	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
+	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
+	InputComponent->BindAction("Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup2);
+	InputComponent->BindAction("Create Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup2);
+	InputComponent->BindAction("Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup3);
+	InputComponent->BindAction("Create Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup3);
+	InputComponent->BindAction("Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup4);
+	InputComponent->BindAction("Create Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
+	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
+	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
+
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -141,7 +166,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (IsInputKeyDown(EKeys::LeftMouseButton))
+	if (!m_SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = GetMousePositionVector2D();
 
@@ -213,6 +238,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 
 	}
+
+	if (m_UnitShowingAbilities)
+	{
+		UpdateAbilityButtons();
+	}
 }
 
 void ARTS_PlayerController::ActionMainClickPressed()
@@ -222,29 +252,38 @@ void ARTS_PlayerController::ActionMainClickPressed()
 
 void ARTS_PlayerController::ActionMainClickReleased()
 {
-	if (!m_RTS_GameState)
+	if (!m_RTS_GameState || !m_RTSHUD)
 	{
 		return; // Game state hasn't been initialized yet, we can't do anything
 	}
 
 	// Hide selection box when mouse isn't being held
-	if (m_RTSHUD)
-	{
-		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
-	}
+	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 
 	// TODO: Use bindable key here
 	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
 
-	// Selected units array must be cleared if shift isn't down
-	if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
+	if (!m_SelectedAbility)
 	{
-		for (int i  = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+		// Selected units array must be cleared if shift isn't down
+		if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
 		{
-			ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
-			selectedUnit->SetSelected(false);
+			for (int i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+			{
+				ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
+				selectedUnit->SetSelected(false);
+			}
+			m_RTS_GameState->SelectedUnits.Empty();
 		}
-		m_RTS_GameState->SelectedUnits.Empty();
+	}
+
+	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult hitResult;
+	bool groundUnderCursor = false;
+	bool hitResultHit = GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	if (hitResult.bBlockingHit && hitResult.Actor.IsValid() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
+	{
+		groundUnderCursor = true; // Not 100% accurate but should work for now
 	}
 
 	for (auto unit : m_RTS_GameState->Units)
@@ -252,7 +291,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		FVector unitLocation = unit->GetActorLocation();
 
 		// Draw unit bounding box
-		if (unit->ShowSelectionBox_DEBUG)
+		if (unit->ShowSelectionBox)
 		{
 			UKismetSystemLibrary::DrawDebugBox(GetWorld(), unitLocation, unit->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
 		}
@@ -284,48 +323,237 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		unitBoundsMinSS /= viewportScale;
 		unitBoundsMaxSS /= viewportScale;
 
-		bool unitInSelectionBox = 
+		bool unitInSelectionBox =
 			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
 			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
 
 
 		// Check if unit is under mouse cursor (for single clicks)
-		ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-		FHitResult hitResult;
-		bool unitUnderCursor = false;
-		if (GetHitResultUnderCursorByChannel(traceType, false, hitResult))
-		{
-			if (hitResult.Actor == unit)
-			{
-				unitUnderCursor = true;
-			}
-		}
+		AActor* actorUnderCursor = hitResult.Actor.Get();
+		bool unitUnderCursor = (actorUnderCursor == unit);
 
-		const bool unitIsDead = unit->m_UnitCoreComponent->IsDead;
+		const bool unitIsDead = unit->UnitCoreComponent->IsDead;
 
 		const bool unitWasSelected = unit->IsSelected();
 		bool unitClicked = unitUnderCursor;
 		bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
 
-		if (!unitIsDead)
+		if (m_SelectedAbility)
 		{
-			if (unitDeselected)
+			EAbilityType abilityType = m_SelectedAbility->Type;
+			EAlignment unitAlignment = unit->UnitCoreComponent->TeamAlignment;
+			const float abilityRange = m_SelectedAbility->CastRange;
+			if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
 			{
-				unit->SetSelected(false);
-				m_RTS_GameState->SelectedUnits.Remove(unit);
+				UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
 			}
-			else if (unitInSelectionBox || unitClicked)
+
+			switch (abilityType)
 			{
-				unit->SetSelected(true);
-				m_RTS_GameState->SelectedUnits.AddUnique(unit);
+			case EAbilityType::E_SELF:
+			{
+				UE_LOG(Wipgate_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
+			} break;
+			case EAbilityType::E_TARGET_GROUND:
+			{
+				if (groundUnderCursor)
+				{
+					if (!m_UnitShowingAbilities)
+					{
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted ground"));
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			} break;
+			case EAbilityType::E_TARGET_UNIT:
+			{
+				if (unitClicked)
+				{
+					if (!m_UnitShowingAbilities)
+					{
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before unit click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted unit"));
+							m_SelectedAbility->SetTarget(unit);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			} break;
+			case EAbilityType::E_TARGET_ALLY:
+			{
+				if (unitClicked)
+				{
+					if (unitAlignment == EAlignment::E_FRIENDLY)
+					{
+						if (!m_UnitShowingAbilities)
+						{
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted friendly"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
+							else
+							{
+								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							}
+						}
+					}
+					else
+					{
+						// TODO: Play sound indicating invalid target location
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			} break;
+			case EAbilityType::E_TARGET_ENEMY:
+			{
+				if (unitClicked)
+				{
+					if (unitAlignment == EAlignment::E_ENEMY)
+					{
+						if (!m_UnitShowingAbilities)
+						{
+							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+						}
+						else
+						{
+							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+							if (unitDist < abilityRange)
+							{
+								print(TEXT("Targetted enemy"));
+								m_SelectedAbility->SetTarget(unit);
+								m_SelectedAbility->Activate();
+								m_SelectedAbility->Deselect();
+								m_SelectedAbility = nullptr;
+							}
+							else
+							{
+								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							}
+						}
+					}
+					else
+					{
+						// TODO: Play sound indicating invalid target location
+					}
+				}
+			} break;
+			}
+		}
+		else // No ability is selected
+		{
+			if (!unitIsDead)
+			{
+				if (unitDeselected)
+				{
+					if (unit == m_UnitShowingAbilities)
+					{
+						ClearAbilityButtons();
+					}
+					unit->SetSelected(false);
+					m_RTS_GameState->SelectedUnits.Remove(unit);
+				}
+				else if (unitInSelectionBox || unitClicked)
+				{
+					unit->SetSelected(true);
+					m_RTS_GameState->SelectedUnits.AddUnique(unit);
+				}
 			}
 		}
 	}
 
-	if (m_RTSHUD)
+	// Ensure unit whos is showing their ability buttons is still selected
+	if (m_UnitShowingAbilities)
 	{
-		m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+		if ((m_RTS_GameState->SelectedUnits.Num() != 1) ||
+			(m_RTS_GameState->SelectedUnits[0] != m_UnitShowingAbilities))
+		{
+			ClearAbilityButtons();
+		}
 	}
+
+
+	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
+
+	if (m_SelectedAbility)
+	{
+		m_SelectedAbility->Activate();
+		m_SelectedAbility->Deselect();
+		m_SelectedAbility = nullptr;
+	}
+	else
+	{
+		if (m_UnitShowingAbilities == nullptr && m_RTS_GameState->SelectedUnits.Num() == 1)
+		{
+			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+
+			// TODO: Check if unit is specialist here
+			bool unitIsSpecialist = true;//unit->IsSpecialist();
+			if (unitIsSpecialist)
+			{
+				m_UnitShowingAbilities = unit;
+				CreateAbilityButtons();
+			}
+		}
+	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickPressed()
+{
+	if (m_SelectedAbility)
+	{
+		m_SelectedAbility->Deselect();
+		m_SelectedAbility = nullptr;
+	}
+}
+
+void ARTS_PlayerController::ActionSecondaryClickReleased()
+{
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
@@ -353,6 +581,83 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	m_MovingToTarget = true;
 	MoveToTarget();
 }
+void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray)
+{
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
+	}
+	ClearAbilityButtons();
+
+	m_RTS_GameState->SelectedUnits = selectionGroupArray;
+
+	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	{
+		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+
+	if (m_RTS_GameState->SelectedUnits.Num() == 1)
+	{
+		ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+		// TODO: Check if unit is a specialist here
+		bool isSpecialist = true;// unit->IsSpecialist();
+		if (isSpecialist)
+		{
+			m_UnitShowingAbilities = unit;
+			CreateAbilityButtons();
+		}
+	}
+}
+
+void ARTS_PlayerController::ActionSelectionGroup1()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup1()
+{
+	m_RTS_GameState->SelectionGroup1 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup2()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup2()
+{
+	m_RTS_GameState->SelectionGroup2 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup3()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup3()
+{
+	m_RTS_GameState->SelectionGroup3 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup4()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup4()
+{
+	m_RTS_GameState->SelectionGroup4 = m_RTS_GameState->SelectedUnits;
+}
+
+void ARTS_PlayerController::ActionSelectionGroup5()
+{
+	ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
+}
+
+void ARTS_PlayerController::ActionCreateSelectionGroup5()
+{
+	m_RTS_GameState->SelectionGroup5 = m_RTS_GameState->SelectedUnits;
+}
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
 {
@@ -376,6 +681,77 @@ void ARTS_PlayerController::AxisMoveRight(float AxisValue)
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 
 		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
+	}
+}
+
+void ARTS_PlayerController::ClearAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
+		{
+			m_UnitShowingAbilities->AbilityIcons[i].Button = nullptr;
+			m_UnitShowingAbilities->AbilityIcons[i].ProgressBar = nullptr;
+		}
+		m_UnitShowingAbilities = nullptr;
+		m_RTSHUD->ClearAbilityIconsFromCommandCardGrid();
+	}
+}
+
+void ARTS_PlayerController::CreateAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
+		{
+			FAbilityIcon& abilityIcon = m_UnitShowingAbilities->AbilityIcons[i];
+			if (!abilityIcon.Button)
+			{
+				abilityIcon.ProgressBar = m_RTSHUD->ConstructWidget<UProgressBar>();
+				abilityIcon.Button = m_RTSHUD->ConstructWidget<UButton>();
+				int col = i;
+				int row = 1;
+				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
+
+				m_RTSHUD->AddAbilityIconToCommandCardGrid(abilityIcon.Button, abilityIcon.ProgressBar);
+
+				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_UnitShowingAbilities);
+
+				if (i == 0)
+				{
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+				}
+				else if (i == 1)
+				{
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+				}
+				else if (i == 2)
+				{
+					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+				}
+			}
+		}
+	}
+}
+
+void ARTS_PlayerController::UpdateAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
+		{
+			FAbilityIcon& abilityIcon = m_UnitShowingAbilities->AbilityIcons[i];
+			if (abilityIcon.Button && abilityIcon.ProgressBar)
+			{
+				int col = i;
+				int row = 1;
+				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
+				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
+
+				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_UnitShowingAbilities);
+			}
+		}
 	}
 }
 

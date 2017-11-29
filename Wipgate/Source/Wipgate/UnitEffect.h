@@ -5,22 +5,25 @@
 #include "UnitEffect.generated.h"
 
 class UParticleSystem;
+class UParticleSystemComponent;
 
 UENUM(BlueprintType)
 enum class EUnitEffectStat : uint8
 {
-	HEALING 	UMETA(DisplayName = "Healing"),
-	DAMAGE 		UMETA(DisplayName = "Damage"),
+	HEALING 		UMETA(DisplayName = "Healing"),
+	DAMAGE 			UMETA(DisplayName = "Damage"),
+	ARMOR			UMETA(DisplayName = "Armor"),
+	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
 };
 
 UENUM(BlueprintType)
 enum class EUnitEffectType : uint8
 {
-	LINEAR 		UMETA(DisplayName = "Apply gradually over time"),
-	FADING 		UMETA(DisplayName = "Reduce over time"),
-	INTENSIFY 	UMETA(DisplayName = "Increase over time"),
-	AT_START 	UMETA(DisplayName = "Apply at start"),
-	AT_END		UMETA(DisplayName = "Apply at end")
+	OVER_TIME 		UMETA(DisplayName = "Over time"),
+	//FADING 		UMETA(DisplayName = "Reduce over time"),
+	//INTENSIFY 	UMETA(DisplayName = "Increase over time"),
+	INSTANT 	UMETA(DisplayName = "Apply at start"),
+	//AT_END		UMETA(DisplayName = "Apply at end")
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -31,18 +34,36 @@ class WIPGATE_API UUnitEffect : public UUserDefinedStruct
 public:	
 	UUnitEffect() {};
 	
-	void Initialize(EUnitEffectStat stat, EUnitEffectType type, float intensity, float duration);
-	
+	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
+	UFUNCTION(BlueprintCallable)
+	void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant);
+	UFUNCTION(BlueprintCallable)
+	void StartParticleConstant(USceneComponent* comp);
+	void StopParticleConstant();
+
+	//UFUNCTION(BlueprintCallable)
+	//UUnitEffect* GetCopy();
+
 public:
-	float m_Elapsed = 0;
-	bool m_IsFinished = false;
+	float Elapsed = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Status")
+	int Ticks = 0;
+	bool IsFinished = false;
 
-	float m_Intensity;
-	float m_Duration;
-	EUnitEffectStat m_AffectedStat;
-	EUnitEffectType m_Type;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	int Magnitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	float Delay;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	int Duration;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	EUnitEffectStat AffectedStat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	EUnitEffectType Type;
 
-	UParticleSystem* m_StartParticles = nullptr;
-	UParticleSystem* m_DuringParticles = nullptr;
-	UParticleSystem* m_EndParticles = nullptr;
+	UParticleSystem* StartParticles = nullptr;
+	UParticleSystem* TickParticles = nullptr;
+	UParticleSystem* EndParticles = nullptr;
+	UParticleSystem* ConstantParticles = nullptr;
+	UParticleSystemComponent * ParticleComponent = nullptr;
 };

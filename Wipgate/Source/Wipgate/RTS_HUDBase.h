@@ -3,11 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+#include "Runtime/UMG/Public/Components/Image.h"
+#include "Blueprint/WidgetTree.h"
 #include "RTS_HUDBase.generated.h"
 
 class ARTS_PlayerController;
 class ARTS_UnitCharacter;
+class UGridPanel;
+class UButton;
+class UProgressBar;
+
+DECLARE_LOG_CATEGORY_EXTERN(RTS_HUD_BASE_LOG, Log, All);
 
 UCLASS(Blueprintable)
 class WIPGATE_API URTS_HUDBase : public UUserWidget
@@ -15,20 +22,78 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateSelectionBox(FVector2D position, FVector2D size);
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
+
+	template<class T>
+	T* ConstructWidget(TSubclassOf<UWidget> WidgetType = T::StaticClass())
+	{
+		return WidgetTree->ConstructWidget<T>(WidgetType);
+	}
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& selectedUnits);
+		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
-	// TODO: Remove these carefully
+	// Unit icons (shows currently selection)
+	UFUNCTION(BlueprintImplementableEvent)
+		void AddUnitIconToGrid(UImage* Icon);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void RemoveUnitIconFromGrid(UImage* Icon);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateUnitIconProperties(UImage* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+
+	// Ability buttons (command card)
+	UFUNCTION(BlueprintImplementableEvent)
+		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
+
+	// TODO: Make last parameter of type specialst once in C++
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_UnitCharacter* specialist);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ClearAbilityIconsFromCommandCardGrid();
+
+
+
+	// TODO: Remove these two members carefully
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	FVector2D SelectionBoxPosition;
+		FVector2D SelectionBoxPosition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	FVector2D SelectionBoxSize;
+		FVector2D SelectionBoxSize;
+
+	// Unit's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
+		FLinearColor UnitHealthColor_FullHealth = FLinearColor(0.12f, 1.0f, 0.0f, 1.0f);
+
+	// Unit's icon's color when almost dead (blended with Full Helath color when health is less than full but not empty)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
+		FLinearColor UnitHealthColor_LowHealth = FLinearColor(1.0f, 0.03f, 0.0f, 1.0f);
+
+	// The color a unit's icon will be when it is dead
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
+		FLinearColor UnitHealthColor_Dead = FLinearColor(0.22f, 0.22f, 0.22f, 1.0f);
+
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
-	ARTS_PlayerController* PlayerController = nullptr;
+		UGridPanel* SelectedUnitIconGridRef = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Misc")
+		UGridPanel* CommandCardGridRef = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Misc")
+		FMargin UnitIconPadding = FMargin(4.0f);
+
+	UPROPERTY(BlueprintReadWrite, Category = "Misc")
+		ARTS_PlayerController* PlayerController = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Misc")
+		TArray<ARTS_UnitCharacter*> SelectedUnitsRef;
+
+private:
+	FIntPoint m_MaxUnitImageCount;
 
 };

@@ -2,24 +2,25 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Runtime/Core//Public/Math/Vector2D.h"
+#include "Math/Vector2D.h"
 #include "UnitEffect.h"
 #include "Ability.generated.h"
 
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	E_TARGET_UNIT 	UMETA(DisplayName = "Target Unit"),
-	E_TARGET_ENEMY 	UMETA(DisplayName = "Target Enemy"),
-	E_TARGET_ALLY 	UMETA(DisplayName = "Target Ally"),
+	E_TARGET_UNIT 		UMETA(DisplayName = "Target Unit"),
+	E_TARGET_ENEMY 		UMETA(DisplayName = "Target Enemy"),
+	E_TARGET_ALLY 		UMETA(DisplayName = "Target Ally"),
 	E_TARGET_GROUND 	UMETA(DisplayName = "Target Ground"),
+	E_SELF				UMETA(DisplayName = "Self")
 };
 
 UENUM(BlueprintType)
 enum class EAbilityState : uint8
 {
 	E_AVAILABLE 	UMETA(DisplayName = "Available"),
-	E_SELECTED 	UMETA(DisplayName = "Selected"),
+	E_SELECTED 		UMETA(DisplayName = "Selected"),
 	E_ON_COOLDOWN 	UMETA(DisplayName = "On cooldown"),
 };
 
@@ -34,50 +35,48 @@ public:
 	/* sandbox methods */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Activate();
-	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
+		void Passive();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Select();
-	UFUNCTION(BlueprintCallable, Category = "Ability Use Functions")
-		virtual void Passive() {};
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
+		void Deselect();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		EAbilityType Type = EAbilityType::E_TARGET_UNIT;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		EAbilityState State = EAbilityState::E_AVAILABLE;
+
+	/* --- Ability parameters --- */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float CastRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		int Charges;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float Cooldown;
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		float CooldownElapsed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float CooldownPassive;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
+		float CastTime;
+
+	void SetTarget(AActor* Target);
 
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
-		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType type, const int intensity, const int duration);
+		UUnitEffect* CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration);
 
 protected:
-	/* general ability functionality */
-	// get enemies/allies
-	// get nearest
-	// sort near to far
-	// void PlaySound() {};
-	// void SpawnParticle() {};
-	// animation
-
-	///* protected members */
-	//AActor m_Caster;
-	//AActor m_Target;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector2D m_TargetPos;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		int m_Charges;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CooldownActive;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CooldownPassive;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		float m_CastTime;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		EAbilityType m_Type;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
-		EAbilityState m_State = EAbilityState::E_AVAILABLE;
+	/* protected members */
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		AActor* m_Caster;
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		AActor* m_Target;
 
 	virtual void BeginPlay() override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
-
-private:
-	const float m_Interval = 0.5f;
-
 };
