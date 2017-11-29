@@ -274,7 +274,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	FHitResult hitResult;
 	bool groundUnderCursor = false;
 	bool hitResultHit = GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	if (hitResult.bBlockingHit && hitResult.Actor.Get() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
+	if (hitResult.bBlockingHit && hitResult.Actor.IsValid() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
 	{
 		groundUnderCursor = true; // Not 100% accurate but should work for now
 	}
@@ -482,12 +482,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 				{
 					if (unit == m_UnitShowingAbilities)
 					{
-						for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
-						{
-							m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
-						}
-						m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
-						m_UnitShowingAbilities = nullptr;
+						ClearAbilityButtons();
 					}
 					unit->SetSelected(false);
 					m_RTS_GameState->SelectedUnits.Remove(unit);
@@ -507,12 +502,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		if ((m_RTS_GameState->SelectedUnits.Num() != 1) ||
 			(m_RTS_GameState->SelectedUnits[0] != m_UnitShowingAbilities))
 		{
-			for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
-			{
-				m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
-			}
-			m_UnitShowingAbilities = nullptr;
-			m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+			ClearAbilityButtons();
 		}
 	}
 
@@ -530,39 +520,13 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		if (m_UnitShowingAbilities == nullptr && m_RTS_GameState->SelectedUnits.Num() == 1)
 		{
 			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
-			m_UnitShowingAbilities = unit;
 
 			// TODO: Check if unit is specialist here
-			bool unitIsSpecialist = true;
-
+			bool unitIsSpecialist = true;//unit->IsSpecialist();
 			if (unitIsSpecialist)
 			{
-				for (int32 i = 0; i < unit->AbilityButtons.Num(); ++i)
-				{
-					if (!unit->AbilityButtons[i])
-					{
-						unit->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
-						int col = i;
-						int row = 1;
-						FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-						m_RTSHUD->AddAbilityButtonToCommandCardGrid(unit->AbilityButtons[i]);
-
-						m_RTSHUD->UpdateAbilityButtonProperties(unit->AbilityButtons[i], col, row, bgCol);
-
-						if (i == 0)
-						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-						}
-						else if (i == 1)
-						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-						}
-						else if (i == 2)
-						{
-							unit->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
-						}
-					}
-				}
+				m_UnitShowingAbilities = unit;
+				CreateAbilityButtons();
 			}
 		}
 	}
@@ -612,12 +576,25 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& se
 	{
 		m_RTS_GameState->SelectedUnits[i]->SetSelected(false);
 	}
+	ClearAbilityButtons();
 
 	m_RTS_GameState->SelectedUnits = selectionGroupArray;
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
 	{
 		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	}
+
+	if (m_RTS_GameState->SelectedUnits.Num() == 1)
+	{
+		ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+		// TODO: Check if unit is a specialist here
+		bool isSpecialist = true;// unit->IsSpecialist();
+		if (isSpecialist)
+		{
+			m_UnitShowingAbilities = unit;
+			CreateAbilityButtons();
+		}
 	}
 }
 
@@ -693,6 +670,52 @@ void ARTS_PlayerController::AxisMoveRight(float AxisValue)
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 
 		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
+	}
+}
+
+void ARTS_PlayerController::ClearAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
+		{
+			m_UnitShowingAbilities->AbilityButtons[i] = nullptr;
+		}
+		m_UnitShowingAbilities = nullptr;
+		m_RTSHUD->ClearAbilityButtonsFromCommandCardGrid();
+	}
+}
+
+void ARTS_PlayerController::CreateAbilityButtons()
+{
+	if (m_UnitShowingAbilities)
+	{
+		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityButtons.Num(); ++i)
+		{
+			if (!m_UnitShowingAbilities->AbilityButtons[i])
+			{
+				m_UnitShowingAbilities->AbilityButtons[i] = m_RTSHUD->ConstructWidget<UButton>();
+				int col = i;
+				int row = 1;
+				FLinearColor bgCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+				m_RTSHUD->AddAbilityButtonToCommandCardGrid(m_UnitShowingAbilities->AbilityButtons[i]);
+
+				m_RTSHUD->UpdateAbilityButtonProperties(m_UnitShowingAbilities->AbilityButtons[i], col, row, bgCol);
+
+				if (i == 0)
+				{
+					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
+				}
+				else if (i == 1)
+				{
+					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
+				}
+				else if (i == 2)
+				{
+					m_UnitShowingAbilities->AbilityButtons[i]->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+				}
+			}
+		}
 	}
 }
 

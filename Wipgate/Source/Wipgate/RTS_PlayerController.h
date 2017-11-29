@@ -77,6 +77,9 @@ private:
 	void AxisMoveForward(float AxisValue);
 	void AxisMoveRight(float AxisValue);
 
+	void ClearAbilityButtons();
+	void CreateAbilityButtons();
+
 	// TODO: Move these to the general function library
 	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
 	void FVector2DMinMax(FVector2D& vec1, FVector2D& vec2);
