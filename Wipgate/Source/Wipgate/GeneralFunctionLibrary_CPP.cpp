@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GeneralFunctionLibrary_CPP.h"
+#include "EngineGlobals.h"
+#include "Engine/Engine.h"
 
 UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 	const float delay, const int magnitude, const int duration)
@@ -44,4 +46,12 @@ FString UGeneralFunctionLibrary_CPP::GetProjectDescription()
 		GGameIni
 	);
 	return ProjectDescription;
+}
+
+void PrintStringToScreen(FString text)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White, text);
+	}
 }

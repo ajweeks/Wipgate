@@ -7,9 +7,6 @@
 #include "UnitEffect.h"
 #include "GeneralFunctionLibrary_CPP.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class WIPGATE_API UGeneralFunctionLibrary_CPP : public UBlueprintFunctionLibrary
 {
@@ -32,3 +29,6 @@ class WIPGATE_API UGeneralFunctionLibrary_CPP : public UBlueprintFunctionLibrary
 		static FString GetProjectDescription();
 	
 };
+
+// Global C++ only functions
+void PrintStringToScreen(FString text);

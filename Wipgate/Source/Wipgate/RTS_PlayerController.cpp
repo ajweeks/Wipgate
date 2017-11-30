@@ -24,9 +24,7 @@
 #include "RTS_HUDBase.h"
 #include "Ability.h"
 #include "AbilityIcon.h"
-
-
-#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
+#include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY(Wipgate_Log);
 
@@ -396,14 +394,14 @@ void ARTS_PlayerController::ActionMainClickReleased()
 					float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
 					if (unitDist < abilityRange)
 					{
-						print(TEXT("Targetted ground"));
+						PrintStringToScreen(TEXT("Targetted ground"));
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
 						m_SelectedAbility = nullptr;
 					}
 					else
 					{
-						print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						PrintStringToScreen(FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
 					}
 				}
 			}
@@ -425,7 +423,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 					float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
 					if (unitDist < abilityRange)
 					{
-						print(TEXT("Targetted unit"));
+						PrintStringToScreen(TEXT("Targetted unit"));
 						m_SelectedAbility->SetTarget(unitUnderCursor);
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
@@ -433,7 +431,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 					}
 					else
 					{
-						print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						PrintStringToScreen(FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
 					}
 				}
 			}
@@ -458,7 +456,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
 						if (unitDist < abilityRange)
 						{
-							print(TEXT("Targetted friendly"));
+							PrintStringToScreen(TEXT("Targetted friendly"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
@@ -466,7 +464,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						}
 						else
 						{
-							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							PrintStringToScreen(FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
 						}
 					}
 				}
@@ -496,7 +494,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
 						if (unitDist < abilityRange)
 						{
-							print(TEXT("Targetted enemy"));
+							PrintStringToScreen(TEXT("Targetted enemy"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
@@ -504,7 +502,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 						}
 						else
 						{
-							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+							PrintStringToScreen(FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
 						}
 					}
 				}
