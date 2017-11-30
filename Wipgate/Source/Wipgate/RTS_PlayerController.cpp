@@ -278,13 +278,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	}
 
 	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	//bool groundUnderCursor = false;
 	FHitResult hitResult;
-	bool groundUnderCursor = false;
-	bool hitResultHit = GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	if (hitResult.bBlockingHit && hitResult.Actor.IsValid() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
-	{
-		groundUnderCursor = true; // Not 100% accurate but should work for now
-	}
+	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	//if (hitResult.bBlockingHit && hitResult.Actor.IsValid() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
+	//{
+	//	groundUnderCursor = true; // Not 100% accurate but should work for now
+	//}
+	AActor* actorUnderCursor = hitResult.Actor.Get();
+	ARTS_UnitCharacter* unitUnderCursor = nullptr;
 
 	for (auto unit : m_RTS_GameState->Units)
 	{
@@ -329,163 +331,19 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 
 		// Check if unit is under mouse cursor (for single clicks)
-		AActor* actorUnderCursor = hitResult.Actor.Get();
-		bool unitUnderCursor = (actorUnderCursor == unit);
+		bool isThisUnitUnderCursor = (actorUnderCursor == unit);
+
+		if (isThisUnitUnderCursor)
+		{
+			unitUnderCursor = unit;
+		}
 
 		const bool unitIsDead = unit->UnitCoreComponent->IsDead;
 
 		const bool unitWasSelected = unit->IsSelected();
-		bool unitClicked = unitUnderCursor;
-		bool unitDeselected = unitClicked && isShiftDown && unitWasSelected;
+		bool unitDeselected = isThisUnitUnderCursor && isShiftDown && unitWasSelected;
 
-		if (m_SelectedAbility)
-		{
-			EAbilityType abilityType = m_SelectedAbility->Type;
-			EAlignment unitAlignment = unit->UnitCoreComponent->TeamAlignment;
-			const float abilityRange = m_SelectedAbility->CastRange;
-			if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
-			{
-				UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
-			}
-
-			switch (abilityType)
-			{
-			case EAbilityType::E_SELF:
-			{
-				UE_LOG(Wipgate_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
-			} break;
-			case EAbilityType::E_TARGET_GROUND:
-			{
-				if (groundUnderCursor)
-				{
-					if (!m_UnitShowingAbilities)
-					{
-						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
-					}
-					else
-					{
-						float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
-						if (unitDist < abilityRange)
-						{
-							print(TEXT("Targetted ground"));
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
-						}
-						else
-						{
-							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
-						}
-					}
-				}
-				else
-				{
-					// TODO: Play sound indicating invalid target location
-				}
-			} break;
-			case EAbilityType::E_TARGET_UNIT:
-			{
-				if (unitClicked)
-				{
-					if (!m_UnitShowingAbilities)
-					{
-						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before unit click!"));
-					}
-					else
-					{
-						float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-						if (unitDist < abilityRange)
-						{
-							print(TEXT("Targetted unit"));
-							m_SelectedAbility->SetTarget(unit);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
-						}
-						else
-						{
-							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
-						}
-					}
-				}
-				else
-				{
-					// TODO: Play sound indicating invalid target location
-				}
-			} break;
-			case EAbilityType::E_TARGET_ALLY:
-			{
-				if (unitClicked)
-				{
-					if (unitAlignment == EAlignment::E_FRIENDLY)
-					{
-						if (!m_UnitShowingAbilities)
-						{
-							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
-						}
-						else
-						{
-							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-							if (unitDist < abilityRange)
-							{
-								print(TEXT("Targetted friendly"));
-								m_SelectedAbility->SetTarget(unit);
-								m_SelectedAbility->Activate();
-								m_SelectedAbility->Deselect();
-								m_SelectedAbility = nullptr;
-							}
-							else
-							{
-								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
-							}
-						}
-					}
-					else
-					{
-						// TODO: Play sound indicating invalid target location
-					}
-				}
-				else
-				{
-					// TODO: Play sound indicating invalid target location
-				}
-			} break;
-			case EAbilityType::E_TARGET_ENEMY:
-			{
-				if (unitClicked)
-				{
-					if (unitAlignment == EAlignment::E_ENEMY)
-					{
-						if (!m_UnitShowingAbilities)
-						{
-							UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
-						}
-						else
-						{
-							float unitDist = FVector::DistXY(unit->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
-							if (unitDist < abilityRange)
-							{
-								print(TEXT("Targetted enemy"));
-								m_SelectedAbility->SetTarget(unit);
-								m_SelectedAbility->Activate();
-								m_SelectedAbility->Deselect();
-								m_SelectedAbility = nullptr;
-							}
-							else
-							{
-								print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
-							}
-						}
-					}
-					else
-					{
-						// TODO: Play sound indicating invalid target location
-					}
-				}
-			} break;
-			}
-		}
-		else // No ability is selected
+		if (!m_SelectedAbility)
 		{
 			if (!unitIsDead)
 			{
@@ -498,7 +356,7 @@ void ARTS_PlayerController::ActionMainClickReleased()
 					unit->SetSelected(false);
 					m_RTS_GameState->SelectedUnits.Remove(unit);
 				}
-				else if (unitInSelectionBox || unitClicked)
+				else if (unitInSelectionBox || isThisUnitUnderCursor)
 				{
 					unit->SetSelected(true);
 					m_RTS_GameState->SelectedUnits.AddUnique(unit);
@@ -506,6 +364,160 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			}
 		}
 	}
+
+
+
+
+	if (m_SelectedAbility)
+	{
+		EAbilityType abilityType = m_SelectedAbility->Type;
+		const float abilityRange = m_SelectedAbility->CastRange;
+		if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
+		}
+
+		switch (abilityType)
+		{
+		case EAbilityType::E_SELF:
+		{
+			UE_LOG(Wipgate_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
+		} break;
+		case EAbilityType::E_TARGET_GROUND:
+		{
+			if (hitResult.bBlockingHit)
+			{
+				if (!m_UnitShowingAbilities)
+				{
+					UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+				}
+				else
+				{
+					float unitDist = FVector::DistXY(hitResult.ImpactPoint, m_UnitShowingAbilities->GetActorLocation());
+					if (unitDist < abilityRange)
+					{
+						print(TEXT("Targetted ground"));
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
+					else
+					{
+						print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+					}
+				}
+			}
+			else
+			{
+				// TODO: Play sound indicating invalid target location
+			}
+		} break;
+		case EAbilityType::E_TARGET_UNIT:
+		{
+			if (unitUnderCursor)
+			{
+				if (!m_UnitShowingAbilities)
+				{
+					UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before unit click!"));
+				}
+				else
+				{
+					float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+					if (unitDist < abilityRange)
+					{
+						print(TEXT("Targetted unit"));
+						m_SelectedAbility->SetTarget(unitUnderCursor);
+						m_SelectedAbility->Activate();
+						m_SelectedAbility->Deselect();
+						m_SelectedAbility = nullptr;
+					}
+					else
+					{
+						print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+					}
+				}
+			}
+			else
+			{
+				// TODO: Play sound indicating invalid target location
+			}
+		} break;
+		case EAbilityType::E_TARGET_ALLY:
+		{
+			if (unitUnderCursor)
+			{
+				EAlignment unitAlignment = unitUnderCursor->UnitCoreComponent->TeamAlignment;
+				if (unitAlignment == EAlignment::E_FRIENDLY)
+				{
+					if (!m_UnitShowingAbilities)
+					{
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted friendly"));
+							m_SelectedAbility->SetTarget(unitUnderCursor);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			}
+			else
+			{
+				// TODO: Play sound indicating invalid target location
+			}
+		} break;
+		case EAbilityType::E_TARGET_ENEMY:
+		{
+			if (unitUnderCursor)
+			{
+				EAlignment unitAlignment = unitUnderCursor->UnitCoreComponent->TeamAlignment;
+				if (unitAlignment == EAlignment::E_ENEMY)
+				{
+					if (!m_UnitShowingAbilities)
+					{
+						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+					}
+					else
+					{
+						float unitDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_UnitShowingAbilities->GetActorLocation());
+						if (unitDist < abilityRange)
+						{
+							print(TEXT("Targetted enemy"));
+							m_SelectedAbility->SetTarget(unitUnderCursor);
+							m_SelectedAbility->Activate();
+							m_SelectedAbility->Deselect();
+							m_SelectedAbility = nullptr;
+						}
+						else
+						{
+							print(*FString::Printf(TEXT("%f > %f"), unitDist, abilityRange));
+						}
+					}
+				}
+				else
+				{
+					// TODO: Play sound indicating invalid target location
+				}
+			}
+		} break;
+		}
+	}
+
+
 
 	// Ensure unit whos is showing their ability buttons is still selected
 	if (m_UnitShowingAbilities)
@@ -520,15 +532,15 @@ void ARTS_PlayerController::ActionMainClickReleased()
 
 	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
 
-	if (m_SelectedAbility)
+	//if (m_SelectedAbility)
+	//{
+	//	m_SelectedAbility->Activate();
+	//	m_SelectedAbility->Deselect();
+	//	m_SelectedAbility = nullptr;
+	//}
+	//else
 	{
-		m_SelectedAbility->Activate();
-		m_SelectedAbility->Deselect();
-		m_SelectedAbility = nullptr;
-	}
-	else
-	{
-		if (m_UnitShowingAbilities == nullptr && m_RTS_GameState->SelectedUnits.Num() == 1)
+		if (!m_SelectedAbility && !m_UnitShowingAbilities && m_RTS_GameState->SelectedUnits.Num() == 1)
 		{
 			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
 
