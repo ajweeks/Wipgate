@@ -113,6 +113,16 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 		effect->StopParticleConstant();
 }
 
+void ARTS_UnitCharacter::DisableDebug()
+{
+	for (UStaticMeshComponent* debugMesh : DebugMeshes)
+	{
+		UActorComponent* actor = Cast<UActorComponent>(debugMesh);
+		actor->DestroyComponent();
+	}
+	DebugMeshes.Empty();
+}
+
 void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 {
 	if (effect->Elapsed > EFFECT_INTERVAL)
