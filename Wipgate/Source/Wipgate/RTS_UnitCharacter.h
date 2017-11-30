@@ -40,6 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void RemoveUnitEffect(UUnitEffect* effect);
 
+	UFUNCTION(BlueprintCallable, Category = "Debug")
+	void DisableDebug();
+
 public:
 	/* Public blueprint editable variables */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
@@ -63,6 +66,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowSelectionBox = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	TArray<UStaticMeshComponent*> DebugMeshes;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
