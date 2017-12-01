@@ -81,12 +81,6 @@ private:
 	void CreateAbilityButtons();
 	void UpdateAbilityButtons();
 
-	// TODO: Move these to the general function library
-	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
-	void FVector2DMinMax(FVector2D& vec1, FVector2D& vec2);
-	void FVectorMinMax(FVector& vec1, FVector& vec2);
-	FVector2D GetNormalizedMousePosition() const;
-	FVector2D GetMousePositionVector2D();
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
 	void MoveToTarget();

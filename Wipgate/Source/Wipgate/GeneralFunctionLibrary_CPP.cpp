@@ -3,6 +3,7 @@
 #include "GeneralFunctionLibrary_CPP.h"
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 	const float delay, const int magnitude, const int duration)
@@ -46,6 +47,59 @@ FString UGeneralFunctionLibrary_CPP::GetProjectDescription()
 		GGameIni
 	);
 	return ProjectDescription;
+}
+
+void UGeneralFunctionLibrary_CPP::FVector2DMinMax(FVector2D& vec1, FVector2D& vec2)
+{
+	FVector2D vec1Copy = vec1;
+	FVector2D vec2Copy = vec2;
+
+	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
+	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+
+	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
+	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+}
+
+void UGeneralFunctionLibrary_CPP::FVectorMinMax(FVector& vec1, FVector& vec2)
+{
+	FVector vec1Copy = vec1;
+	FVector vec2Copy = vec2;
+
+	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
+	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
+	vec1.Z = FMath::Min(vec1Copy.Z, vec2Copy.Z);
+
+	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
+	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
+	vec2.Z = FMath::Max(vec1Copy.Z, vec2Copy.Z);
+}
+
+bool UGeneralFunctionLibrary_CPP::PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax)
+{
+	bool result = ((point.X > boundsMin.X && point.X < boundsMax.X) &&
+		(point.Y > boundsMin.Y && point.Y < boundsMax.Y));
+	return result;
+}
+
+FVector2D UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(APlayerController* playerController)
+{
+	float mouseX, mouseY;
+	playerController->GetMousePosition(mouseX, mouseY);
+
+	int32 viewportSizeX, viewportSizeY;
+	playerController->GetViewportSize(viewportSizeX, viewportSizeY);
+
+	FVector2D result(mouseX / (float)viewportSizeX,
+		mouseY / (float)viewportSizeY);
+	return result;
+}
+
+FVector2D UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(APlayerController* playerController)
+{
+	FVector2D result = {};
+	float viewportScaleF = UWidgetLayoutLibrary::GetMousePositionScaledByDPI(playerController, result.X, result.Y);
+	return result;
 }
 
 void PrintStringToScreen(FString text)

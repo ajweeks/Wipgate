@@ -5,7 +5,6 @@
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 #include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/WidgetTree.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
@@ -166,7 +165,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	// Update selection box size if mouse is being dragged
 	if (!m_SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
-		m_ClickEndSS = GetMousePositionVector2D();
+		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
 
 		FVector2D selectionBoxPosition = m_ClickStartSS;
 		FVector2D selectionBoxSize = (m_ClickEndSS - m_ClickStartSS);
@@ -323,10 +322,10 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		unitBoundsMinSS /= viewportScale;
 		unitBoundsMaxSS /= viewportScale;
 
-		bool unitInSelectionBox =
-			PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
-			PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
-
+			unitInSelectionBox =
+				UGeneralFunctionLibrary_CPP::PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
+				UGeneralFunctionLibrary_CPP::PointInBounds2D(unitBoundsMaxSS, selectionBoxMin, selectionBoxMax);
+		}
 
 		// Check if unit is under mouse cursor (for single clicks)
 		bool isThisUnitUnderCursor = (actorUnderCursor == unit);
@@ -779,59 +778,6 @@ void ARTS_PlayerController::AxisMoveForward(float AxisValue)
 	}
 }
 
-bool ARTS_PlayerController::PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax)
-{
-	bool result = ((point.X > boundsMin.X && point.X < boundsMax.X) && 
-				   (point.Y > boundsMin.Y && point.Y < boundsMax.Y));
-	return result;
-}
-
-void ARTS_PlayerController::FVector2DMinMax(FVector2D& vec1, FVector2D& vec2)
-{
-	FVector2D vec1Copy = vec1;
-	FVector2D vec2Copy = vec2;
-
-	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
-	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
-
-	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
-	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
-}
-
-void ARTS_PlayerController::FVectorMinMax(FVector& vec1, FVector& vec2)
-{
-	FVector vec1Copy = vec1;
-	FVector vec2Copy = vec2;
-
-	vec1.X = FMath::Min(vec1Copy.X, vec2Copy.X);
-	vec1.Y = FMath::Min(vec1Copy.Y, vec2Copy.Y);
-	vec1.Z = FMath::Min(vec1Copy.Z, vec2Copy.Z);
-
-	vec2.X = FMath::Max(vec1Copy.X, vec2Copy.X);
-	vec2.Y = FMath::Max(vec1Copy.Y, vec2Copy.Y);
-	vec2.Z = FMath::Max(vec1Copy.Z, vec2Copy.Z);
-}
-
-FVector2D ARTS_PlayerController::GetNormalizedMousePosition() const
-{
-	float mouseX, mouseY;
-	GetMousePosition(mouseX, mouseY);
-
-int32 viewportSizeX, viewportSizeY;
-GetViewportSize(viewportSizeX, viewportSizeY);
-
-FVector2D result(mouseX / (float)viewportSizeX,
-	mouseY / (float)viewportSizeY);
-return result;
-}
-
-FVector2D ARTS_PlayerController::GetMousePositionVector2D()
-{
-	FVector2D result = {};
-	float viewportScaleF = UWidgetLayoutLibrary::GetMousePositionScaledByDPI(this, result.X, result.Y);
-	return result;
-}
-
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)
 {
 	if (m_RTS_CameraPawnSpringArmComponent)
@@ -868,9 +814,9 @@ void ARTS_PlayerController::MoveToTarget()
 
 		FVector unitLocationCopy = unitLocation; // TODO: Is this needed?
 
-		FVectorMinMax(minUnitLocation, unitLocationCopy);
+		UGeneralFunctionLibrary_CPP::FVectorMinMax(minUnitLocation, unitLocationCopy);
 		unitLocationCopy = unitLocation;
-		FVectorMinMax(unitLocationCopy, maxUnitLocation);
+		UGeneralFunctionLibrary_CPP::FVectorMinMax(unitLocationCopy, maxUnitLocation);
 
 		const float unitVelocityMag = unit->GetVelocity().Size();
 		if (unitVelocityMag > maxUnitVelocityMag)
