@@ -17,6 +17,7 @@
 #include "Engine/RendererSettings.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerInput.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "RTS_GameState.h"
@@ -116,8 +117,8 @@ void ARTS_PlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("Main Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClickPressed);
-	InputComponent->BindAction("Main Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
+	InputComponent->BindAction("Primary Click", IE_Pressed, this, &ARTS_PlayerController::ActionMainClickPressed);
+	InputComponent->BindAction("Primary Click", IE_Released, this, &ARTS_PlayerController::ActionMainClickReleased);
 	InputComponent->BindAction("Secondary Click", IE_Pressed, this, &ARTS_PlayerController::ActionSecondaryClickPressed);
 	InputComponent->BindAction("Secondary Click", IE_Released, this, &ARTS_PlayerController::ActionSecondaryClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
@@ -155,6 +156,11 @@ void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
+	if (!m_RTS_GameState ||!m_RTSHUD)
+	{
+		return;
+	}
+
 	if (IsInputKeyDown(EKeys::Escape))
 	{
 		// TODO: Look into alternative to this
@@ -170,13 +176,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		FVector2D selectionBoxPosition = m_ClickStartSS;
 		FVector2D selectionBoxSize = (m_ClickEndSS - m_ClickStartSS);
 
-		if (m_RTSHUD)
-		{
-			m_RTSHUD->UpdateSelectionBox(selectionBoxPosition, selectionBoxSize);
-		}
+		m_RTSHUD->UpdateSelectionBox(selectionBoxPosition, selectionBoxSize);
 	}
 
-	
+
 	// TODO: Find out how to use input mapped key
 	if (IsInputKeyDown(EKeys::SpaceBar))
 	{
@@ -186,19 +189,19 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		MoveToTarget();
 	}
-		// If mouse is at edge of screen, update camera pos
-		/* 
-			These two values need to be checked because Tick can be called
-			before they are set in BeginPlay somehow 
-			TODO: Look into call order - I think this function even gets called in the editor for some reason
-		*/
+	// If mouse is at edge of screen, update camera pos
+	/*
+		These two values need to be checked because Tick can be called
+		before they are set in BeginPlay somehow
+		TODO: Look into call order - I think this function even gets called in the editor for some reason
+	*/
 	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
 		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
 		forwardVec.Z = 0; // Only move along XY plane
 		forwardVec.Normalize();
-	
+
 		float camDistSpeedMultiplier = 0.0f;
 		UWorld* world = GetWorld();
 		if (!world)
@@ -209,8 +212,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 			camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
 		}
-	
-		FVector2D normMousePos = GetNormalizedMousePosition();
+
+		FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
 		if (normMousePos.X > 1.0f - m_EdgeSize)
 		{
 			m_RTS_CameraPawn->AddActorWorldOffset(rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
@@ -219,7 +222,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 			m_RTS_CameraPawn->AddActorWorldOffset(-rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
 		}
-	
+
 		if (normMousePos.Y > 1.0f - m_EdgeSize)
 		{
 			m_RTS_CameraPawn->AddActorWorldOffset(-forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
@@ -233,57 +236,63 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	bool showViewportOnMinimap = true;
 	if (showViewportOnMinimap)
 	{
-
+		// TODO: Implement
 	}
 
-	if (m_UnitShowingAbilities)
+
+	static const auto mainClickKeys = PlayerInput->GetKeysForAction("Primary Click");
+	static const FKey mainClickButton = mainClickKeys[0].Key;
+	const bool isPrimaryClickButtonDown = IsInputKeyDown(mainClickButton);
+	const bool isPrimaryClickButtonClicked = WasInputKeyJustPressed(mainClickButton);
+	const bool isPrimaryClickButtonReleased = WasInputKeyJustReleased(mainClickButton);
+
+	static const auto addToSelectionKeys = PlayerInput->GetKeysForAction("Add To Selection");
+	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
+	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
+	const bool isAddToSelectionKeyPressed = WasInputKeyJustPressed(addToSelectionKey);
+	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
+
+	//if (isAddToSelectionKeyPressed)
+	//{
+	//	// Keep a reference to the selected units when shift is pressed
+	//	SelectedUnitsWhenAddToSelectionKeyPressed = m_RTS_GameState->SelectedUnits;
+	//}
+	//
+	//if (isAddToSelectionKeyReleased)
+	//{
+	//	m_RTS_GameState->SelectedUnits = SelectedUnitsWhenAddToSelectionKeyPressed;
+
+	//	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+	//	{
+	//		m_RTS_GameState->SelectedUnits[i]->SetSelected(true);
+	//	}
+	//}
+	
+	if (!isAddToSelectionKeyDown)
 	{
-		UpdateAbilityButtons();
-	}
-}
-
-void ARTS_PlayerController::ActionMainClickPressed()
-{
-	m_ClickStartSS = GetMousePositionVector2D();
-}
-
-void ARTS_PlayerController::ActionMainClickReleased()
-{
-	if (!m_RTS_GameState || !m_RTSHUD)
-	{
-		return; // Game state hasn't been initialized yet, we can't do anything
-	}
-
-	// Hide selection box when mouse isn't being held
-	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
-
-	// TODO: Use bindable key here
-	const bool isShiftDown = IsInputKeyDown(EKeys::LeftShift);
-
-	if (!m_SelectedAbility)
-	{
-		// Selected units array must be cleared if shift isn't down
-		if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
+		for (int i = 0; i < m_RTS_GameState->Units.Num(); ++i)
 		{
-			for (int i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+			ARTS_UnitCharacter* unit = m_RTS_GameState->Units[i];
+			if (!m_RTS_GameState->SelectedUnits.Contains(unit))
 			{
-				ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
-				selectedUnit->SetSelected(false);
+				unit->SetSelected(false);
 			}
-			m_RTS_GameState->SelectedUnits.Empty();
 		}
 	}
 
-	ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-	//bool groundUnderCursor = false;
+	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
 	FHitResult hitResult;
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	//if (hitResult.bBlockingHit && hitResult.Actor.IsValid() && !hitResult.Actor.Get()->ActorHasTag("Unit"))
-	//{
-	//	groundUnderCursor = true; // Not 100% accurate but should work for now
-	//}
 	AActor* actorUnderCursor = hitResult.Actor.Get();
 	ARTS_UnitCharacter* unitUnderCursor = nullptr;
+
+	FVector2D selectionBoxMin = m_ClickStartSS;
+	FVector2D selectionBoxMax = m_ClickEndSS;
+	UGeneralFunctionLibrary_CPP::FVector2DMinMax(selectionBoxMin, selectionBoxMax);
+
+	FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>();
+	float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
 
 	for (auto unit : m_RTS_GameState->Units)
 	{
@@ -300,27 +309,22 @@ void ARTS_PlayerController::ActionMainClickReleased()
 			UE_LOG(Wipgate_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
 		}
 
-		// Check if this unit's min or max bounding box points lie within the selection box
-		FVector unitBoundsMinWS = unitLocation - unit->SelectionHitBox;
-		FVector2D unitBoundsMinSS;
-		ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
+		bool unitInSelectionBox = false;
+		if (isPrimaryClickButtonDown)
+		{
+			// Check if this unit's min or max bounding box points lie within the selection box
+			FVector unitBoundsMinWS = unitLocation - unit->SelectionHitBox;
+			FVector2D unitBoundsMinSS;
+			ProjectWorldLocationToScreen(unitBoundsMinWS, unitBoundsMinSS, true);
 
-		FVector unitBoundsMaxWS = unitLocation + unit->SelectionHitBox;
-		FVector2D unitBoundsMaxSS;
-		ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
+			FVector unitBoundsMaxWS = unitLocation + unit->SelectionHitBox;
+			FVector2D unitBoundsMaxSS;
+			ProjectWorldLocationToScreen(unitBoundsMaxWS, unitBoundsMaxSS, true);
 
-		FVector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
+			UGeneralFunctionLibrary_CPP::FVector2DMinMax(unitBoundsMinSS, unitBoundsMaxSS);
 
-		FVector2D selectionBoxMin = m_ClickStartSS;
-		FVector2D selectionBoxMax = m_ClickEndSS;
-		FVector2DMinMax(selectionBoxMin, selectionBoxMax);
-
-		FVector2D viewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-		const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
-		float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
-
-		unitBoundsMinSS /= viewportScale;
-		unitBoundsMaxSS /= viewportScale;
+			unitBoundsMinSS /= viewportScale;
+			unitBoundsMaxSS /= viewportScale;
 
 			unitInSelectionBox =
 				UGeneralFunctionLibrary_CPP::PointInBounds2D(unitBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
@@ -338,32 +342,82 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		const bool unitIsDead = unit->UnitCoreComponent->IsDead;
 
 		const bool unitWasSelected = unit->IsSelected();
-		bool unitDeselected = isThisUnitUnderCursor && isShiftDown && unitWasSelected;
+		bool unitDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && unitWasSelected && isPrimaryClickButtonClicked;
+		bool unitWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !unitWasSelected;
 
+		//if (unit->HoveredOver && !isThisUnitUnderCursor && !unitInSelectionBox)
+		//{
+		//	unit->SetSelected(false);
+		//	if (m_RTS_GameState->SelectedUnits.Contains(unit))
+		//	{
+		//		m_RTS_GameState->SelectedUnits.Remove(unit);
+		//	}
+		//}
+		
 		if (!m_SelectedAbility)
 		{
 			if (!unitIsDead)
 			{
 				if (unitDeselected)
 				{
-					if (unit == m_UnitShowingAbilities)
-					{
-						ClearAbilityButtons();
-					}
-					unit->SetSelected(false);
 					m_RTS_GameState->SelectedUnits.Remove(unit);
+					unit->SetSelected(false);
 				}
 				else if (unitInSelectionBox || isThisUnitUnderCursor)
 				{
-					unit->SetSelected(true);
-					m_RTS_GameState->SelectedUnits.AddUnique(unit);
+					if (!unitWasLikelyDeselectedLastFrame)
+					{
+						unit->SetSelected(true);
+
+						if (!isPrimaryClickButtonDown)
+						{
+							unit->HoveredOver = true;
+						}
+
+						if ((isAddToSelectionKeyDown && !isPrimaryClickButtonReleased))
+						{
+							m_RTS_GameState->SelectedUnits.AddUnique(unit);
+
+						}
+					}
+				}
+				else
+				{
+					if (isPrimaryClickButtonDown && !isAddToSelectionKeyDown && m_RTS_GameState->SelectedUnits.Contains(unit))
+					{
+						unit->SetSelected(false);
+					}
 				}
 			}
 		}
 	}
 
+	if (m_UnitShowingAbilities)
+	{
+		UpdateAbilityButtons();
+	}
+}
 
+void ARTS_PlayerController::ActionMainClickPressed()
+{
+	m_ClickStartSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
+}
 
+void ARTS_PlayerController::ActionMainClickReleased()
+{
+	if (!m_RTS_GameState || !m_RTSHUD)
+	{
+		return; // Game state hasn't been initialized yet, we can't do anything
+	}
+
+	// Hide selection box when mouse isn't being held
+	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
+
+	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult hitResult;
+	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	AActor* actorUnderCursor = hitResult.Actor.Get();
+	ARTS_UnitCharacter* unitUnderCursor = nullptr;
 
 	if (m_SelectedAbility)
 	{
@@ -514,7 +568,24 @@ void ARTS_PlayerController::ActionMainClickReleased()
 		}
 	}
 
+	static const auto addToSelectionKeys = PlayerInput->GetKeysForAction("Add To Selection");
+	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
+	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
 
+	if (!isAddToSelectionKeyDown)
+	{
+		m_RTS_GameState->SelectedUnits.Empty();
+	}
+
+	for (size_t i = 0; i < m_RTS_GameState->Units.Num(); i++)
+	{
+		ARTS_UnitCharacter* unit = m_RTS_GameState->Units[i];
+
+		if (unit->IsSelected())
+		{
+			m_RTS_GameState->SelectedUnits.AddUnique(unit);
+		}
+	}
 
 	// Ensure unit whos is showing their ability buttons is still selected
 	if (m_UnitShowingAbilities)
@@ -527,27 +598,34 @@ void ARTS_PlayerController::ActionMainClickReleased()
 	}
 
 
+	/*
+		if (!m_SelectedAbility)
+		{
+			// Selected units array must be cleared if shift isn't down
+			if (!isShiftDown && m_RTS_GameState->SelectedUnits.Num() > 0)
+			{
+				for (int i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
+				{
+					ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedUnits[i];
+					selectedUnit->SetSelected(false);
+				}
+				//m_RTS_GameState->SelectedUnits.Empty();
+			}
+		}
+	*/
+	
 	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
 
-	//if (m_SelectedAbility)
-	//{
-	//	m_SelectedAbility->Activate();
-	//	m_SelectedAbility->Deselect();
-	//	m_SelectedAbility = nullptr;
-	//}
-	//else
+	if (!m_SelectedAbility && !m_UnitShowingAbilities && m_RTS_GameState->SelectedUnits.Num() == 1)
 	{
-		if (!m_SelectedAbility && !m_UnitShowingAbilities && m_RTS_GameState->SelectedUnits.Num() == 1)
-		{
-			ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
+		ARTS_UnitCharacter* unit = m_RTS_GameState->SelectedUnits[0];
 
-			// TODO: Check if unit is specialist here
-			bool unitIsSpecialist = true;//unit->IsSpecialist();
-			if (unitIsSpecialist)
-			{
-				m_UnitShowingAbilities = unit;
-				CreateAbilityButtons();
-			}
+		// TODO: Check if unit is specialist here
+		bool unitIsSpecialist = true;//unit->IsSpecialist();
+		if (unitIsSpecialist)
+		{
+			m_UnitShowingAbilities = unit;
+			CreateAbilityButtons();
 		}
 	}
 }
@@ -616,6 +694,8 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& se
 			CreateAbilityButtons();
 		}
 	}
+
+	m_RTSHUD->UpdateSelectedUnits(m_RTS_GameState->SelectedUnits);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup1()

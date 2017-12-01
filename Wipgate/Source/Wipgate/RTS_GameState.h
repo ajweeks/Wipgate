@@ -15,7 +15,6 @@ class WIPGATE_API ARTS_GameState : public AGameState
 	GENERATED_BODY()
 	
 public:
-	//FUNCTIONS
 	UFUNCTION(BlueprintCallable)
 		void RemoveUnit(ARTS_UnitCharacter* unit);
 

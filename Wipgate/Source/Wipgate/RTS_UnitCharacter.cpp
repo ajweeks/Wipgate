@@ -16,6 +16,10 @@ ARTS_UnitCharacter::ARTS_UnitCharacter()
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 }
 
+ARTS_UnitCharacter::~ARTS_UnitCharacter()
+{
+}
+
 void ARTS_UnitCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
