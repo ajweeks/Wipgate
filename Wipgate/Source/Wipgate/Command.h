@@ -4,66 +4,105 @@
 #include "Command.generated.h"
 
 class AAbility;
+class ARTS_Entity;
 
-UCLASS()
+UENUM(BlueprintType)
+enum class ECOMMAND_TYPE : uint8
+{
+	NONE 					UMETA(DisplayName = "None"),
+	STOP 					UMETA(DisplayName = "Stop"),
+	MOVE_TO_LOCATION 		UMETA(DisplayName = "Move To Location"),
+	MOVE_TO_ENTITY 			UMETA(DisplayName = "Move To Entity"),
+	ATTACK_MOVE 			UMETA(DisplayName = "Attack Move"),
+	PATROL 					UMETA(DisplayName = "Patrol"),
+	ATTACK 					UMETA(DisplayName = "Attack"),
+	CAST 					UMETA(DisplayName = "Cast Ability"),
+};
+
+
+UCLASS(Blueprintable, BlueprintType)
 class WIPGATE_API UCommand : public UObject
 {
 	GENERATED_BODY()
 public:
 	UCommand() {}
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
-		void Execute();
+	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
+	//	void Execute();
 
 	UPROPERTY(BlueprintReadWrite)
-		bool IsComplete = false;
+		bool IsCompleted = false;
+	UPROPERTY(BlueprintReadWrite)
+		ECOMMAND_TYPE Type = ECOMMAND_TYPE::NONE;
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class WIPGATE_API UCommand_Stop : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Stop() {}
+	UCommand_Stop() 
+	{ Type = ECOMMAND_TYPE::STOP; }
 };
 
 
-UCLASS()
-class WIPGATE_API UCommand_Move : public UCommand
+UCLASS(Blueprintable)
+class WIPGATE_API UCommand_MoveToLocation : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Move(FVector target) : Target(target) {}
+	UCommand_MoveToLocation(FVector target) : Target(target) 
+	{ Type = ECOMMAND_TYPE::MOVE_TO_LOCATION; }
 	
 	UPROPERTY(BlueprintReadWrite)
 		FVector Target;
 
 private:
-	UCommand_Move() {}
+	UCommand_MoveToLocation() 
+	{ Type = ECOMMAND_TYPE::MOVE_TO_LOCATION; }
+};
+
+UCLASS(Blueprintable)
+class WIPGATE_API UCommand_MoveToEntity : public UCommand
+{
+	GENERATED_BODY()
+public:
+	UCommand_MoveToEntity(ARTS_Entity* target) : Target(target) 
+	{ Type = ECOMMAND_TYPE::MOVE_TO_ENTITY; }
+
+	UPROPERTY(BlueprintReadWrite)
+		ARTS_Entity* Target;
+
+private:
+	UCommand_MoveToEntity() 
+	{ Type = ECOMMAND_TYPE::MOVE_TO_ENTITY; }
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class WIPGATE_API UCommand_AttackMove : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_AttackMove(FVector target) : Target(target) {}
+	UCommand_AttackMove(FVector target) : Target(target) 
+	{ Type = ECOMMAND_TYPE::ATTACK_MOVE; }
 
 	UPROPERTY(BlueprintReadWrite)
 		FVector Target;
 
 private:
-	UCommand_AttackMove() {}
+	UCommand_AttackMove() 
+	{ Type = ECOMMAND_TYPE::ATTACK_MOVE; }
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class WIPGATE_API UCommand_Patrol : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Patrol(FVector current, FVector target) : Current(current), Target(target) {}
+	UCommand_Patrol(FVector current, FVector target) : Current(current), Target(target)
+	{ Type = ECOMMAND_TYPE::PATROL; }
 
 	UPROPERTY(BlueprintReadWrite)
 		FVector Current;
@@ -71,36 +110,40 @@ public:
 		FVector Target;
 
 private:
-	UCommand_Patrol() {}
+	UCommand_Patrol()
+	{ Type = ECOMMAND_TYPE::PATROL; }
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class WIPGATE_API UCommand_Attack : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Attack() {} // entity target
+	UCommand_Attack(ARTS_Entity* target) : Target(target)
+	{ Type = ECOMMAND_TYPE::ATTACK; } 
 
-	// entity target
-	//UPROPERTY(BlueprintReadWrite)
-	//	FVector Target;
+	UPROPERTY(BlueprintReadWrite)
+		ARTS_Entity* Target;
 
-//private:
-	//UCommand_Attack() {}
+private:
+	UCommand_Attack()
+	{ Type = ECOMMAND_TYPE::ATTACK; }
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class WIPGATE_API UCommand_Cast : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Cast(AAbility* ability) : Ability(ability) {}
+	UCommand_Cast(AAbility* ability) : Ability(ability) 
+	{ Type = ECOMMAND_TYPE::CAST; }
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* Ability;
 
 private:
-	UCommand_Cast() {}
+	UCommand_Cast() 
+	{ Type = ECOMMAND_TYPE::CAST; }
 };

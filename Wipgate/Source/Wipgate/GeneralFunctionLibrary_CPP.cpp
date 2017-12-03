@@ -10,6 +10,13 @@ UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, con
 	return unitEffect;
 }
 
+UCommand_MoveToLocation * UGeneralFunctionLibrary_CPP::CreateCommand_MoveToLocation(UObject* outer, FVector location)
+{
+	UCommand_MoveToLocation* command = NewObject<UCommand_MoveToLocation>(outer);
+	command->Target = location;
+	return command;
+}
+
 FString UGeneralFunctionLibrary_CPP::GetProjectVersion()
 {
 	FString ProjectVersion;
