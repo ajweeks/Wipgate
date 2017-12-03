@@ -6,6 +6,6 @@ Tile::Tile(const Tile & other)
 	Color = other.Color;
 	X = other.X;
 	Y = other.Y;
-	State = other.State;
+	Type = other.Type;
 //	Parent = other.Parent;
 }

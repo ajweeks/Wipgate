@@ -36,7 +36,8 @@ public:
 	int Y = -1;
 
 	bool IsFilled = true;
-	TileType State;
+	TileType Type;
+	TileRegion Region;
 	FColor Color = FColor::Black;
 
 	// TODO: parent to lowest subgrid (street, block or intersection)
