@@ -14,6 +14,8 @@ enum class EUnitEffectStat : uint8
 	DAMAGE 			UMETA(DisplayName = "Damage"),
 	ARMOR			UMETA(DisplayName = "Armor"),
 	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
+	ATTACK_RATE		UMETA(DisplayName = "Attack rate"),
+	ATTACK_DAMAGE	UMETA(DisplayName = "Attack damage"),
 };
 
 UENUM(BlueprintType)
