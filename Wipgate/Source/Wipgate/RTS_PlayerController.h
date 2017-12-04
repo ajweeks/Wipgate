@@ -52,6 +52,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AAbility* m_SelectedAbility = nullptr;
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateAbilityButtons(ARTS_UnitCharacter* SpecialistShowingAbilities = nullptr);
+
 private:
 	void ActionMainClickPressed();
 	void ActionMainClickReleased();
@@ -80,9 +83,6 @@ private:
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
 
-public:
-	UFUNCTION(BlueprintCallable)
-	void UpdateAbilityButtons(ARTS_UnitCharacter* SpecialistShowingAbilities = nullptr);
 private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);

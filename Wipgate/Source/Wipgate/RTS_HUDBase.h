@@ -9,6 +9,7 @@
 
 class ARTS_PlayerController;
 class ARTS_UnitCharacter;
+class URTS_UnitIcon;
 class UGridPanel;
 class UButton;
 class UProgressBar;
@@ -24,7 +25,7 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
+		void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
 
 	template<class T>
 	T* ConstructWidget(TSubclassOf<UWidget> WidgetType = T::StaticClass())
@@ -35,28 +36,28 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
-	// Unit icons (shows currently selection)
+	// Unit icon functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddUnitIconToGrid(UButton* Icon);
+		void AddUnitIconToGrid(ARTS_UnitCharacter* Unit);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveUnitIconFromGrid(UButton* Icon);
+		void RemoveUnitIconFromGrid(int32 IconIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateUnitIconProperties(UButton* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+		void UpdateUnitIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
-	// Ability buttons (command card)
+	// Ability button functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
 
-	// TODO: Make last parameter of type specialst once in C++
+	// TODO: Make last parameter of type specialst once ported to C++
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_UnitCharacter* specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
 
-
+	void OnUnitIconPressed(ARTS_UnitCharacter* unit);
 
 	// TODO: Remove these two members carefully
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")

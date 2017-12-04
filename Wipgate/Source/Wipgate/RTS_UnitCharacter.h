@@ -9,8 +9,7 @@
 #include "AbilityIcon.h"
 #include "RTS_UnitCharacter.generated.h"
 
-class UButton;
-class AbilityIcon;
+class URTS_UnitIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
 
@@ -75,7 +74,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
 
-	UButton* Icon = nullptr;
+	URTS_UnitIcon* Icon = nullptr;
+	int32 IconIndex = -1;
 
 	const int NUM_ABILITIES = 3;
 	TArray<FAbilityIcon> AbilityIcons; // Set to nullptrs when not visible

@@ -9,6 +9,8 @@
 #include "Engine/Engine.h"
 
 #include "RTS_UnitCharacter.h"
+#include "RTS_GameState.h"
+#include "RTS_UnitIcon.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 
@@ -35,7 +37,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D iconSize = { 32, 32 };// SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
 		iconSize.X += UnitIconPadding.Left + UnitIconPadding.Right;
 		iconSize.Y += UnitIconPadding.Top + UnitIconPadding.Bottom;
 
@@ -58,19 +60,22 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 	{
 		if (SelectedUnitsRef.Num() > 1)
 		{
-			for (auto oldSelectedUnit : SelectedUnitsRef)
+			for (int32 i = 0; i < SelectedUnitsRef.Num(); ++i)
 			{
-				RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
-				oldSelectedUnit->Icon = nullptr;
+				RemoveUnitIconFromGrid(SelectedUnitsRef[i]->IconIndex);
+				SelectedUnitsRef[i]->Icon = nullptr;
 			}
 		}
 
 		if (SelectedUnits.Num() > 1)
 		{
-			for (auto newSelectedUnit : SelectedUnits)
+			for (int32 i = 0; i < SelectedUnits.Num(); ++i)
 			{
-				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UButton>();
-				AddUnitIconToGrid(newSelectedUnit->Icon);
+				//newSelectedUnit->Icon = WidgetTree->ConstructWidget<URTS_UnitIcon>();
+				{
+					SelectedUnits[i]->IconIndex = i;
+					AddUnitIconToGrid(SelectedUnits[i]);
+				}
 			}
 		}
 
@@ -98,8 +103,15 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 			{
 				color = UnitHealthColor_Dead;
 			}
+			UE_LOG(RTS_HUD_BASE_LOG, Log, TEXT("color: %f, %f, %f"), color.R, color.G, color.B);
 
-			UpdateUnitIconProperties(unit->Icon, col, row, color);
+			UpdateUnitIconProperties(i, col, row, color);
 		}
 	}
+}
+
+void URTS_HUDBase::OnUnitIconPressed(ARTS_UnitCharacter* unit)
+{
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	auto gameState = Cast<ARTS_GameState>(baseGameState);
 }
