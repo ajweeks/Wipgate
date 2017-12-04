@@ -9,7 +9,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Camera/CameraComponent.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -22,15 +24,18 @@ ARTS_Entity::ARTS_Entity()
 	USceneComponent* root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	RootComponent = root;
 
+	//Selection
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
 	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
-
+	
+	//TODO: Move to childclass
 	TestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TestMesh"));
 	TestMesh->SetupAttachment(RootComponent);
 	FRotator rot;
 	rot.Yaw = -90;
 	TestMesh->SetRelativeRotation(rot);
 
+	//UI
 	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
 	BarWidget->SetupAttachment(RootComponent);
 
@@ -39,6 +44,7 @@ ARTS_Entity::ARTS_Entity()
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 
+	//Debug
 	UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
 	innerVision->SetupAttachment(RootComponent);
 	UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
@@ -91,6 +97,25 @@ void ARTS_Entity::BeginPlay()
 
 	if (ShowRange)
 		SetRangeDebug();
+
+	//Bars
+	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
+	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	TArray<UCameraComponent*> cameracomponents;
+	playerPawn->GetComponents(cameracomponents);
+	if (cameracomponents.Num() > 0)
+	{
+		UCameraComponent* camera = cameracomponents[0];
+		FRotator rot = camera->GetComponentRotation();
+
+		BarRotation.Roll = rot.Roll;
+		BarRotation.Pitch = rot.Pitch + 90;
+		BarRotation.Yaw = rot.Yaw + 180;
+	}
+	else
+	{
+		UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+	}
 }
 
 void ARTS_Entity::SetSelected(bool selected)
@@ -102,6 +127,9 @@ void ARTS_Entity::SetSelected(bool selected)
 void ARTS_Entity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	/* Update bar rotation */
+	BarWidget->SetWorldRotation(BarRotation);
 
 	/* Apply effects */
 	for (auto e : UnitEffects)

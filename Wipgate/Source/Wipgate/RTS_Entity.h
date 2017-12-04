@@ -163,6 +163,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	FName MinimapColorParameterName = "None";
 
+	FRotator BarRotation;
+
 	//DEBUG
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowRange = false;
