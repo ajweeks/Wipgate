@@ -2,6 +2,7 @@
 
 #include "RTS_HUDBase.h"
 
+#include "Components/Button.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
 #include "Components/PanelSlot.h"
@@ -68,7 +69,7 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 		{
 			for (auto newSelectedUnit : SelectedUnits)
 			{
-				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UButton>();
 				AddUnitIconToGrid(newSelectedUnit->Icon);
 			}
 		}

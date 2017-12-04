@@ -79,7 +79,11 @@ private:
 
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
-	void UpdateAbilityButtons();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void UpdateAbilityButtons(ARTS_UnitCharacter* SpecialistShowingAbilities = nullptr);
+private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
-#include "Runtime/UMG/Public/Components/Image.h"
 #include "Blueprint/WidgetTree.h"
 #include "RTS_HUDBase.generated.h"
 
@@ -24,6 +23,7 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
 	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
 
 	template<class T>
@@ -37,13 +37,13 @@ public:
 
 	// Unit icons (shows currently selection)
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddUnitIconToGrid(UImage* Icon);
+		void AddUnitIconToGrid(UButton* Icon);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveUnitIconFromGrid(UImage* Icon);
+		void RemoveUnitIconFromGrid(UButton* Icon);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateUnitIconProperties(UImage* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+		void UpdateUnitIconProperties(UButton* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
 	// Ability buttons (command card)
 	UFUNCTION(BlueprintImplementableEvent)

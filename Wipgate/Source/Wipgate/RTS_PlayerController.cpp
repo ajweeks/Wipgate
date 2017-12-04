@@ -668,6 +668,7 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	m_MovingToTarget = true;
 	MoveToTarget();
 }
+
 void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray)
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedUnits.Num(); ++i)
@@ -824,8 +825,13 @@ void ARTS_PlayerController::CreateAbilityButtons()
 	}
 }
 
-void ARTS_PlayerController::UpdateAbilityButtons()
+void ARTS_PlayerController::UpdateAbilityButtons(ARTS_UnitCharacter* SpecialistShowingAbilities)
 {
+	if (SpecialistShowingAbilities)
+	{
+		m_UnitShowingAbilities = SpecialistShowingAbilities;
+	}
+
 	if (m_UnitShowingAbilities)
 	{
 		for (int32 i = 0; i < m_UnitShowingAbilities->AbilityIcons.Num(); ++i)
