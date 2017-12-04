@@ -9,6 +9,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -38,10 +39,15 @@ ARTS_Entity::ARTS_Entity()
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 
-	//TODO: Update for outer and middle range
 	UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
 	innerVision->SetupAttachment(RootComponent);
+	UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
+	attackRange->SetupAttachment(RootComponent);
+	UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
+	outerVision->SetupAttachment(RootComponent);
 	DebugMeshes.Push(innerVision);
+	DebugMeshes.Push(attackRange);
+	DebugMeshes.Push(outerVision);
 }
 
 // Called when the game starts
@@ -66,6 +72,16 @@ void ARTS_Entity::BeginPlay()
 	//TODO: No hardcoding
 	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
 
+	//Set minimap icon color
+	if (MinimapPlaneMaterial)
+	{
+		UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapPlaneMaterial);
+		mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
+	}
+	else
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::BeginPlay() > No minimap material found!"));
+
+
 	SetSelected(false);
 
 	for (auto debugMesh : DebugMeshes)
@@ -74,7 +90,7 @@ void ARTS_Entity::BeginPlay()
 	}
 
 	if (ShowRange)
-		CreateRangeDebug();
+		SetRangeDebug();
 }
 
 void ARTS_Entity::SetSelected(bool selected)
@@ -180,20 +196,86 @@ void ARTS_Entity::DisableDebug()
 	DebugMeshes.Empty();
 }
 
-//TODO: Update for outer and middle range, not hardcoding debug meshes
-void ARTS_Entity::CreateRangeDebug()
+void ARTS_Entity::SetRangeDebug()
 {
+	if (DebugMeshes.Num() < 3)
+	{
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > Not all debug meshes were properly initialized!"));
+		return;
+	}
+
 	UStaticMeshComponent* innerVision = DebugMeshes[0];
+	UStaticMeshComponent* attackRange = DebugMeshes[1];
+	UStaticMeshComponent* outerVision = DebugMeshes[2];
+
 	if (RangeMesh)
+	{
 		innerVision->SetStaticMesh(RangeMesh);
+		attackRange->SetStaticMesh(RangeMesh);
+		outerVision->SetStaticMesh(RangeMesh);
+
+		FVector size;
+
+		size.X = CurrentVisionStats.InnerRange / 50.f;
+		size.Y = size.X;
+		size.Z = RangeHeight;
+		innerVision->SetWorldScale3D(size);
+
+		size.X = CurrentAttackStats.Range / 50.f;
+		size.Y = size.X;
+		attackRange->SetWorldScale3D(size);
+
+		size.X = CurrentVisionStats.OuterRange / 50.f;
+		size.Y = size.X;
+		outerVision->SetWorldScale3D(size);
+	}
 	else
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::CreateRangeDebug > No valid mesh found!"));
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid mesh found!"));
 
 	if (RangeMaterial)
-		innerVision->SetMaterial(0, RangeMaterial);
+	{
+		UMaterialInstanceDynamic* iMaterial = innerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
+		iMaterial->SetVectorParameterValue(RangeColorParameterName, RangeInnerVisionColor);
+		UMaterialInstanceDynamic* aMaterial = attackRange->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
+		aMaterial->SetVectorParameterValue(RangeColorParameterName, RangeAttackColor);
+		UMaterialInstanceDynamic* oMaterial = outerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
+		oMaterial->SetVectorParameterValue(RangeColorParameterName, RangeOuterVisionColor);
+	}
 	else
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::CreateRangeDebug > No valid material found!"));
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid material found!"));
 }
+
+bool ARTS_Entity::ApplyDamage(int damage, bool armor)
+{
+	//Apply the damage
+	if (armor)
+	{
+		int d = damage;
+		d -= CurrentDefenceStats.Armor;
+		CurrentDefenceStats.Health -= FMath::Clamp(d, 1, damage);
+	}
+	else
+	{
+		CurrentDefenceStats.Health -= FMath::Clamp(damage, 1, damage);
+	}
+
+	//Check if character is dead
+	if (CurrentDefenceStats.Health <= 0)
+	{
+		CurrentDefenceStats.Health = 0;
+		Kill();
+		return true;
+	}
+	return false;
+}
+
+void ARTS_Entity::ApplyHealing(int healing)
+{
+	CurrentDefenceStats.Health += healing;
+	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
+		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+}
+
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 {
@@ -211,10 +293,10 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 			CurrentDefenceStats.Armor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
 		case EUnitEffectStat::DAMAGE:
-			//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+			ApplyDamage(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
 			break;
 		case EUnitEffectStat::HEALING:
-			//UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+			ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			break;
@@ -244,11 +326,11 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			break;
 
 		case EUnitEffectStat::DAMAGE:
-			//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
+			ApplyDamage(effect->Magnitude, false);
 			break;
 
 		case EUnitEffectStat::HEALING:
-			//UnitCoreComponent->ApplyHealing(effect->Magnitude);
+			ApplyHealing(effect->Magnitude);
 			break;
 
 		case EUnitEffectStat::MOVEMENT_SPEED:

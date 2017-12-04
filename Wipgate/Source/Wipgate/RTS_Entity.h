@@ -129,7 +129,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	void DisableDebug();
 	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void CreateRangeDebug();
+	void SetRangeDebug();
+
+	bool ApplyDamage(int damage, bool armor);
+	void ApplyHealing(int healing);
+	virtual void Kill() {};
 
 public:
 	/* Public blueprint editable variables */
@@ -153,6 +157,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UStaticMeshComponent* MinimapIcon = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	UMaterial* MinimapPlaneMaterial = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	FName MinimapColorParameterName = "None";
+
 	//DEBUG
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowRange = false;
@@ -172,6 +182,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	UStaticMesh* RangeMesh = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	FName RangeColorParameterName = "None";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	FLinearColor RangeInnerVisionColor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	FLinearColor RangeAttackColor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	FLinearColor RangeOuterVisionColor;
 
 	//STATS
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
