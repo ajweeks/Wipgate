@@ -31,8 +31,6 @@ public:
 	//	void Execute();
 
 	UPROPERTY(BlueprintReadWrite)
-		bool IsCompleted = false;
-	UPROPERTY(BlueprintReadWrite)
 		ECOMMAND_TYPE Type = ECOMMAND_TYPE::NONE;
 };
 
