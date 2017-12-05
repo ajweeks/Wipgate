@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseGrid.h"
+#include "LevelGrid.h"
 
 #include "LevelGenerator.generated.h"
 
@@ -15,21 +15,29 @@ public:
 	~ALevelGenerator() {}
 protected:
 	virtual void BeginPlay() override {};
-
 public:
 	virtual void Tick(float DeltaTime) override {};
 
+	/* --- Initialization --- */
 	UFUNCTION(BlueprintCallable)
 		void SetBasicBlock(UStaticMesh* mesh) { m_Block = mesh; }
 	UFUNCTION(BlueprintCallable)
 		void InitializeBlockout();
+
+	/* --- Generation --- */
 	UFUNCTION(BlueprintCallable)
-		void EmptyRandomTile();
+		void GenerateStreets(const int granularity);
+
+	/* --- Steps --- */
+	UFUNCTION(BlueprintCallable)
+		void ExecuteStep(UStep* step);
+	UFUNCTION(BlueprintCallable)
+		TArray<UStep*> GetSteps() { return m_Grid->GetMainGrid()->GetSteps(); }
 	
 	void UpdateBlock(Tile* tile);
 
 private:
-	BaseGrid* m_Grid = nullptr;
+	LevelGrid* m_Grid = nullptr;
 	UStaticMesh* m_Block;
 	TMap<Tile*, UStaticMeshComponent*> m_BlockOutMap;
 

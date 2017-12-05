@@ -4,6 +4,8 @@
 
 enum TileType
 {
+	FLOOR,
+	WALL,
 	STREET,
 	BLOCK,
 	INTERSECTION,
@@ -29,16 +31,20 @@ public:
 	~Tile() {}
 
 	/* --- Functions --- */
-	FVector2D GetPosition() { return FVector2D(X, Y); }
+	FVector2D GetPosition() const { return FVector2D(X, Y); }
+	TileType GetType() const { return m_Type; }
+	TileRegion GetRegion() const { return m_Region; }
+	void SetType(const TileType type); // Sets type and sets color accordingly
+	void SetRegion(const TileRegion region); // Sets region and sets color accordingly
 
 	/* --- Members --- */
 	int X = -1;
 	int Y = -1;
-
 	bool IsFilled = true;
-	TileType Type;
-	TileRegion Region;
 	FColor Color = FColor::Black;
-
 	// TODO: parent to lowest subgrid (street, block or intersection)
+
+private:
+	TileType m_Type;
+	TileRegion m_Region;
 };
