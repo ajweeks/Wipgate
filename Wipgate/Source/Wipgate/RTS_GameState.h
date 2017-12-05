@@ -16,7 +16,6 @@ class WIPGATE_API ARTS_GameState : public AGameState
 	GENERATED_BODY()
 	
 public:
-	//FUNCTIONS
 	UFUNCTION(BlueprintCallable)
 		void RemoveEntity(ARTS_Entity* Entity);
 

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
-#include "Runtime/UMG/Public/Components/Image.h"
 #include "Blueprint/WidgetTree.h"
 #include "RTS_HUDBase.generated.h"
 
@@ -26,7 +25,8 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	void UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray = true);
+	UFUNCTION(BlueprintCallable)
+		void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
 
 	template<class T>
 	T* ConstructWidget(TSubclassOf<UWidget> WidgetType = T::StaticClass())
@@ -37,17 +37,17 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
-	// Unit icons (shows currently selection)
+	// Unit icon functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddUnitIconToGrid(UImage* Icon);
+		void AddUnitIconToGrid(ARTS_UnitCharacter* Unit);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveUnitIconFromGrid(UImage* Icon);
+		void RemoveUnitIconFromGrid(int32 IconIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateUnitIconProperties(UImage* Icon, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+		void UpdateUnitIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
-	// Ability buttons (command card)
+	// Ability button functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
 
@@ -57,7 +57,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
 
-
+	void OnUnitIconPressed(ARTS_UnitCharacter* unit);
 
 	// TODO: Remove these two members carefully
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")

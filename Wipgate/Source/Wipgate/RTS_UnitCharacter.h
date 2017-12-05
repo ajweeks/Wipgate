@@ -8,8 +8,7 @@
 #include "AbilityIcon.h"
 #include "RTS_UnitCharacter.generated.h"
 
-class UImage;
-class AbilityIcon;
+class URTS_UnitIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Unit_Log, Log, All);
 
@@ -20,6 +19,7 @@ class WIPGATE_API ARTS_UnitCharacter : public ACharacter
 
 public:
 	ARTS_UnitCharacter();
+	~ARTS_UnitCharacter();
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -41,6 +41,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	void DisableDebug();
+
+	bool HoveredOver;
 
 public:
 	/* Public blueprint editable variables */
@@ -68,11 +70,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
 
-	UImage* Icon = nullptr;
+	URTS_UnitIcon* Icon = nullptr;
+	int32 IconIndex = -1;
 
 	const int NUM_ABILITIES = 3;
 	TArray<FAbilityIcon> AbilityIcons; // Set to nullptrs when not visible
-
+	
 private:
 	/* private functions */
 	void ApplyEffectLinear(UUnitEffect* effect);
@@ -81,6 +84,6 @@ private:
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
 	bool Selected;
-	
+
 	const int EFFECT_INTERVAL = 1;
 };

@@ -1,6 +1,9 @@
 
 #include "Ability.h"
 #include "UnitEffect.h"
+#include "Engine/Engine.h"
+
+#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White,text)
 
 AAbility::AAbility()
 {
@@ -27,6 +30,8 @@ void AAbility::BeginPlay()
 void AAbility::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	Passive();
+
+	if (CooldownPassiveElapsed >= CooldownPassive)
+		Passive();
 }
 

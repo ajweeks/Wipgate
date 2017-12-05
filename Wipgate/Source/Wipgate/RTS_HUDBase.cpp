@@ -2,6 +2,7 @@
 
 #include "RTS_HUDBase.h"
 
+#include "Components/Button.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
 #include "Components/PanelSlot.h"
@@ -10,6 +11,8 @@
 #include "RTS_Entity.h"
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
+#include "RTS_GameState.h"
+#include "RTS_UnitIcon.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 
@@ -36,7 +39,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = SelectedEntitiesRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D iconSize = { 32, 32 };// SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
 		iconSize.X += UnitIconPadding.Left + UnitIconPadding.Right;
 		iconSize.Y += UnitIconPadding.Top + UnitIconPadding.Bottom;
 
@@ -97,8 +100,15 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntit
 			{
 				color = UnitHealthColor_Dead;
 			}
+			UE_LOG(RTS_HUD_BASE_LOG, Log, TEXT("color: %f, %f, %f"), color.R, color.G, color.B);
 
 			UpdateUnitIconProperties(entity->Icon, col, row, color);
 		}
 	}
+}
+
+void URTS_HUDBase::OnUnitIconPressed(ARTS_UnitCharacter* unit)
+{
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	auto gameState = Cast<ARTS_GameState>(baseGameState);
 }
