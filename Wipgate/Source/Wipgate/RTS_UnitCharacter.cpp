@@ -93,10 +93,10 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 	switch (effect->AffectedStat)
 	{
 	case EUnitEffectStat::ARMOR:
-		if(effect->Type == EUnitEffectType::OVER_TIME)
-			UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
-			UnitCoreComponent->CurrentArmor -= effect->Magnitude;
+		//if(effect->Type == EUnitEffectType::OVER_TIME)
+			//UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		//else
+			//UnitCoreComponent->CurrentArmor -= effect->Magnitude;
 		break;
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		break;
@@ -136,13 +136,13 @@ void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			//UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
 		case EUnitEffectStat::DAMAGE:
-			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+			//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
 			break;
 		case EUnitEffectStat::HEALING:
-			UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+			//UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			break;
@@ -168,15 +168,15 @@ void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			UnitCoreComponent->CurrentArmor += effect->Magnitude;
+			//UnitCoreComponent->CurrentArmor += effect->Magnitude;
 			break;
 
 		case EUnitEffectStat::DAMAGE:
-			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
+			//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
 			break;
 
 		case EUnitEffectStat::HEALING:
-			UnitCoreComponent->ApplyHealing(effect->Magnitude);
+			//UnitCoreComponent->ApplyHealing(effect->Magnitude);
 			break;
 
 		case EUnitEffectStat::MOVEMENT_SPEED:

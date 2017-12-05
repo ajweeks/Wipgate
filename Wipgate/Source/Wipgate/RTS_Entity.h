@@ -4,15 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "RTS_UnitCoreComponent.h"
-#include "UnitEffect.h"
+
 #include "AbilityIcon.h"
 #include "Engine/DataTable.h"
+
 #include "RTS_Entity.generated.h"
 
 class UImage;
-class AbilityIcon;
 class UWidgetComponent;
+class UMaterial;
+class UUnitEffect;
+class UStaticMeshComponent;
+struct FAbilityIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -34,10 +37,10 @@ struct FAttackStat
 	int Damage = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RateOfFire = 1.f;
+	float RateOfFire = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Range = 250.f;
+	float Range = 250.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -64,6 +67,14 @@ struct FVisionStat
 	float InnerRange = 150;
 };
 
+UENUM(BlueprintType)
+enum class EAlignment : uint8
+{
+	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
+	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
+	E_ENEMY 		UMETA(DisplayName = "Enemy"),
+};
+
 USTRUCT(BlueprintType)
 struct FTeamRow : public FTableRowBase
 {
@@ -72,7 +83,7 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FColor Color = FColor(1, 1, 1, 1);
+	FLinearColor Color = FLinearColor(1, 1, 1, 1);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EAlignment Alignment = EAlignment::E_NEUTRAL;
@@ -87,7 +98,7 @@ struct FTeam
 	FName Name = "Team";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FColor Color = FColor(1, 1, 1, 1);
+	FLinearColor Color = FLinearColor(1, 1, 1, 1);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EAlignment Alignment = EAlignment::E_NEUTRAL;
@@ -117,7 +128,7 @@ public:
 	bool IsSelected() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial() {}
+	virtual void SetTeamMaterial();
 
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
@@ -131,8 +142,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Debug")
 	void SetRangeDebug();
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	bool ApplyDamage(int damage, bool armor);
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ApplyHealing(int healing);
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() {};
 
 public:
@@ -145,10 +159,8 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Selection")
 	UStaticMeshComponent* SelectionStaticMeshComponent = nullptr;
 
-	//MESH
-	//TODO: Move to Unit class
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Test Mesh")
-	USkeletalMeshComponent* TestMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
+	float SelectionBrightness = 5.0f;
 
 	//UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
@@ -156,9 +168,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UStaticMeshComponent* MinimapIcon = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UMaterial* MinimapPlaneMaterial = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	FName MinimapColorParameterName = "None";

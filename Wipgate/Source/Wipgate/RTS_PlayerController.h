@@ -8,12 +8,15 @@
 #include "RTS_PlayerController.generated.h"
 
 class UUserWidget;
-class APawn;
 class UCameraComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
+class APawn;
 class ARTS_GameState;
 class AAbility;
+class ARTS_Entity;
+class ARTS_Unit;
+class ARTS_Specialist;
 
 DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
 
@@ -61,7 +64,7 @@ private:
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
 
-	void ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray);
+	void ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray);
 	void ActionSelectionGroup1();
 	void ActionCreateSelectionGroup1();
 	void ActionSelectionGroup2();
@@ -98,7 +101,7 @@ private:
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
 
-	ARTS_UnitCharacter* m_UnitShowingAbilities = nullptr;
+	ARTS_Specialist* m_SpecialistShowingAbilities = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	bool m_EdgeMovementEnabled = true;

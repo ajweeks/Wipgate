@@ -7,7 +7,9 @@
 #include "Components/PanelSlot.h"
 #include "Engine/Engine.h"
 
-#include "RTS_UnitCharacter.h"
+#include "RTS_Entity.h"
+#include "RTS_Unit.h"
+#include "RTS_Specialist.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 
@@ -27,14 +29,14 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		return;
 	}
 
-	if (SelectedUnitsRef.Num() > 1) // If one unit was selected, there won't be an icon for it
+	if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
 	{
 		FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
 		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedUnitIconGridRef->GetCachedGeometry().GetAbsoluteSize();
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D iconSize = SelectedEntitiesRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
 		iconSize.X += UnitIconPadding.Left + UnitIconPadding.Right;
 		iconSize.Y += UnitIconPadding.Top + UnitIconPadding.Bottom;
 
@@ -44,50 +46,48 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			FMath::TruncToInt(maxSelectedUnitImageCountF.Y) - 1);
 
 		m_MaxUnitImageCount = maxSelectedUnitImageCount;
-		UpdateSelectedUnits(SelectedUnitsRef, false);
+		UpdateSelectedUnits(SelectedEntitiesRef, false);
 	}
 }
 
-void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray)
+void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
 {
-	int32 newSelectedUnitCount = SelectedUnits.Num();
+	int32 newSelectedUnitCount = SelectedEntities.Num();
 	int32 newSelectedUnitIconCount = FMath::Min(newSelectedUnitCount, m_MaxUnitImageCount.X * m_MaxUnitImageCount.Y);
 
 	if (ClearArray)
 	{
-		if (SelectedUnitsRef.Num() > 1)
+		if (SelectedEntitiesRef.Num() > 1)
 		{
-			for (auto oldSelectedUnit : SelectedUnitsRef)
+			for (auto oldSelectedUnit : SelectedEntitiesRef)
 			{
 				RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
 				oldSelectedUnit->Icon = nullptr;
 			}
 		}
 
-		if (SelectedUnits.Num() > 1)
+		if (SelectedEntities.Num() > 1)
 		{
-			for (auto newSelectedUnit : SelectedUnits)
+			for (auto newSelectedUnit : SelectedEntities)
 			{
 				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
 				AddUnitIconToGrid(newSelectedUnit->Icon);
 			}
 		}
 
-		SelectedUnitsRef = SelectedUnits;
+		SelectedEntitiesRef = SelectedEntities;
 	}
 
 	if (newSelectedUnitIconCount > 1)
 	{
 		for (int32 i = 0; i < newSelectedUnitIconCount; ++i)
 		{
-			ARTS_UnitCharacter* unit = SelectedUnitsRef[i];
-			checkSlow(unit);
-			URTS_UnitCoreComponent* unitCoreComponent = unit->UnitCoreComponent;
-			checkSlow(unitCoreComponent);
+			ARTS_Entity* entity = SelectedEntitiesRef[i];
+			checkSlow(entity);
 
 			int col = i % m_MaxUnitImageCount.X;
 			int row = i / m_MaxUnitImageCount.X;
-			float unitHealthNorm = (float)unitCoreComponent->CurrentHealth / (float)unitCoreComponent->BaseHealth;
+			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health/ (float)entity->BaseDefenceStats.Health;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{
@@ -98,7 +98,7 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& Select
 				color = UnitHealthColor_Dead;
 			}
 
-			UpdateUnitIconProperties(unit->Icon, col, row, color);
+			UpdateUnitIconProperties(entity->Icon, col, row, color);
 		}
 	}
 }

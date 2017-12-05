@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "RTS_UnitCoreComponent.h"
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
 #include "RTS_UnitCharacter.generated.h"
@@ -50,9 +49,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
 	float SelectionBrightness = 5.f;
-
-	UPROPERTY(BlueprintReadWrite)
-	URTS_UnitCoreComponent* UnitCoreComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowRange = false;

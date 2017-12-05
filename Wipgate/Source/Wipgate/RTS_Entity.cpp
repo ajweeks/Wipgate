@@ -2,16 +2,20 @@
 
 #include "RTS_Entity.h"
 
-#include "Particles/ParticleSystem.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Engine/DataTable.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
-#include "Camera/PlayerCameraManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Camera/CameraComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+
+#include "UnitEffect.h"
+#include "AbilityIcon.h"
+#include "RTS_Entity.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -27,13 +31,6 @@ ARTS_Entity::ARTS_Entity()
 	//Selection
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
 	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
-	
-	//TODO: Move to childclass
-	TestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TestMesh"));
-	TestMesh->SetupAttachment(RootComponent);
-	FRotator rot;
-	rot.Yaw = -90;
-	TestMesh->SetRelativeRotation(rot);
 
 	//UI
 	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
@@ -78,16 +75,6 @@ void ARTS_Entity::BeginPlay()
 	//TODO: No hardcoding
 	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
 
-	//Set minimap icon color
-	if (MinimapPlaneMaterial)
-	{
-		UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapPlaneMaterial);
-		mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
-	}
-	else
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::BeginPlay() > No minimap material found!"));
-
-
 	SetSelected(false);
 
 	for (auto debugMesh : DebugMeshes)
@@ -116,6 +103,8 @@ void ARTS_Entity::BeginPlay()
 	{
 		UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
 	}
+
+	SetTeamMaterial();
 }
 
 void ARTS_Entity::SetSelected(bool selected)
@@ -167,6 +156,30 @@ void ARTS_Entity::Tick(float DeltaTime)
 bool ARTS_Entity::IsSelected() const
 {
 	return Selected;
+}
+
+void ARTS_Entity::SetTeamMaterial()
+{
+	FLinearColor selectionColorHSV = Team.Color.LinearRGBToHSV();
+	selectionColorHSV.B = SelectionBrightness;
+	FLinearColor selectionColorRGB = selectionColorHSV.HSVToLinearRGB();
+	if (SelectionStaticMeshComponent->GetMaterials().Num() > 0)
+	{
+		UMaterialInstanceDynamic* selectionMatInst = SelectionStaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, SelectionStaticMeshComponent->GetMaterial(0));
+		selectionMatInst->SetVectorParameterValue("EmissiveColor", selectionColorRGB);
+		SelectionStaticMeshComponent->SetVisibility(false);
+	}
+
+	//Set minimap icon color
+	if (MinimapIcon && MinimapIcon->GetMaterials().Num() > 0)
+	{
+		UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
+		mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
+	}
+	else
+	{
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::BeginPlay() > No minimap material found!"));
+	}
 }
 
 TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const

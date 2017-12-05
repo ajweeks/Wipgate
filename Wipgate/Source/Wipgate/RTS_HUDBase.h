@@ -9,7 +9,9 @@
 #include "RTS_HUDBase.generated.h"
 
 class ARTS_PlayerController;
-class ARTS_UnitCharacter;
+class ARTS_Entity;
+class ARTS_Unit;
+class ARTS_Specialist;
 class UGridPanel;
 class UButton;
 class UProgressBar;
@@ -24,7 +26,7 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
+	void UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray = true);
 
 	template<class T>
 	T* ConstructWidget(TSubclassOf<UWidget> WidgetType = T::StaticClass())
@@ -49,9 +51,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
 
-	// TODO: Make last parameter of type specialst once in C++
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_UnitCharacter* specialist);
+		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_Specialist* Specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
@@ -91,7 +92,7 @@ public:
 		ARTS_PlayerController* PlayerController = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
-		TArray<ARTS_UnitCharacter*> SelectedUnitsRef;
+		TArray<ARTS_Entity*> SelectedEntitiesRef;
 
 private:
 	FIntPoint m_MaxUnitImageCount;
