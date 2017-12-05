@@ -56,11 +56,11 @@ public:
 	AAbility* m_SelectedAbility = nullptr;
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateAbilityButtons(ARTS_UnitCharacter* SpecialistShowingAbilities = nullptr);
+	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 private:
-	void ActionMainClickPressed();
-	void ActionMainClickReleased();
+	void ActionPrimaryClickPressed();
+	void ActionPrimaryClickReleased();
 	void ActionSecondaryClickPressed();
 	void ActionSecondaryClickReleased();
 	void ActionMoveFastPressed();

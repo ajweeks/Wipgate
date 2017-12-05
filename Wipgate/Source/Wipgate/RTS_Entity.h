@@ -243,6 +243,7 @@ public:
 	TArray<UUnitEffect*> UnitEffects;
 
 	UImage* Icon = nullptr;
+	int32 IconIndex = -1;
 
 	const int NUM_ABILITIES = 3;
 	TArray<FAbilityIcon> AbilityIcons; // Set to nullptrs when not visible

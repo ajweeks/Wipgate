@@ -6,6 +6,7 @@
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
 #include "Components/PanelSlot.h"
+#include "Components/Image.h"
 #include "Engine/Engine.h"
 
 #include "RTS_Entity.h"
@@ -20,7 +21,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::Tick(MyGeometry, InDeltaTime);
 
-	if (!SelectedUnitIconGridRef)
+	if (!SelectedEntityIconGridRef)
 	{
 		UE_LOG(RTS_HUD_BASE_LOG, Error, TEXT("Selected unit icons grid not set! (Should be set in HUD BP's constructor)"));
 		return;
@@ -35,46 +36,46 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
 	{
 		FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
-		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedUnitIconGridRef->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedEntityIconGridRef->GetCachedGeometry().GetAbsoluteSize();
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
 		FVector2D iconSize = { 32, 32 };// SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
-		iconSize.X += UnitIconPadding.Left + UnitIconPadding.Right;
-		iconSize.Y += UnitIconPadding.Top + UnitIconPadding.Bottom;
+		iconSize.X += EntityIconPadding.Left + EntityIconPadding.Right;
+		iconSize.Y += EntityIconPadding.Top + EntityIconPadding.Bottom;
 
 		FVector2D maxSelectedUnitImageCountF = (selectedUnitsBGImageAbsoluteSize / iconSize);
 		FIntPoint maxSelectedUnitImageCount = FIntPoint(
 			FMath::TruncToInt(maxSelectedUnitImageCountF.X) - 1, 
 			FMath::TruncToInt(maxSelectedUnitImageCountF.Y) - 1);
 
-		m_MaxUnitImageCount = maxSelectedUnitImageCount;
-		UpdateSelectedUnits(SelectedEntitiesRef, false);
+		m_MaxEntityImageCount = maxSelectedUnitImageCount;
+		UpdateSelectedEntities(SelectedEntitiesRef, false);
 	}
 }
 
-void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
+void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
 {
 	int32 newSelectedUnitCount = SelectedEntities.Num();
-	int32 newSelectedUnitIconCount = FMath::Min(newSelectedUnitCount, m_MaxUnitImageCount.X * m_MaxUnitImageCount.Y);
+	int32 newSelectedUnitIconCount = FMath::Min(newSelectedUnitCount, m_MaxEntityImageCount.X * m_MaxEntityImageCount.Y);
 
 	if (ClearArray)
 	{
 		if (SelectedEntitiesRef.Num() > 1)
 		{
-			for (auto oldSelectedUnit : SelectedEntitiesRef)
+			for (auto oldSelectedEntity : SelectedEntitiesRef)
 			{
-				RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
-				oldSelectedUnit->Icon = nullptr;
+				RemoveEntityIconFromGrid(oldSelectedEntity->IconIndex);
+				oldSelectedEntity->Icon = nullptr;
 			}
 		}
 
 		if (SelectedEntities.Num() > 1)
 		{
-			for (auto newSelectedUnit : SelectedEntities)
+			for (auto newSelectedEntity : SelectedEntities)
 			{
-				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-				AddUnitIconToGrid(newSelectedUnit->Icon);
+				newSelectedEntity->Icon = WidgetTree->ConstructWidget<UImage>();
+				AddEntityIconToGrid(newSelectedEntity);
 			}
 		}
 
@@ -88,27 +89,28 @@ void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_Entity*>& SelectedEntit
 			ARTS_Entity* entity = SelectedEntitiesRef[i];
 			checkSlow(entity);
 
-			int col = i % m_MaxUnitImageCount.X;
-			int row = i / m_MaxUnitImageCount.X;
+			int col = i % m_MaxEntityImageCount.X;
+			int row = i / m_MaxEntityImageCount.X;
 			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health/ (float)entity->BaseDefenceStats.Health;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{
-				color = FMath::Lerp(UnitHealthColor_LowHealth, UnitHealthColor_FullHealth, unitHealthNorm);
+				color = FMath::Lerp(EntityIconHealthColor_LowHealth, EntityIconHealthColor_FullHealth, unitHealthNorm);
 			}
 			else
 			{
-				color = UnitHealthColor_Dead;
+				color = EntityIconHealthColor_Dead;
 			}
-			UE_LOG(RTS_HUD_BASE_LOG, Log, TEXT("color: %f, %f, %f"), color.R, color.G, color.B);
 
-			UpdateUnitIconProperties(entity->Icon, col, row, color);
+			UpdateEntityIconProperties(entity->IconIndex, col, row, color);
 		}
 	}
 }
 
-void URTS_HUDBase::OnUnitIconPressed(ARTS_UnitCharacter* unit)
+void URTS_HUDBase::OnEntityIconPressed(ARTS_Entity* Entity)
 {
 	AGameStateBase* baseGameState = GetWorld()->GetGameState();
 	auto gameState = Cast<ARTS_GameState>(baseGameState);
+
+	// TODO: Implement
 }
