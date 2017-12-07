@@ -30,6 +30,7 @@ ARTS_Entity::ARTS_Entity()
 	//Selection
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
 	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
+	SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//UI
 	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
