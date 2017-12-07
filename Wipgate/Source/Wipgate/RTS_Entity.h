@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
+#include "Engine/DataTable.h"
 
 #include "AbilityIcon.h"
-#include "Engine/DataTable.h"
 
 #include "RTS_Entity.generated.h"
 
@@ -111,8 +111,10 @@ enum class EEntityType : uint8
 	E_STRUCTURE 		UMETA(DisplayName = "Static Structure")
 };
 
+
+
 UCLASS()
-class WIPGATE_API ARTS_Entity : public APawn
+class WIPGATE_API ARTS_Entity : public ACharacter
 {
 	GENERATED_BODY()
 

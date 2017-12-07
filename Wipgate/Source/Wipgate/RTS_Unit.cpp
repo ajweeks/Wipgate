@@ -5,25 +5,29 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/CollisionProfile.h"
 
-DEFINE_LOG_CATEGORY(RTS_UNIT_LOG);
+DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
 ARTS_Unit::ARTS_Unit()
 {
-	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	SkeletalMeshComponent->SetupAttachment(RootComponent);
-	FRotator rot;
-	rot.Yaw = -90;
-	SkeletalMeshComponent->SetRelativeRotation(rot);
+	USkeletalMeshComponent* mesh = GetMesh();
+	if (mesh)
+	{
+		FRotator rot;
+		rot.Yaw = -90;
+		mesh->SetRelativeRotation(rot);
+	}
 }
 
 void ARTS_Unit::SetTeamMaterial()
 {
 	ARTS_Entity::SetTeamMaterial();
 
-	if (SkeletalMeshComponent && SkeletalMeshComponent->GetMaterials().Num() > 0)
+	USkeletalMeshComponent* mesh = GetMesh();
+	if (mesh && mesh->GetMaterials().Num() > 0)
 	{
-		UMaterialInstanceDynamic* bodyMatInst = SkeletalMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, SkeletalMeshComponent->GetMaterial(0));
+		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
 		bodyMatInst->SetVectorParameterValue("BodyColor", Team.Color);
 	}
 }

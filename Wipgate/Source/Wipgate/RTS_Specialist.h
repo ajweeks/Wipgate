@@ -12,9 +12,10 @@ UCLASS()
 class WIPGATE_API ARTS_Specialist : public ARTS_Unit
 {
 	GENERATED_BODY()
-	
 public:
 	
+	ARTS_Specialist();
+
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
 	AAbility* AbilityActive;
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")

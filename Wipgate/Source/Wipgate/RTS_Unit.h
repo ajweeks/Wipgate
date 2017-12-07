@@ -8,8 +8,6 @@
 
 class USkeletalMeshComponent;
 
-DECLARE_LOG_CATEGORY_EXTERN(RTS_UNIT_LOG, Log, All);
-
 UCLASS()
 class WIPGATE_API ARTS_Unit : public ARTS_Entity
 {
@@ -21,9 +19,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
-	USkeletalMeshComponent* SkeletalMeshComponent;
-	
 private:
 	
 };

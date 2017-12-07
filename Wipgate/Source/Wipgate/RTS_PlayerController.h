@@ -18,7 +18,7 @@ class ARTS_Entity;
 class ARTS_Unit;
 class ARTS_Specialist;
 
-DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RTS_PlayerController_Log, Log, All);
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController

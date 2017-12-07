@@ -12,6 +12,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -22,11 +23,13 @@ DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 // Sets default values
 ARTS_Entity::ARTS_Entity()
 {
+	//GetCharacterMovement()->SetUpdatedComponent(this);
+
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	USceneComponent* root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	RootComponent = root;
+	//USceneComponent* root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	//RootComponent = root;
 
 	//Selection
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
@@ -72,7 +75,7 @@ void ARTS_Entity::BeginPlay()
 	CurrentDefenceStats = BaseDefenceStats;
 	CurrentVisionStats = BaseVisionStats;
 
-	//TODO: No hardcoding
+	//TODO: Remove hardcoding
 	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
 
 	SetSelected(false);
@@ -169,6 +172,10 @@ void ARTS_Entity::SetTeamMaterial()
 		selectionMatInst->SetVectorParameterValue("EmissiveColor", selectionColorRGB);
 		SelectionStaticMeshComponent->SetVisibility(false);
 	}
+	else
+	{
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("No selection mesh material found!"));
+	}
 
 	//Set minimap icon color
 	if (MinimapIcon && MinimapIcon->GetMaterials().Num() > 0)
@@ -178,7 +185,7 @@ void ARTS_Entity::SetTeamMaterial()
 	}
 	else
 	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::BeginPlay() > No minimap material found!"));
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("No minimap material found!"));
 	}
 }
 

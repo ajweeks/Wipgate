@@ -29,7 +29,7 @@
 #include "RTS_Specialist.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
-DEFINE_LOG_CATEGORY(Wipgate_Log);
+DEFINE_LOG_CATEGORY(RTS_PlayerController_Log);
 
 ARTS_PlayerController::ARTS_PlayerController()
 {
@@ -54,7 +54,7 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Camera pawn doesn't contain a camera component!"));
 	}
 	check(m_RTS_CameraPawnCameraComponent != nullptr);
 
@@ -66,7 +66,7 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a mesh component!"));
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Camera pawn doesn't contain a mesh component!"));
 	}
 	check(m_RTS_CameraPawnMeshComponent != nullptr);
 
@@ -78,7 +78,7 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(Wipgate_Log, Error, TEXT("Camera pawn doesn't contain a spring arm component!"));
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Camera pawn doesn't contain a spring arm component!"));
 	}
 	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
@@ -105,14 +105,14 @@ void ARTS_PlayerController::BeginPlay()
 		}
 		else
 		{
-			UE_LOG(Wipgate_Log, Error, TEXT("Failed to create main HUD widget!"));
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
 		}
 
 		bShowMouseCursor = true;
 	}
 	else
 	{
-		UE_LOG(Wipgate_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
 }
 
@@ -209,7 +209,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		UWorld* world = GetWorld();
 		if (!world)
 		{
-			UE_LOG(Wipgate_Log, Error, TEXT("World not found!"));
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
 		}
 		else
 		{
@@ -310,7 +310,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		if (entity->SelectionHitBox == FVector::ZeroVector)
 		{
-			UE_LOG(Wipgate_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
 		}
 
 		bool entityInSelectionBox = false;
@@ -429,14 +429,14 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		const float abilityRange = m_SelectedAbility->CastRange;
 		if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
 		{
-			UE_LOG(Wipgate_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
 		}
 
 		switch (abilityType)
 		{
 		case EAbilityType::E_SELF:
 		{
-			UE_LOG(Wipgate_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Ability type is SELF but ability was selected! SELF-targeted abilities should be immediately activated."));
 		} break;
 		case EAbilityType::E_TARGET_GROUND:
 		{
@@ -444,7 +444,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (!m_SpecialistShowingAbilities)
 				{
-					UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before ground click!"));
 				}
 				else
 				{
@@ -473,7 +473,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (!m_SpecialistShowingAbilities)
 				{
-					UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before entity click!"));
+					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before entity click!"));
 				}
 				else
 				{
@@ -506,7 +506,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
-						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
 					}
 					else
 					{
@@ -544,7 +544,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
-						UE_LOG(Wipgate_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
 					}
 					else
 					{
