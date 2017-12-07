@@ -4,6 +4,7 @@
 
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 
 ARTS_Structure::ARTS_Structure()
 {
@@ -12,6 +13,12 @@ ARTS_Structure::ARTS_Structure()
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	StaticMeshComponent->SetupAttachment(RootComponent);
+	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//StaticMeshComponent->SetStaticMesh();
+
+	UCapsuleComponent* CapsuleComponent = GetCapsuleComponent();
+	CapsuleComponent->SetSimulatePhysics(true);
+
 }
 
 void ARTS_Structure::SetTeamMaterial()
