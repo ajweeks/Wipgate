@@ -22,7 +22,9 @@ DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 // Sets default values
 ARTS_Entity::ARTS_Entity()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity"));
+
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Selection
@@ -41,10 +43,13 @@ ARTS_Entity::ARTS_Entity()
 	//Debug
 	UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
 	innerVision->SetupAttachment(RootComponent);
+	innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
 	attackRange->SetupAttachment(RootComponent);
+	attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
 	outerVision->SetupAttachment(RootComponent);
+	outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DebugMeshes.Push(innerVision);
 	DebugMeshes.Push(attackRange);
 	DebugMeshes.Push(outerVision);
