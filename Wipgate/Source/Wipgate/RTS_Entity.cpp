@@ -12,7 +12,6 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -23,13 +22,8 @@ DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 // Sets default values
 ARTS_Entity::ARTS_Entity()
 {
-	//GetCharacterMovement()->SetUpdatedComponent(this);
-
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//USceneComponent* root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	//RootComponent = root;
 
 	//Selection
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
