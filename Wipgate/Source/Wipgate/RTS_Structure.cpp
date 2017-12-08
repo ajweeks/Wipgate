@@ -14,7 +14,7 @@ ARTS_Structure::ARTS_Structure()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	StaticMeshComponent->SetupAttachment(RootComponent);
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//StaticMeshComponent->SetStaticMesh();
+	StaticMeshComponent->SetReceivesDecals(false);
 
 	UCapsuleComponent* CapsuleComponent = GetCapsuleComponent();
 	CapsuleComponent->SetSimulatePhysics(true);
