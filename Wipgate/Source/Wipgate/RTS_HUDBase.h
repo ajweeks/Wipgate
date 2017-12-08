@@ -64,11 +64,19 @@ public:
 
 
 	// Selection group icon functions
+	/* 
+		This function should be called once at startup to create all necessary buttons
+		All buttons created will be invisible (and unclickable). Call ShowSelectionGroupIcon
+		to make button visible and clickable
+	*/ 
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddSelectionGroupIconToGrid(int32 Index);
+		void AddSelectionGroupIconsToGrid(int32 Count);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveSelectionGroupIconFromGrid(int32 Index);
+		void ShowSelectionGroupIcon(int32 Index);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSelectionGroupIcon(int32 Index);
 
 
 

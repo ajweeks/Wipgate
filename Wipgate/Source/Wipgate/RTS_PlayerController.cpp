@@ -114,6 +114,8 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
+
+	m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
 }
 
 void ARTS_PlayerController::SetupInputComponent()
@@ -728,14 +730,14 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
 	if (m_RTS_GameState->SelectedEntities.Num() == 0)
 	{
-		m_RTSHUD->RemoveSelectionGroupIconFromGrid(Index - 1);
+		m_RTSHUD->HideSelectionGroupIcon(Index - 1);
 		*SelectionGroupIconCreated = false;
 	}
 	else
 	{
 		if (!(*SelectionGroupIconCreated))
 		{
-			m_RTSHUD->AddSelectionGroupIconToGrid(Index - 1);
+			m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
 			*SelectionGroupIconCreated = true;
 		}
 	}
