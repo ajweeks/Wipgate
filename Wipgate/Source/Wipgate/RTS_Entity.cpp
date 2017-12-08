@@ -16,6 +16,7 @@
 #include "Components/WidgetComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -31,36 +32,67 @@ ARTS_Entity::ARTS_Entity()
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//Selection
-	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
-	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
-	SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
+	// Selection component
+	{
+		SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
+		SelectionStaticMeshComponent->SetupAttachment(RootComponent);
+		SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
+	}
 
-	//UI
-	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
-	BarWidget->SetupAttachment(RootComponent);
-	BarWidget->SetCanEverAffectNavigation(false);
+	// UI components
+	{
+		BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
+		BarWidget->SetupAttachment(RootComponent);
+		BarWidget->SetCanEverAffectNavigation(false);
 
-	MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
-	MinimapIcon->SetupAttachment(RootComponent);
-	MinimapIcon->SetCanEverAffectNavigation(false);
+		MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
+		MinimapIcon->SetupAttachment(RootComponent);
+		MinimapIcon->SetCanEverAffectNavigation(false);
+	}
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 
-	//Debug
-	UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
-	innerVision->SetupAttachment(RootComponent);
-	innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
-	attackRange->SetupAttachment(RootComponent);
-	attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
-	outerVision->SetupAttachment(RootComponent);
-	outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DebugMeshes.Push(innerVision);
-	DebugMeshes.Push(attackRange);
-	DebugMeshes.Push(outerVision);
+	// Vision debugging meshes
+	{
+		RangeInnerVisionColor = FLinearColor(0.0f, 0.9f, 0.0f, 1.0f);
+		RangeAttackColor = FLinearColor(0.9f, 0.0f, 0.0f, 1.0f);
+		RangeOuterVisionColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
+
+		UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
+		innerVision->SetupAttachment(RootComponent);
+		innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		innerVision->SetReceivesDecals(false);
+		innerVision->SetVisibility(false);
+		DebugMeshes.Push(innerVision);
+
+		UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
+		attackRange->SetupAttachment(RootComponent);
+		attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		attackRange->SetReceivesDecals(false);
+		attackRange->SetVisibility(false);
+		DebugMeshes.Push(attackRange);
+
+		UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
+		outerVision->SetupAttachment(RootComponent);
+		outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		outerVision->SetReceivesDecals(false);
+		outerVision->SetVisibility(false);
+		DebugMeshes.Push(outerVision);
+
+		ConstructorHelpers::FObjectFinder<UStaticMesh> cylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+		if (cylinderMesh.Succeeded())
+		{
+			innerVision->SetStaticMesh(cylinderMesh.Object);
+			attackRange->SetStaticMesh(cylinderMesh.Object);
+			outerVision->SetStaticMesh(cylinderMesh.Object);
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Failed to find mesh at \"/Engine/BasicShapes/Cylinder.Cylinder\""));
+		}
+	}
+
 }
 
 // Called when the game starts
