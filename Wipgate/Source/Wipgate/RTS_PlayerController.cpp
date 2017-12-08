@@ -421,7 +421,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	FHitResult hitResult;
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
 	AActor* actorUnderCursor = hitResult.Actor.Get();
-	ARTS_Entity* entityUnderCursor = nullptr;
+	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
 
 	if (m_SelectedAbility)
 	{
@@ -469,7 +469,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_UNIT:
 		{
-			if (entityUnderCursor)
+			if (unitUnderCursor)
 			{
 				if (!m_SpecialistShowingAbilities)
 				{
@@ -477,11 +477,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				}
 				else
 				{
-					float entityDist = FVector::DistXY(entityUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
+					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
 						PrintStringToScreen(TEXT("Targetted entity"));
-						m_SelectedAbility->SetTarget(entityUnderCursor);
+						m_SelectedAbility->SetTarget(unitUnderCursor);
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
 						m_SelectedAbility = nullptr;
@@ -499,9 +499,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ALLY:
 		{
-			if (entityUnderCursor)
+			if (unitUnderCursor)
 			{
-				EAlignment entityAlignment = entityUnderCursor->Team.Alignment;
+				EAlignment entityAlignment = unitUnderCursor->Team.Alignment;
 				if (entityAlignment == EAlignment::E_FRIENDLY)
 				{
 					if (!m_SpecialistShowingAbilities)
@@ -510,11 +510,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					}
 					else
 					{
-						float entityDist = FVector::DistXY(entityUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
+						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
 							PrintStringToScreen(TEXT("Targetted friendly"));
-							m_SelectedAbility->SetTarget(entityUnderCursor);
+							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
 							m_SelectedAbility = nullptr;
@@ -537,9 +537,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ENEMY:
 		{
-			if (entityUnderCursor)
+			if (unitUnderCursor)
 			{
-				EAlignment entityAlignment = entityUnderCursor->Team.Alignment;
+				EAlignment entityAlignment = unitUnderCursor->Team.Alignment;
 				if (entityAlignment == EAlignment::E_ENEMY)
 				{
 					if (!m_SpecialistShowingAbilities)
@@ -548,11 +548,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					}
 					else
 					{
-						float entityDist = FVector::DistXY(entityUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
+						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
 							PrintStringToScreen(TEXT("Targetted enemy"));
-							m_SelectedAbility->SetTarget(entityUnderCursor);
+							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
 							m_SelectedAbility = nullptr;
