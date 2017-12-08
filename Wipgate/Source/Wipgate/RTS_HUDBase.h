@@ -45,6 +45,9 @@ public:
 		void RemoveEntityIconFromGrid(int32 IconIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
+		void ClearEntityIconsFromGrid();
+
+	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateEntityIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
 	// Ability button functions
