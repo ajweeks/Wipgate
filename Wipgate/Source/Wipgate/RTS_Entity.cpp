@@ -17,6 +17,7 @@
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -168,6 +169,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Rate of fire */
 	if (TimerRateOfFire > 0)
 		TimerRateOfFire -= DeltaTime;
+
+	/* Update movement stats */
+	UCharacterMovementComponent* movement = GetCharacterMovement(); 
+	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Update bar rotation */
 	BarWidget->SetWorldRotation(BarRotation);
