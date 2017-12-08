@@ -4,8 +4,6 @@
 
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/CollisionProfile.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -34,5 +32,12 @@ void ARTS_Unit::SetTeamMaterial()
 
 void ARTS_Unit::Kill()
 {
+	ARTS_Entity::Kill();
 
+	USkeletalMeshComponent* skeletalMesh = GetMesh();
+	if (skeletalMesh)
+	{
+		skeletalMesh->SetCollisionProfileName("Ragdoll");
+		skeletalMesh->SetSimulatePhysics(true);
+	}
 }

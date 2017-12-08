@@ -50,13 +50,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
-	UUserWidget* MainHUDInstance;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AAbility* m_SelectedAbility = nullptr;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
+
+	URTS_HUDBase* GetHUD();
 
 private:
 	void ActionPrimaryClickPressed();
@@ -96,6 +96,9 @@ private:
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
+
+	UUserWidget* MainHUDInstance;
+
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
 
