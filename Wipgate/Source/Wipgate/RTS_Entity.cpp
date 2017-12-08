@@ -17,6 +17,7 @@
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -38,16 +39,19 @@ ARTS_Entity::ARTS_Entity()
 		SelectionStaticMeshComponent->SetupAttachment(RootComponent);
 		SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
+		SelectionStaticMeshComponent->SetReceivesDecals(false);
 	}
 
 	// UI components
 	{
 		BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
 		BarWidget->SetupAttachment(RootComponent);
+		BarWidget->SetReceivesDecals(false);
 		BarWidget->SetCanEverAffectNavigation(false);
 
 		MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
 		MinimapIcon->SetupAttachment(RootComponent);
+		MinimapIcon->SetReceivesDecals(false);
 		MinimapIcon->SetCanEverAffectNavigation(false);
 	}
 
@@ -165,6 +169,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Rate of fire */
 	if (TimerRateOfFire > 0)
 		TimerRateOfFire -= DeltaTime;
+
+	/* Update movement stats */
+	UCharacterMovementComponent* movement = GetCharacterMovement(); 
+	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Update bar rotation */
 	BarWidget->SetWorldRotation(BarRotation);
@@ -377,9 +385,10 @@ void ARTS_Entity::Kill()
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
 	{
-		capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SetActorTickEnabled(false);
-		DisableDebug();
+		capsule->DestroyComponent();
+		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//SetActorTickEnabled(false);
+		//DisableDebug();
 	}
 
 	if (Controller)
