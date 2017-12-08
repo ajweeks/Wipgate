@@ -27,7 +27,7 @@ class WIPGATE_API BaseGrid
 public:
 	BaseGrid(const BaseGrid& other);
 	BaseGrid(const int width, const int height, UObject* outer);
-	BaseGrid(TileArr2D& tiles, UObject* outer);
+	BaseGrid(TileArr2D tiles, UObject* outer);
 	virtual ~BaseGrid();
 
 	BaseGrid& operator =(const BaseGrid& other);
@@ -38,6 +38,15 @@ public:
 	vector<Tile*> operator[](const int col) { return m_Tiles[col]; }
 	int GetWidth() const { return m_Width; }
 	int GetHeight() const { return m_Height; }
+
+	void SetMainGrid(BaseGrid* main) { m_MainGrid = main; }
+	void SetParentGrid(BaseGrid* parent) { m_Parent = parent; }
+	BaseGrid* GetMainGrid() { return m_MainGrid; }
+	BaseGrid* GetParent() { return m_Parent; }
+
+	/* --- Random Getters --- */
+	Tile* GetRandomTile();
+	Tile* GetRandomTileWithType(const TileType type);
 
 	/* --- Fillers --- */
 	void SetFilled(Tile* tile, bool isFilled);
@@ -58,6 +67,7 @@ public:
 	vector<Tile*> GetTilesWithTypes(const vector<Tile*> tiles, const vector<TileType> types);
 	vector<Tile*> GetTilesWithRegion(const vector<Tile*> tiles, const TileRegion region);
 	vector<Tile*> GetTilesWithRegions(const vector<Tile*> tiles, const vector<TileRegion> regions);
+	vector<Tile*> GetTilesExcept(vector<Tile*> tiles, Tile* ex);
 
 	bool IsAdjTileWithType(const Tile* tile, const TileType type);
 	bool IsNearTileWithType(const Tile* tile, const TileType type);
@@ -73,8 +83,18 @@ public:
 	Tile * GetRightTile(const Tile * t);
 	Tile * GetTopTile(const Tile * t);
 	Tile * GetBottomTile(const Tile * t);
-
 	vector<Tile*> GetOppositeDirTiles(const Tile* tile, const Direction dir);
+
+	vector<Tile*> GetSubCol(const int col, const int rowStart, const int rowEnd);
+	vector<Tile*> GetSubRow(const int row, const int colStart, const int colEnd);
+
+	/* --- Utility --- */
+	TileArr2D TilesTo2D(vector<Tile*> tiles);
+	void PrintDirectionToScreen(const Direction dir);
+	void LogDirection(const Direction dir);
+
+	/* --- Floodfills --- */
+	vector<Tile*> GetFloodType(Tile* start, const TileType type);
 
 	/* --- Steps --- */
 	virtual void AddStep_Fill(Tile* tile, const bool isFilled);
@@ -87,9 +107,16 @@ public:
 	bool IsWithinBounds(const int x, const int y, const FString logInfo = "");
 	bool IsWithinBounds(const Tile* tile, const FString logInfo = "");
 
+	/* --- Logging --- */
+	void LogTileCoordinates(TileArr2D tiles);
+	void LogTileCoordinates(vector<Tile*> tiles);
+
 protected:
 	int m_Width, m_Height;
 	TileArr2D m_Tiles;
 	TArray<UStep*> m_Steps;
 	UObject* m_Outer;
+
+	BaseGrid* m_MainGrid;
+	BaseGrid* m_Parent;
 };

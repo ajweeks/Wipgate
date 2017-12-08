@@ -1,6 +1,8 @@
 #include "BaseGrid.h"
 #include "Wipgate.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include <algorithm>
+#include <functional>
 
 BaseGrid::BaseGrid(const BaseGrid & other)
 {
@@ -20,15 +22,21 @@ BaseGrid::BaseGrid(const int width, const int height, UObject* outer)
 	}
 }
 
-BaseGrid::BaseGrid(TileArr2D& tiles, UObject* outer)
+BaseGrid::BaseGrid(TileArr2D tiles, UObject* outer)
 	: m_Outer(outer)
 {
 	m_Width = tiles.size();
-	if (!tiles.empty()) {
-		m_Height = tiles[0].size();
+	if (tiles.size() == 0) return;
+	
+	// calculate height based on the longest vector
+	// this way width and height contain the outer limits of the 2D space in case it's not a rectangle (streets/open spaces)
+	int maxHeight = 0;
+	for (auto col : tiles)
+	{
+		if (col.size() > maxHeight)
+			maxHeight = col.size();
 	}
-	else
-		return;
+	m_Height = maxHeight;
 
 	m_Tiles = tiles;
 }
@@ -55,6 +63,20 @@ vector<Tile*> BaseGrid::GetTiles()
 			tiles.push_back(tile);
 	}
 	return tiles;
+}
+
+Tile * BaseGrid::GetRandomTile()
+{
+	vector<Tile*> tiles = GetTiles();
+	if (tiles.empty()) return nullptr;
+	return tiles[rand() % tiles.size()];
+}
+
+Tile * BaseGrid::GetRandomTileWithType(const TileType type)
+{
+	vector<Tile*> tilesWithType = GetTilesWithType(GetTiles(), type);
+	if (tilesWithType.empty()) return nullptr;
+	return tilesWithType[rand() % tilesWithType.size()];
 }
 
 void BaseGrid::SetFilled(Tile * tile, bool isFilled)
@@ -240,6 +262,17 @@ vector<Tile*> BaseGrid::GetTilesWithRegions(const vector<Tile*> tiles, const vec
 	return tilesWithRegion;
 }
 
+vector<Tile*> BaseGrid::GetTilesExcept(vector<Tile*> tiles, Tile * ex)
+{
+	for (auto t : tiles)
+	{
+		auto iter = find(tiles.begin(), tiles.end(), ex);
+		if (iter != tiles.end())
+			tiles.erase(iter);
+	}
+	return tiles;
+}
+
 bool BaseGrid::IsAdjTileWithType(const Tile * tile, const TileType type)
 {
 	for (auto adj : GetAdjacentTiles(tile))
@@ -403,15 +436,159 @@ vector<Tile*> BaseGrid::GetOppositeDirTiles(const Tile * tile, const Direction d
 		temp = GetTileAt(tile, RIGHT);
 		if (temp) opposites.push_back(temp);
 		break;
+	case NO_DIRECTION:
+		UE_LOG(LevelGenerator, Warning, TEXT("Opposite direction is NO_DIRECTION"));
 	default:
 		break;
 	}
 	return opposites;
 }
 
+vector<Tile*> BaseGrid::GetSubCol(const int col, const int rowStart, const int rowEnd)
+{
+	vector<Tile*> subCol;
+	for (size_t i = rowStart; i < rowEnd; i++)
+		subCol.push_back(m_Tiles[col][i]);
+	return subCol;
+}
+
+vector<Tile*> BaseGrid::GetSubRow(const int row, const int colStart, const int colEnd)
+{
+	vector<Tile*> subCol;
+	for (size_t i = colStart; i < colEnd; i++)
+		subCol.push_back(m_Tiles[i][row]);
+	return subCol;
+}
+
+TileArr2D BaseGrid::TilesTo2D(vector<Tile*> tiles)
+{
+	TileArr2D tiles2D = TileArr2D();
+	sort(tiles.begin(), tiles.end(), TileCompare());
+
+	int previousX = tiles[0]->X;
+	tiles2D.push_back(vector<Tile*>());
+	int i = 0;
+	int col = 0;
+	while (i < tiles.size())
+	{
+		if (tiles[i]->X != previousX)
+		{
+			tiles2D.push_back(vector<Tile*>());
+			col++;
+		}
+		tiles2D[col].push_back(tiles[i]);
+
+		previousX = tiles[i]->X;
+		i++;
+	}
+	//LogTileCoordinates(tiles2D);
+	return tiles2D;
+}
+
+void BaseGrid::PrintDirectionToScreen(const Direction dir)
+{
+	switch (dir)
+	{
+	case TOP:
+		PrintStringToScreen("Top");
+		break;
+	case TOP_RIGHT:
+		PrintStringToScreen("Top right");
+		break;
+	case RIGHT:
+		PrintStringToScreen("Right");
+		break;
+	case BOTTOM_RIGHT:
+		PrintStringToScreen("Bottom right");
+		break;
+	case BOTTOM:
+		PrintStringToScreen("Bottom");
+		break;
+	case BOTTOM_LEFT:
+		PrintStringToScreen("Bottom left");
+		break;
+	case LEFT:
+		PrintStringToScreen("Left");
+		break;
+	case TOP_LEFT:
+		PrintStringToScreen("Top left");
+		break;
+	case NO_DIRECTION:
+		PrintStringToScreen("No direction");
+		break;
+	default:
+		break;
+	}
+}
+
+void BaseGrid::LogDirection(const Direction dir)
+{
+	switch (dir)
+	{
+	case TOP:
+		UE_LOG(LevelGenerator, Log, TEXT("Top"));
+		break;
+	case TOP_RIGHT:
+		UE_LOG(LevelGenerator, Log, TEXT("Top right"));
+		break;
+	case RIGHT:
+		UE_LOG(LevelGenerator, Log, TEXT("Right"));
+		break;
+	case BOTTOM_RIGHT:
+		UE_LOG(LevelGenerator, Log, TEXT("Bottom right"));
+		break;
+	case BOTTOM:
+		UE_LOG(LevelGenerator, Log, TEXT("Bottom"));
+		break;
+	case BOTTOM_LEFT:
+		UE_LOG(LevelGenerator, Log, TEXT("Bottom left"));
+		break;
+	case LEFT:
+		UE_LOG(LevelGenerator, Log, TEXT("Left"));
+		break;
+	case TOP_LEFT:
+		UE_LOG(LevelGenerator, Log, TEXT("Top left"));
+		break;
+	case NO_DIRECTION:
+		UE_LOG(LevelGenerator, Log, TEXT("No direction"));
+		break;
+	default:
+		break;
+	}
+}
+
+vector<Tile*> BaseGrid::GetFloodType(Tile * start, const TileType type)
+{
+	TQueue<Tile*> nodeQueue;
+	vector<Tile*> explored;
+	nodeQueue.Enqueue(start);
+
+	while (!nodeQueue.IsEmpty())
+	{
+		Tile* current;
+		nodeQueue.Dequeue(current);
+
+		vector<Tile*> adjacents = GetAdjacentTiles(current);
+		adjacents = GetTilesWithType(adjacents, type);
+
+		for (auto node : adjacents)
+		{
+			// make sure no explored nodes are checked again
+			if (std::find(explored.begin(), explored.end(), node) != explored.end())
+				continue;
+			// mark node as explored
+			explored.push_back(node);
+			// add to queue of nodes to examine
+			nodeQueue.Enqueue(node);
+		}
+	}
+
+	return explored;
+}
+
 Direction BaseGrid::GetTileDirection(const Tile * from, const Tile * to)
 {
-	for (int dirIndex = TOP; dirIndex != TOP_LEFT; dirIndex++)
+	for (int dirIndex = TOP; dirIndex != NO_DIRECTION; dirIndex++)
 	{
 		Direction dir = static_cast<Direction>(dirIndex);
 		if (to == GetTileAt(from, dir))
@@ -448,16 +625,30 @@ Tile * BaseGrid::GetTileAt(const Tile* t, const Direction dir)
 
 void BaseGrid::AddStep_Fill(Tile * tile, const bool isFilled)
 {
-	UStep_Fill* fillStep = NewObject<UStep_Fill>(m_Outer);
-	fillStep->Initialize(tile, isFilled);
-	m_Steps.Add(fillStep);
+	if (m_MainGrid)
+	{
+		if (m_MainGrid == this) {
+			UStep_Fill* fillStep = NewObject<UStep_Fill>(m_Outer);
+			fillStep->Initialize(tile, isFilled);
+			m_Steps.Add(fillStep);
+		}
+		else
+			m_MainGrid->AddStep_Fill(tile, isFilled);
+	}
 }
 
 void BaseGrid::AddStep_Type(Tile * tile, const TileType type)
 {
-	UStep_Type* typeStep = NewObject<UStep_Type>(m_Outer);
-	typeStep->Initialize(tile, type);
-	m_Steps.Add(typeStep);
+	if (m_MainGrid)
+	{
+		if (m_MainGrid == this) {
+			UStep_Type* typeStep = NewObject<UStep_Type>(m_Outer);
+			typeStep->Initialize(tile, type);
+			m_Steps.Add(typeStep);
+		}
+		else
+			m_MainGrid->AddStep_Type(tile, type);
+	}
 }
 
 bool BaseGrid::IsWithinBounds(const FVector2D pos, const FString logInfo)
@@ -481,4 +672,46 @@ bool BaseGrid::IsWithinBounds(const Tile* tile, const FString logInfo)
 	return IsWithinBounds(FVector2D(tile->X, tile->Y), logInfo);
 }
 
+void BaseGrid::LogTileCoordinates(TileArr2D tiles)
+{
+	FString log;
+	log += "GRID COORDINATES [2D]: \n";
 
+	for (auto col : tiles)
+	{
+		for (auto t : col)
+		{
+			if (t)
+			{
+				log += "[";
+				log.AppendInt(t->X);
+				log += ", ";
+				log.AppendInt(t->Y);
+				log += "]";
+			}
+		}
+		log += "\n";
+	}
+
+	UE_LOG(LevelGenerator, Log, TEXT("%s"), *log);
+}
+
+void BaseGrid::LogTileCoordinates(vector<Tile*> tiles)
+{
+	FString log;
+	log += "GRID COORDINATES [1D]: \n";
+
+	for (auto t : tiles)
+	{
+		if (t)
+		{
+			log += "[";
+			log.AppendInt(t->X);
+			log += ", ";
+			log.AppendInt(t->Y);
+			log += "]";
+		}
+	}
+
+	UE_LOG(LevelGenerator, Log, TEXT("%s"), *log);
+}

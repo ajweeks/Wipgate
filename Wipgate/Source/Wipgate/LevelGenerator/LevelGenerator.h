@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "LevelGrid.h"
+#include "LevelBlockout.h"
 
 #include "LevelGenerator.generated.h"
 
@@ -32,14 +33,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ExecuteStep(UStep* step);
 	UFUNCTION(BlueprintCallable)
+		void ClearSteps() { m_Grid->ClearSteps(); }
+	UFUNCTION(BlueprintCallable)
 		TArray<UStep*> GetSteps() { return m_Grid->GetMainGrid()->GetSteps(); }
 	
-	void UpdateBlock(Tile* tile);
+	UFUNCTION(BlueprintCallable)
+		void Reset();
+
+private:
+	void ExecuteSteps();
+
+	void GenerateBaseLayout(LevelGrid* grid, const int granularity);
+	void FlagStreets();
+	void CreateStreetsFromFlagged();
+	void SparsifyStreetsRandom(const int odds);
 
 private:
 	LevelGrid* m_Grid = nullptr;
+	ALevelBlockout* m_Blockout = nullptr;
 	UStaticMesh* m_Block;
-	TMap<Tile*, UStaticMeshComponent*> m_BlockOutMap;
-
-	const int BLOCK_SIZE = 100;
 };

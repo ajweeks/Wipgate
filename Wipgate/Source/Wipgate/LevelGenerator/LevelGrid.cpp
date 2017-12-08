@@ -1,6 +1,8 @@
 #include "LevelGrid.h"
 #include "GeneralFunctionLibrary_CPP.h"
 #include "Wipgate.h"
+#include <algorithm>
+#include "Tile.h"
 
 LevelGrid::LevelGrid(const LevelGrid & other)
 	: BaseGrid(other)
@@ -96,7 +98,7 @@ bool LevelGrid::Split(const int sizeMin)
 bool LevelGrid::SplitDeep(const int sizeMin, int level)
 {
 	// Deep split child grids if the current split was successful
-	if (Split(sizeMin))
+	if (Split(sizeMin + rand() % 4))
 	{
 		for (auto c : m_Children)
 			c->SplitDeep(sizeMin, level++);
@@ -132,30 +134,98 @@ bool LevelGrid::SplitVertical(const int sizeMin, LevelGrid& subLeft, LevelGrid& 
 	return true;
 }
 
-void LevelGrid::AddStep_Fill(Tile * tile, const bool isFilled)
+void LevelGrid::AddStreet(vector<Tile*> tiles)
 {
-	if (m_MainGrid)
-	{
-		if (m_MainGrid == this) {
-			UStep_Fill* fillStep = NewObject<UStep_Fill>(m_Outer);
-			fillStep->Initialize(tile, isFilled);
-			m_Steps.Add(fillStep);
-		}
-		else
-			m_MainGrid->AddStep_Fill(tile, isFilled);
-	}
+	m_Streets.push_back(new Street(TilesTo2D(tiles), m_Outer, m_MainGrid));
 }
 
-void LevelGrid::AddStep_Type(Tile * tile, const TileType type)
+void LevelGrid::RemoveStreet(Street * street)
 {
-	if (m_MainGrid)
+	SetFilledTiles(street->GetTiles(), true);
+	auto it = find(m_Streets.begin(), m_Streets.end(), street);
+	m_Streets.erase(it);
+}
+
+vector<Street*> LevelGrid::GetEdgeStreets()
+{
+	vector<Street*> edgeStreets;
+	for (auto street : m_Streets)
 	{
-		if (m_MainGrid == this) {
-			UStep_Type* typeStep = NewObject<UStep_Type>(m_Outer);
-			typeStep->Initialize(tile, type);
-			m_Steps.Add(typeStep);
-		}
-		else 
-			m_MainGrid->AddStep_Type(tile, type);
+		if (street->IsEdgeStreet())
+			edgeStreets.push_back(street);
 	}
+	return edgeStreets;
+}
+
+vector<Tile*> LevelGrid::FindPathWithoutStreets(Tile* start, Tile* goal, const vector<Street*> illegalStreets)
+{
+	TQueue<Tile*> nodeQueue;
+	vector<Tile*> explored;
+	TMap<Tile*, Tile*> connections;
+	nodeQueue.Enqueue(start);
+
+	while (!nodeQueue.IsEmpty())
+	{
+		Tile* current;
+		nodeQueue.Dequeue(current);
+		if (current == goal)
+		{
+			vector<Tile*> path;
+			while (connections[current] != start)
+			{
+				current = connections[current];
+				path.push_back(current);
+			}
+			return path;
+		}
+
+		vector<Tile*> adjacents = GetAdjacentTiles(current);
+		adjacents = GetTilesFilled(adjacents, false);
+		adjacents = GetTilesFromOtherStreets(adjacents, illegalStreets);
+
+		for (auto node : adjacents)
+		{
+			// make sure no explored nodes are checked again
+			if (std::find(explored.begin(), explored.end(), node) != explored.end())
+				continue;
+
+			// mark node as explored
+			explored.push_back(node);
+			// store reference to previous node
+			connections.Add(node, current);
+			// add to queue of nodes to examine
+			nodeQueue.Enqueue(node);
+		}
+
+	}
+
+	// return empty
+	return vector<Tile*>();
+}
+
+vector<Tile*> LevelGrid::GetTilesFromOtherStreets(const vector<Tile*> tiles, const vector<Street*> illegalStreets)
+{
+	vector<Tile*> otherTiles = tiles;
+	vector<Tile*> illegalTiles;
+
+	for (auto t : tiles)
+	{
+		for (auto street : illegalStreets)
+		{
+			if (street == t->Street)
+				illegalTiles.push_back(t);
+		}
+	}
+
+	//otherTiles.erase(remove_if(begin(otherTiles), end(otherTiles),
+	//	[&](auto x) {return find(begin(illegalTiles), end(illegalTiles), x) != end(illegalTiles); }), end(illegalTiles));
+
+	for (int i = 0; i < illegalTiles.size(); i++)
+	{
+		auto iter = find(otherTiles.begin(), otherTiles.end(), illegalTiles[i]);
+		if (iter != otherTiles.end())
+			otherTiles.erase(iter);
+	}
+
+	return otherTiles;
 }

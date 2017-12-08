@@ -12,19 +12,44 @@ Tile::Tile(const Tile & other)
 //	Parent = other.Parent;
 }
 
+bool Tile::operator <(const Tile& other) const
+{
+	if (X < other.X)
+		return true;
+	if (X > other.X)
+		return false;
+	if (Y < other.Y)
+		return true;
+	if (Y > other.Y)
+		return false;
+	return true;
+}
+
 void Tile::SetType(const TileType type)
 {
 	m_Type = type;
 	switch (type)
 	{
+	case FLAGGED:
+		Color = FColor::Red;
+		break;
 	case FLOOR:
 		Color = FColor::White;
 		break;
 	case WALL:
 		Color = FColor::Black;
 		break;
-	case STREET:
-		Color = FColor::Yellow;
+	case LEVEL_EDGE:
+		Color = FColor::Purple;
+		break;
+	case STREET_HOR:
+		Color = COL_STREET_HOR;
+		break;
+	case STREET_VERT:
+		Color = COL_STREET_VERT;
+		break;
+	case INTERSECTION:
+		Color = FColor::White;
 		break;
 	default:
 		break;
