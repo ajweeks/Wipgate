@@ -678,19 +678,19 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 {
 	switch (Index)
 	{
-	case 1:
+	case 0:
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
 		break;
-	case 2:
+	case 1:
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
 		break;
-	case 3:
+	case 2:
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
 		break;
-	case 4:
+	case 3:
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
 		break;
-	case 5:
+	case 4:
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
 		break;
 	}

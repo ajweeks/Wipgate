@@ -66,6 +66,7 @@ private:
 	void ActionCenterOnSelection();
 
 public:
+	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
 	void ActionSelectionGroup(int32 Index);
 
