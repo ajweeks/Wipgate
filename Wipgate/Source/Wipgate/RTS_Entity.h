@@ -150,7 +150,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	virtual void Kill() {};
+	virtual void Kill();
 
 public:
 	/* Public blueprint editable variables */

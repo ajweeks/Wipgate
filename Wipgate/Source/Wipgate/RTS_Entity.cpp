@@ -12,10 +12,16 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Engine/CollisionProfile.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
 #include "RTS_Entity.h"
+#include "RTS_GameState.h"
+#include "RTS_PlayerController.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -326,6 +332,53 @@ void ARTS_Entity::ApplyHealing(int healing)
 	CurrentDefenceStats.Health += healing;
 	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
 		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+}
+
+void ARTS_Entity::Kill()
+{
+	SetSelected(false);
+
+	UCapsuleComponent* capsule = GetCapsuleComponent();
+	if (capsule)
+	{
+		capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SetActorTickEnabled(false);
+		DisableDebug();
+	}
+
+	if (Controller)
+	{
+		Controller->SetActorTickEnabled(false);
+	}
+
+	if (BarWidget)
+	{
+		BarWidget->DestroyComponent();
+	}
+
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		AGameStateBase* baseGameState = world->GetGameState();
+		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
+		if (baseGameState && castedGameState)
+		{
+			castedGameState->SelectedEntities.Remove(this);
+
+			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
+			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+			if (playerController && rtsPlayerController)
+			{
+				rtsPlayerController->UpdateAbilityButtons();
+				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
+				if (hud)
+				{
+					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+				}
+			}
+		}
+	}
 }
 
 

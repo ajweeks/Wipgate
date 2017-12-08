@@ -833,6 +833,7 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 		m_SpecialistShowingAbilities = SpecialistShowingAbilities;
 	}
 
+	if (m_SpecialistShowingAbilities && m_RTSHUD)
 	{
 		for (int32 i = 0; i < m_SpecialistShowingAbilities->AbilityIcons.Num(); ++i)
 		{
@@ -848,6 +849,11 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 			}
 		}
 	}
+}
+
+URTS_HUDBase* ARTS_PlayerController::GetHUD()
+{
+	return m_RTSHUD;
 }
 
 void ARTS_PlayerController::AxisMoveForward(float AxisValue)
