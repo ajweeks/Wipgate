@@ -124,6 +124,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/* Rate of fire */
+	if (TimerRateOfFire > 0)
+		TimerRateOfFire -= DeltaTime;
+
 	/* Update bar rotation */
 	BarWidget->SetWorldRotation(BarRotation);
 

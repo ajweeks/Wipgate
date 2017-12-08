@@ -4,8 +4,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "UnitEffect.h"
 #include "Command.h"
+#include "RTS_Entity.h"
 #include "GeneralFunctionLibrary_CPP.generated.h"
-
 class APlayerController;
 
 UCLASS()
@@ -22,7 +22,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Commands")
 		static UCommand_MoveToLocation* CreateCommand_MoveToLocation(UObject* outer, FVector location);
-
+	UFUNCTION(BlueprintCallable, Category = "Commands")
+		static UCommand_Attack* CreateCommand_Attack(UObject* outer, ARTS_Entity* target);
 
 	/* --- Project version and naming functions --- */
 	
