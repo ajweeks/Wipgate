@@ -708,7 +708,10 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
-		m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
+		if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.Health > 0)
+		{
+			m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
+		}
 	}
 
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
