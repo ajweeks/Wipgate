@@ -2,16 +2,18 @@
 
 #include "RTS_GameState.h"
 
+#include "RTS_Entity.h"
+
 DEFINE_LOG_CATEGORY(RTS_Gamestate_log);
 
-void ARTS_GameState::RemoveUnit(ARTS_UnitCharacter* unit)
+void ARTS_GameState::RemoveEntity(ARTS_Entity* Entity)
 {
-	if(unit)
+	if(Entity)
 	{
-		unit->SetSelected(false);
-		Units.Remove(unit);
-		SelectedUnits.Remove(unit);
+		Entity->SetSelected(false);
+		Entities.Remove(Entity);
+		SelectedEntities.Remove(Entity);
 
-		UE_LOG(LogTemp, Display, TEXT("ARTS_GameState::RemoveUnit > Removed unit from Units array. %i remaining."), Units.Num());
+		UE_LOG(LogTemp, Display, TEXT("ARTS_GameState::RemoveUnit > Removed unit from Units array. %i remaining."), Entities.Num());
 	}
 }

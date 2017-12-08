@@ -8,8 +8,9 @@
 #include "RTS_HUDBase.generated.h"
 
 class ARTS_PlayerController;
-class ARTS_UnitCharacter;
-class URTS_UnitIcon;
+class ARTS_Entity;
+class ARTS_Unit;
+class ARTS_Specialist;
 class UGridPanel;
 class UButton;
 class UProgressBar;
@@ -25,7 +26,7 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray = true);
+		void UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray = true);
 
 	template<class T>
 	T* ConstructWidget(TSubclassOf<UWidget> WidgetType = T::StaticClass())
@@ -36,65 +37,55 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
-	// Unit icon functions
+	// Entity icon functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddUnitIconToGrid(ARTS_UnitCharacter* Unit);
+		void AddEntityIconToGrid(ARTS_Entity* Entity);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveUnitIconFromGrid(int32 IconIndex);
+		void RemoveEntityIconFromGrid(int32 IconIndex);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateUnitIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
+		void UpdateEntityIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
 	// Ability button functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
 
-	// TODO: Make last parameter of type specialst once ported to C++
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_UnitCharacter* specialist);
+		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_Specialist* Specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
 
-	void OnUnitIconPressed(ARTS_UnitCharacter* unit);
-
-	// TODO: Remove these two members carefully
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-		FVector2D SelectionBoxPosition;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-		FVector2D SelectionBoxSize;
-
-	// Unit's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
+	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
-		FLinearColor UnitHealthColor_FullHealth = FLinearColor(0.12f, 1.0f, 0.0f, 1.0f);
+		FLinearColor EntityIconHealthColor_FullHealth = FLinearColor(0.12f, 1.0f, 0.0f, 1.0f);
 
-	// Unit's icon's color when almost dead (blended with Full Helath color when health is less than full but not empty)
+	// Entity's icon's color when almost dead (blended with Full Helath color when health is less than full but not empty)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
-		FLinearColor UnitHealthColor_LowHealth = FLinearColor(1.0f, 0.03f, 0.0f, 1.0f);
+		FLinearColor EntityIconHealthColor_LowHealth = FLinearColor(1.0f, 0.03f, 0.0f, 1.0f);
 
-	// The color a unit's icon will be when it is dead
+	// Entity's icon's color when dead
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
-		FLinearColor UnitHealthColor_Dead = FLinearColor(0.22f, 0.22f, 0.22f, 1.0f);
+		FLinearColor EntityIconHealthColor_Dead = FLinearColor(0.22f, 0.22f, 0.22f, 1.0f);
 
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
-		UGridPanel* SelectedUnitIconGridRef = nullptr;
+		UGridPanel* SelectedEntityIconGridRef = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
 		UGridPanel* CommandCardGridRef = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
-		FMargin UnitIconPadding = FMargin(4.0f);
+		FMargin EntityIconPadding = FMargin(4.0f);
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
 		ARTS_PlayerController* PlayerController = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Misc")
-		TArray<ARTS_UnitCharacter*> SelectedUnitsRef;
+		TArray<ARTS_Entity*> SelectedEntitiesRef;
 
 private:
-	FIntPoint m_MaxUnitImageCount;
+	FIntPoint m_MaxEntityImageCount;
 
 };

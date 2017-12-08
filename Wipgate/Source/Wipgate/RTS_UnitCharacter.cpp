@@ -94,35 +94,35 @@ void ARTS_UnitCharacter::RemoveUnitEffect(UUnitEffect * effect)
 	if (!UnitEffects.Contains(effect))
 		return;
 
-	switch (effect->AffectedStat)
-	{
-	case EUnitEffectStat::ARMOR:
-		if(effect->Type == EUnitEffectType::OVER_TIME)
-			UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
-			UnitCoreComponent->CurrentArmor -= effect->Magnitude;
-		break;
+	//switch (effect->AffectedStat)
+	//{
+	//case EUnitEffectStat::ARMOR:
+	//	//if(effect->Type == EUnitEffectType::OVER_TIME)
+	//		//UnitCoreComponent->CurrentArmor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+	//	//else
+	//		//UnitCoreComponent->CurrentArmor -= effect->Magnitude;
+	//	break;
 
-	case EUnitEffectStat::MOVEMENT_SPEED:
-		break;
+	//case EUnitEffectStat::MOVEMENT_SPEED:
+	//	break;
 
-	case EUnitEffectStat::ATTACK_DAMAGE:
-		if (effect->Type == EUnitEffectType::OVER_TIME)
-			UnitCoreComponent->CurrentDamage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
-			UnitCoreComponent->CurrentDamage -= effect->Magnitude;
-		break;
+	//case EUnitEffectStat::ATTACK_DAMAGE:
+	//	if (effect->Type == EUnitEffectType::OVER_TIME)
+	//		UnitCoreComponent->CurrentDamage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+	//	else
+	//		UnitCoreComponent->CurrentDamage -= effect->Magnitude;
+	//	break;
 
-	case EUnitEffectStat::ATTACK_RATE:
-		if (effect->Type == EUnitEffectType::OVER_TIME)
-			UnitCoreComponent->CurrentRateOfFire -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
-			UnitCoreComponent->CurrentRateOfFire -= effect->Magnitude;
-		break;
+	//case EUnitEffectStat::ATTACK_RATE:
+	//	if (effect->Type == EUnitEffectType::OVER_TIME)
+	//		UnitCoreComponent->CurrentRateOfFire -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+	//	else
+	//		UnitCoreComponent->CurrentRateOfFire -= effect->Magnitude;
+	//	break;
 
-	default:
-		break;
-	}
+	//default:
+	//	break;
+	//}
 	UnitEffects.Remove(effect);
 
 	// stop particle systems
@@ -145,82 +145,82 @@ void ARTS_UnitCharacter::DisableDebug()
 
 void ARTS_UnitCharacter::ApplyEffectLinear(UUnitEffect * effect)
 {
-	if (effect->Elapsed > EFFECT_INTERVAL)
-	{
-		// increment ticks each interval
-		effect->Ticks++;
-		if (effect->IsFinished)
-			return;
+	//if (effect->Elapsed > EFFECT_INTERVAL)
+	//{
+	//	// increment ticks each interval
+	//	effect->Ticks++;
+	//	if (effect->IsFinished)
+	//		return;
 
-		// only apply effect if it was not finished yet
-		switch (effect->AffectedStat)
-		{
-		case EUnitEffectStat::ARMOR:
-			UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
-			break;
-		case EUnitEffectStat::ATTACK_DAMAGE:
-			UnitCoreComponent->CurrentDamage += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
-			break;
-		case EUnitEffectStat::ATTACK_RATE:
-			UnitCoreComponent->CurrentRateOfFire += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
-			break;
-		case EUnitEffectStat::DAMAGE:
-			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
-			break;
-		case EUnitEffectStat::HEALING:
-			UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
-			break;
-		case EUnitEffectStat::MOVEMENT_SPEED:
-			break;
-		default:
-			break;
-		}
+	//	// only apply effect if it was not finished yet
+	//	switch (effect->AffectedStat)
+	//	{
+	//	case EUnitEffectStat::ARMOR:
+	//		//UnitCoreComponent->CurrentArmor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+	//		break;
+	//	case EUnitEffectStat::ATTACK_DAMAGE:
+	//		UnitCoreComponent->CurrentDamage += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+	//		break;
+	//	case EUnitEffectStat::ATTACK_RATE:
+	//		UnitCoreComponent->CurrentRateOfFire += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+	//		break;
+	//	case EUnitEffectStat::DAMAGE:
+	//		//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+	//		break;
+	//	case EUnitEffectStat::HEALING:
+	//		//UnitCoreComponent->ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+	//		break;
+	//	case EUnitEffectStat::MOVEMENT_SPEED:
+	//		break;
+	//	default:
+	//		break;
+	//	}
 
-		// spawn particles and reset time
-		if (effect->TickParticles)
-			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
-		effect->Elapsed = 0;
-	}
+	//	// spawn particles and reset time
+	//	if (effect->TickParticles)
+	//		UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+	//	effect->Elapsed = 0;
+	//}
 }
 
 void ARTS_UnitCharacter::ApplyEffectOnce(UUnitEffect * effect)
 {
-	if (effect->Ticks == 0)
-	{
-		effect->Ticks++;
-		if (effect->TickParticles)
-			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+	//if (effect->Ticks == 0)
+	//{
+	//	effect->Ticks++;
+	//	if (effect->TickParticles)
+	//		UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 
-		switch (effect->AffectedStat)
-		{
-		case EUnitEffectStat::ARMOR:
-			UnitCoreComponent->CurrentArmor += effect->Magnitude;
-			break;
+	//	switch (effect->AffectedStat)
+	//	{
+	//	case EUnitEffectStat::ARMOR:
+	//		//UnitCoreComponent->CurrentArmor += effect->Magnitude;
+	//		break;
 
-		case EUnitEffectStat::ATTACK_DAMAGE:
-			UnitCoreComponent->CurrentDamage += effect->Magnitude;
-			break;
+	//	case EUnitEffectStat::ATTACK_DAMAGE:
+	//		UnitCoreComponent->CurrentDamage += effect->Magnitude;
+	//		break;
 
-		case EUnitEffectStat::ATTACK_RATE:
-			UnitCoreComponent->CurrentRateOfFire += effect->Magnitude;
-			break;
+	//	case EUnitEffectStat::ATTACK_RATE:
+	//		UnitCoreComponent->CurrentRateOfFire += effect->Magnitude;
+	//		break;
 
-		case EUnitEffectStat::DAMAGE:
-			UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
-			break;
+	//	case EUnitEffectStat::DAMAGE:
+	//		//UnitCoreComponent->ApplyDamage_CPP(effect->Magnitude, false);
+	//		break;
 
-		case EUnitEffectStat::HEALING:
-			UnitCoreComponent->ApplyHealing(effect->Magnitude);
-			break;
+	//	case EUnitEffectStat::HEALING:
+	//		//UnitCoreComponent->ApplyHealing(effect->Magnitude);
+	//		break;
 
-		case EUnitEffectStat::MOVEMENT_SPEED:
-			break;
+	//	case EUnitEffectStat::MOVEMENT_SPEED:
+	//		break;
 
-		default:
-			break;
-		}
-	}
+	//	default:
+	//		break;
+	//	}
+	//}
 
-	if (effect->Elapsed > effect->Duration)
-		effect->IsFinished = true;
+	//if (effect->Elapsed > effect->Duration)
+	//	effect->IsFinished = true;
 }
