@@ -31,3 +31,8 @@ void ARTS_Unit::SetTeamMaterial()
 		bodyMatInst->SetVectorParameterValue("BodyColor", Team.Color);
 	}
 }
+
+void ARTS_Unit::Kill()
+{
+
+}

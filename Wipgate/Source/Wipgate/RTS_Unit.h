@@ -18,6 +18,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial() override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	virtual void Kill() override;
 
 private:
 	

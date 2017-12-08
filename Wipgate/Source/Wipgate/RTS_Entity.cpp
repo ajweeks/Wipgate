@@ -22,8 +22,6 @@ DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 // Sets default values
 ARTS_Entity::ARTS_Entity()
 {
-	UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity"));
-
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -31,13 +29,16 @@ ARTS_Entity::ARTS_Entity()
 	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
 	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
 	SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
 
 	//UI
 	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
 	BarWidget->SetupAttachment(RootComponent);
+	BarWidget->SetCanEverAffectNavigation(false);
 
 	MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
 	MinimapIcon->SetupAttachment(RootComponent);
+	MinimapIcon->SetCanEverAffectNavigation(false);
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 
@@ -91,20 +92,23 @@ void ARTS_Entity::BeginPlay()
 	//Bars
 	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
 	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-	TArray<UCameraComponent*> cameracomponents;
-	playerPawn->GetComponents(cameracomponents);
-	if (cameracomponents.Num() > 0)
+	if (playerPawn)
 	{
-		UCameraComponent* camera = cameracomponents[0];
-		FRotator rot = camera->GetComponentRotation();
+		TArray<UCameraComponent*> cameracomponents;
+		playerPawn->GetComponents(cameracomponents);
+		if (cameracomponents.Num() > 0)
+		{
+			UCameraComponent* camera = cameracomponents[0];
+			FRotator rot = camera->GetComponentRotation();
 
-		BarRotation.Roll = rot.Roll;
-		BarRotation.Pitch = rot.Pitch + 90;
-		BarRotation.Yaw = rot.Yaw + 180;
-	}
-	else
-	{
-		UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+			BarRotation.Roll = rot.Roll;
+			BarRotation.Pitch = rot.Pitch + 90;
+			BarRotation.Yaw = rot.Yaw + 180;
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+		}
 	}
 
 	SetTeamMaterial();

@@ -122,6 +122,7 @@ public:
 	ARTS_Entity();
 
 public:
+	UFUNCTION(BlueprintCallable)
 	void SetSelected(bool selected);
 
 	virtual void Tick(float DeltaTime) override;
@@ -245,6 +246,8 @@ public:
 	TArray<UUnitEffect*> UnitEffects;
 
 	UImage* Icon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 IconIndex = -1;
 
 	const int NUM_ABILITIES = 3;

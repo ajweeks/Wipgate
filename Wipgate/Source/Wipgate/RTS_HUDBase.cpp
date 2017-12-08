@@ -56,8 +56,8 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
 {
-	int32 newSelectedUnitCount = SelectedEntities.Num();
-	int32 newSelectedUnitIconCount = FMath::Min(newSelectedUnitCount, m_MaxEntityImageCount.X * m_MaxEntityImageCount.Y);
+	int32 newSelectedEntityCount = SelectedEntities.Num();
+	int32 newSelectedEntityIconCount = FMath::Min(newSelectedEntityCount, m_MaxEntityImageCount.X * m_MaxEntityImageCount.Y);
 
 	if (ClearArray)
 	{
@@ -82,9 +82,9 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 		SelectedEntitiesRef = SelectedEntities;
 	}
 
-	if (newSelectedUnitIconCount > 1)
+	if (newSelectedEntityIconCount > 1)
 	{
-		for (int32 i = 0; i < newSelectedUnitIconCount; ++i)
+		for (int32 i = 0; i < newSelectedEntityIconCount; ++i)
 		{
 			ARTS_Entity* entity = SelectedEntitiesRef[i];
 			checkSlow(entity);
@@ -107,10 +107,3 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 	}
 }
 
-void URTS_HUDBase::OnEntityIconPressed(ARTS_Entity* Entity)
-{
-	AGameStateBase* baseGameState = GetWorld()->GetGameState();
-	auto gameState = Cast<ARTS_GameState>(baseGameState);
-
-	// TODO: Implement
-}

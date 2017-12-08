@@ -57,8 +57,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
 
-	void OnEntityIconPressed(ARTS_Entity* Entity);
-
 	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
 		FLinearColor EntityIconHealthColor_FullHealth = FLinearColor(0.12f, 1.0f, 0.0f, 1.0f);
