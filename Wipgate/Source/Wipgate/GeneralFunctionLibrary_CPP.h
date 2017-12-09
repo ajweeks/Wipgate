@@ -23,7 +23,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Commands")
 		static UCommand_MoveToLocation* CreateCommand_MoveToLocation(UObject* outer, FVector location);
 	UFUNCTION(BlueprintCallable, Category = "Commands")
-		static UCommand_Attack* CreateCommand_Attack(UObject* outer, ARTS_Entity* target);
+		static UCommand_Attack* CreateCommand_Attack(UObject* outer, ARTS_Entity* target, const bool isForced);
 
 	/* --- Project version and naming functions --- */
 	

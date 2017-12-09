@@ -32,6 +32,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		ECOMMAND_TYPE Type = ECOMMAND_TYPE::NONE;
+	UPROPERTY(BlueprintReadWrite)
+		bool IsForced;
 };
 
 
