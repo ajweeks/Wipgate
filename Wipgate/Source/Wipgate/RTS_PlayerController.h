@@ -18,8 +18,6 @@ class ARTS_Entity;
 class ARTS_Unit;
 class ARTS_Specialist;
 
-DECLARE_LOG_CATEGORY_EXTERN(RTS_PlayerController_Log, Log, All);
-
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
 {
@@ -67,7 +65,16 @@ private:
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
 
+public:
+	// Helper function for selecting a selection group (index is 0-based)
+	UFUNCTION(BlueprintCallable)
+	void ActionSelectionGroup(int32 Index);
+
+private:
+	static const int32 SELECTION_GROUP_COUNT = 5;
+
 	void ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray);
+	void ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup, bool* SelectionGroupIconCreated);
 	void ActionSelectionGroup1();
 	void ActionCreateSelectionGroup1();
 	void ActionSelectionGroup2();

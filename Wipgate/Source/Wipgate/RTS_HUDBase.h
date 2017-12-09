@@ -37,6 +37,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
+
 	// Entity icon functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddEntityIconToGrid(ARTS_Entity* Entity);
@@ -50,7 +51,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateEntityIconProperties(int32 IconIndex, int GridSlotColumn, int GridSlotRow, FLinearColor IconColor);
 
-	// Ability button functions
+
+	// Ability icon functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
 
@@ -59,6 +61,24 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
+
+
+	// Selection group icon functions
+	/* 
+		This function should be called once at startup to create all necessary buttons
+		All buttons created will be invisible (and unclickable). Call ShowSelectionGroupIcon
+		to make button visible and clickable
+	*/ 
+	UFUNCTION(BlueprintImplementableEvent)
+		void AddSelectionGroupIconsToGrid(int32 Count);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowSelectionGroupIcon(int32 Index);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSelectionGroupIcon(int32 Index);
+
+
 
 	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")

@@ -129,7 +129,9 @@ void ARTS_Entity::BeginPlay()
 	}
 
 	if (ShowRange)
+	{
 		SetRangeDebug();
+	}
 
 	//Bars
 	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
@@ -168,14 +170,19 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 	/* Rate of fire */
 	if (TimerRateOfFire > 0)
+	{
 		TimerRateOfFire -= DeltaTime;
+	}
 
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Update bar rotation */
-	BarWidget->SetWorldRotation(BarRotation);
+	if (BarWidget)
+	{
+		BarWidget->SetWorldRotation(BarRotation);
+	}
 
 	/* Apply effects */
 	for (auto e : UnitEffects)
@@ -186,7 +193,9 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 		// only apply effect after delay
 		if (e->Elapsed < 0)
+		{
 			continue;
+		}
 
 		switch (e->Type)
 		{
@@ -201,14 +210,18 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 
 		if (e->Ticks >= e->Duration)
+		{
 			e->IsFinished = true;
+		}
 	}
 
 	/* Clean up effects */
 	for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
 	{
 		if (UnitEffects[i]->IsFinished)
+		{
 			RemoveUnitEffect(UnitEffects[i]);
+		}
 	}
 }
 
@@ -256,10 +269,14 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 
 	// start particle systems
 	if (effect->StartParticles)
+	{
 		UGameplayStatics::SpawnEmitterAttached(effect->StartParticles, RootComponent);
+	}
 
 	if (effect->ConstantParticles)
+	{
 		effect->StartParticleConstant(RootComponent);
+	}
 }
 
 void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
@@ -271,23 +288,32 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	{
 	case EUnitEffectStat::ARMOR:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			CurrentDefenceStats.Armor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		}
 		else
+		{
 			CurrentDefenceStats.Armor -= effect->Magnitude;
+		}
 		break;
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		break;
 	default:
 		break;
 	}
+
 	UnitEffects.Remove(effect);
 
 	// stop particle systems
 	if (effect->EndParticles)
+	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
+	}
 
 	if (effect->ConstantParticles)
+	{
 		effect->StopParticleConstant();
+	}
 }
 
 void ARTS_Entity::DisableDebug()
@@ -334,7 +360,9 @@ void ARTS_Entity::SetRangeDebug()
 		outerVision->SetWorldScale3D(size);
 	}
 	else
+	{
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid mesh found!"));
+	}
 
 	if (RangeMaterial)
 	{
@@ -346,7 +374,9 @@ void ARTS_Entity::SetRangeDebug()
 		oMaterial->SetVectorParameterValue(RangeColorParameterName, RangeOuterVisionColor);
 	}
 	else
+	{
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid material found!"));
+	}
 }
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
@@ -377,7 +407,9 @@ void ARTS_Entity::ApplyHealing(int healing)
 {
 	CurrentDefenceStats.Health += healing;
 	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
+	{
 		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+	}
 }
 
 void ARTS_Entity::Kill()
@@ -436,7 +468,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		// increment ticks each interval
 		effect->Ticks++;
 		if (effect->IsFinished)
+		{
 			return;
+		}
 
 		// only apply effect if it was not finished yet
 		switch (effect->AffectedStat)
@@ -458,7 +492,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 
 		// spawn particles and reset time
 		if (effect->TickParticles)
+		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+		}
 		effect->Elapsed = 0;
 	}
 }
@@ -469,7 +505,9 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	{
 		effect->Ticks++;
 		if (effect->TickParticles)
+		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+		}
 
 		switch (effect->AffectedStat)
 		{
@@ -494,6 +532,8 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	}
 
 	if (effect->Elapsed > effect->Duration)
+	{
 		effect->IsFinished = true;
+	}
 }
 
