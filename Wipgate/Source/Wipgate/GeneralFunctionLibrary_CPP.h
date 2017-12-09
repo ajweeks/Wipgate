@@ -13,6 +13,8 @@ class WIPGATE_API UGeneralFunctionLibrary_CPP : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+	//UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
+	//	static ARTS_Entity* GetClosestEntity(ARTS_Entity* self, TArray<ARTS_Entity*> entities);
 
 	/* --- Object creation functions --- */
 

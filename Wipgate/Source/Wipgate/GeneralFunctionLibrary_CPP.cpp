@@ -4,6 +4,26 @@
 #include "EngineGlobals.h"
 #include "Engine/Engine.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "RTS_Entity.h"
+
+//ARTS_Entity* GetClosestEntity(ARTS_Entity* self, TArray<ARTS_Entity*> entities)
+//{
+//	float shortestDistance = TNumericLimits<float>::Max();
+//	ARTS_Entity* closestEntity = NewObject<ARTS_Entity>(self->GetWorld());
+//	float currentDistance;
+//
+//	for (auto e : entities)
+//	{
+//		currentDistance = self->GetDistanceTo(e);
+//		if (currentDistance < shortestDistance)
+//		{
+//			shortestDistance = currentDistance;
+//			closestEntity = e;
+//		}
+//	}
+//
+//	return closestEntity;
+//}
 
 UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 	const float delay, const int magnitude, const int duration)

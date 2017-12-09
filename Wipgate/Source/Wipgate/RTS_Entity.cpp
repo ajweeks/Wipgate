@@ -288,16 +288,25 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	{
 	case EUnitEffectStat::ARMOR:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
-		{
 			CurrentDefenceStats.Armor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		}
 		else
-		{
 			CurrentDefenceStats.Armor -= effect->Magnitude;
-		}
 		break;
+
+	case EUnitEffectStat::DAMAGE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			CurrentAttackStats.Damage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		else
+			CurrentAttackStats.Damage -= effect->Magnitude;
+		break;
+
 	case EUnitEffectStat::MOVEMENT_SPEED:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			CurrentMovementStats.Speed -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		else
+			CurrentMovementStats.Speed -= effect->Magnitude;
 		break;
+
 	default:
 		break;
 	}
@@ -485,6 +494,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 			ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
+			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
 		default:
 			break;
@@ -524,6 +534,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			break;
 
 		case EUnitEffectStat::MOVEMENT_SPEED:
+			CurrentMovementStats.Speed += effect->Magnitude;
 			break;
 
 		default:
