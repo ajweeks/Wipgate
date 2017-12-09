@@ -187,6 +187,8 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Apply effects */
 	for (auto e : UnitEffects)
 	{
+		if (!e) continue;
+
 		e->Elapsed += DeltaTime;
 
 		// only apply effect after delay

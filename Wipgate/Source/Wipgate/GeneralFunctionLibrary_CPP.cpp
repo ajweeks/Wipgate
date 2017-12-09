@@ -20,7 +20,7 @@ UCommand_MoveToLocation * UGeneralFunctionLibrary_CPP::CreateCommand_MoveToLocat
 	return command;
 }
 
-UCommand_Attack * UGeneralFunctionLibrary_CPP::CreateCommand_Attack(UObject * outer, ARTS_Entity* target)
+UCommand_Attack * UGeneralFunctionLibrary_CPP::CreateCommand_Attack(UObject * outer, ARTS_Entity* target, const bool isForced)
 {
 	UCommand_Attack* command = NewObject<UCommand_Attack>(outer);
 	command->Target = target;
