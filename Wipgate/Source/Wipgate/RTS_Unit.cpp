@@ -27,6 +27,7 @@ void ARTS_Unit::SetTeamMaterial()
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
 		bodyMatInst->SetVectorParameterValue("BodyColor", Team.Color);
+		mesh->SetReceivesDecals(false);
 	}
 }
 
@@ -38,6 +39,7 @@ void ARTS_Unit::Kill()
 	if (skeletalMesh)
 	{
 		skeletalMesh->SetCollisionProfileName("Ragdoll");
+		skeletalMesh->SetEnableGravity(true);
 		skeletalMesh->SetSimulatePhysics(true);
 	}
 }

@@ -61,14 +61,15 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 
 	if (ClearArray)
 	{
-		if (SelectedEntitiesRef.Num() > 1)
-		{
-			for (auto oldSelectedEntity : SelectedEntitiesRef)
-			{
-				RemoveEntityIconFromGrid(oldSelectedEntity->IconIndex);
-				oldSelectedEntity->Icon = nullptr;
-			}
-		}
+		ClearEntityIconsFromGrid();
+		//if (SelectedEntitiesRef.Num() > 1)
+		//{
+		//	for (auto oldSelectedEntity : SelectedEntitiesRef)
+		//	{
+		//		RemoveEntityIconFromGrid(oldSelectedEntity->IconIndex);
+		//		oldSelectedEntity->Icon = nullptr;
+		//	}
+		//}
 
 		if (SelectedEntities.Num() > 1)
 		{
@@ -91,7 +92,7 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 
 			int col = i % m_MaxEntityImageCount.X;
 			int row = i / m_MaxEntityImageCount.X;
-			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health/ (float)entity->BaseDefenceStats.Health;
+			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health / (float)entity->BaseDefenceStats.Health;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{

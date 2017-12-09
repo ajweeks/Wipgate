@@ -16,6 +16,8 @@
 #include "Components/WidgetComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
@@ -31,36 +33,70 @@ ARTS_Entity::ARTS_Entity()
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//Selection
-	SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
-	SelectionStaticMeshComponent->SetupAttachment(RootComponent);
-	SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
+	// Selection component
+	{
+		SelectionStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionEffect"));
+		SelectionStaticMeshComponent->SetupAttachment(RootComponent);
+		SelectionStaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SelectionStaticMeshComponent->SetCanEverAffectNavigation(false);
+		SelectionStaticMeshComponent->SetReceivesDecals(false);
+	}
 
-	//UI
-	BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
-	BarWidget->SetupAttachment(RootComponent);
-	BarWidget->SetCanEverAffectNavigation(false);
+	// UI components
+	{
+		BarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Bars"));
+		BarWidget->SetupAttachment(RootComponent);
+		BarWidget->SetReceivesDecals(false);
+		BarWidget->SetCanEverAffectNavigation(false);
 
-	MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
-	MinimapIcon->SetupAttachment(RootComponent);
-	MinimapIcon->SetCanEverAffectNavigation(false);
+		MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
+		MinimapIcon->SetupAttachment(RootComponent);
+		MinimapIcon->SetReceivesDecals(false);
+		MinimapIcon->SetCanEverAffectNavigation(false);
+	}
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
 
-	//Debug
-	UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
-	innerVision->SetupAttachment(RootComponent);
-	innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
-	attackRange->SetupAttachment(RootComponent);
-	attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
-	outerVision->SetupAttachment(RootComponent);
-	outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DebugMeshes.Push(innerVision);
-	DebugMeshes.Push(attackRange);
-	DebugMeshes.Push(outerVision);
+	// Vision debugging meshes
+	{
+		RangeInnerVisionColor = FLinearColor(0.0f, 0.9f, 0.0f, 1.0f);
+		RangeAttackColor = FLinearColor(0.9f, 0.0f, 0.0f, 1.0f);
+		RangeOuterVisionColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
+
+		UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
+		innerVision->SetupAttachment(RootComponent);
+		innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		innerVision->SetReceivesDecals(false);
+		innerVision->SetVisibility(false);
+		DebugMeshes.Push(innerVision);
+
+		UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
+		attackRange->SetupAttachment(RootComponent);
+		attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		attackRange->SetReceivesDecals(false);
+		attackRange->SetVisibility(false);
+		DebugMeshes.Push(attackRange);
+
+		UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
+		outerVision->SetupAttachment(RootComponent);
+		outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		outerVision->SetReceivesDecals(false);
+		outerVision->SetVisibility(false);
+		DebugMeshes.Push(outerVision);
+
+		ConstructorHelpers::FObjectFinder<UStaticMesh> cylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+		if (cylinderMesh.Succeeded())
+		{
+			innerVision->SetStaticMesh(cylinderMesh.Object);
+			attackRange->SetStaticMesh(cylinderMesh.Object);
+			outerVision->SetStaticMesh(cylinderMesh.Object);
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Failed to find mesh at \"/Engine/BasicShapes/Cylinder.Cylinder\""));
+		}
+	}
+
 }
 
 // Called when the game starts
@@ -93,7 +129,9 @@ void ARTS_Entity::BeginPlay()
 	}
 
 	if (ShowRange)
+	{
 		SetRangeDebug();
+	}
 
 	//Bars
 	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
@@ -132,10 +170,19 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 	/* Rate of fire */
 	if (TimerRateOfFire > 0)
+	{
 		TimerRateOfFire -= DeltaTime;
+	}
+
+	/* Update movement stats */
+	UCharacterMovementComponent* movement = GetCharacterMovement(); 
+	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Update bar rotation */
-	BarWidget->SetWorldRotation(BarRotation);
+	if (BarWidget)
+	{
+		BarWidget->SetWorldRotation(BarRotation);
+	}
 
 	/* Apply effects */
 	for (auto e : UnitEffects)
@@ -144,7 +191,9 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 		// only apply effect after delay
 		if (e->Elapsed < 0)
+		{
 			continue;
+		}
 
 		switch (e->Type)
 		{
@@ -159,14 +208,18 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 
 		if (e->Ticks >= e->Duration)
+		{
 			e->IsFinished = true;
+		}
 	}
 
 	/* Clean up effects */
 	for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
 	{
 		if (UnitEffects[i]->IsFinished)
+		{
 			RemoveUnitEffect(UnitEffects[i]);
+		}
 	}
 }
 
@@ -214,10 +267,14 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 
 	// start particle systems
 	if (effect->StartParticles)
+	{
 		UGameplayStatics::SpawnEmitterAttached(effect->StartParticles, RootComponent);
+	}
 
 	if (effect->ConstantParticles)
+	{
 		effect->StartParticleConstant(RootComponent);
+	}
 }
 
 void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
@@ -229,23 +286,32 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	{
 	case EUnitEffectStat::ARMOR:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			CurrentDefenceStats.Armor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		}
 		else
+		{
 			CurrentDefenceStats.Armor -= effect->Magnitude;
+		}
 		break;
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		break;
 	default:
 		break;
 	}
+
 	UnitEffects.Remove(effect);
 
 	// stop particle systems
 	if (effect->EndParticles)
+	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
+	}
 
 	if (effect->ConstantParticles)
+	{
 		effect->StopParticleConstant();
+	}
 }
 
 void ARTS_Entity::DisableDebug()
@@ -292,7 +358,9 @@ void ARTS_Entity::SetRangeDebug()
 		outerVision->SetWorldScale3D(size);
 	}
 	else
+	{
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid mesh found!"));
+	}
 
 	if (RangeMaterial)
 	{
@@ -304,7 +372,9 @@ void ARTS_Entity::SetRangeDebug()
 		oMaterial->SetVectorParameterValue(RangeColorParameterName, RangeOuterVisionColor);
 	}
 	else
+	{
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid material found!"));
+	}
 }
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
@@ -335,7 +405,9 @@ void ARTS_Entity::ApplyHealing(int healing)
 {
 	CurrentDefenceStats.Health += healing;
 	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
+	{
 		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+	}
 }
 
 void ARTS_Entity::Kill()
@@ -345,9 +417,10 @@ void ARTS_Entity::Kill()
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
 	{
-		capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SetActorTickEnabled(false);
-		DisableDebug();
+		capsule->DestroyComponent();
+		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//SetActorTickEnabled(false);
+		//DisableDebug();
 	}
 
 	if (Controller)
@@ -393,7 +466,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		// increment ticks each interval
 		effect->Ticks++;
 		if (effect->IsFinished)
+		{
 			return;
+		}
 
 		// only apply effect if it was not finished yet
 		switch (effect->AffectedStat)
@@ -415,7 +490,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 
 		// spawn particles and reset time
 		if (effect->TickParticles)
+		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+		}
 		effect->Elapsed = 0;
 	}
 }
@@ -426,7 +503,9 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	{
 		effect->Ticks++;
 		if (effect->TickParticles)
+		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
+		}
 
 		switch (effect->AffectedStat)
 		{
@@ -451,6 +530,8 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	}
 
 	if (effect->Elapsed > effect->Duration)
+	{
 		effect->IsFinished = true;
+	}
 }
 
