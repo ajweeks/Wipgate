@@ -53,6 +53,8 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->SetupAttachment(RootComponent);
 		MinimapIcon->SetReceivesDecals(false);
 		MinimapIcon->SetCanEverAffectNavigation(false);
+		MinimapIcon->SetCastShadow(false);
+		MinimapIcon->CastShadow = 1;
 	}
 
 	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
