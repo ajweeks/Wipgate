@@ -56,6 +56,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Project")
 		static FVector2D GetMousePositionVector2D(APlayerController* playerController);
+
+	UFUNCTION(BlueprintPure, Category = "Project")
+		static void DrawPointArray(const UWorld* world, const TArray<FVector> & points, const FColor & color, const float pointSize, const float lineSize);
 };
 
 // Global C++ only functions

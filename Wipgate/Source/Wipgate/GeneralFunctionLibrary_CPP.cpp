@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "RTS_Entity.h"
+#include "DrawDebugHelpers.h"
 
 //ARTS_Entity* GetClosestEntity(ARTS_Entity* self, TArray<ARTS_Entity*> entities)
 //{
@@ -134,6 +135,20 @@ FVector2D UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(APlayerControlle
 	FVector2D result = {};
 	float viewportScaleF = UWidgetLayoutLibrary::GetMousePositionScaledByDPI(playerController, result.X, result.Y);
 	return result;
+}
+
+void UGeneralFunctionLibrary_CPP::DrawPointArray(const UWorld* world, const TArray<FVector>& points, const FColor & color, const float pointSize, const float lineSize)
+{
+	for (int32 i = 0; i < points.Num(); ++i)
+	{
+		FVector point = points[i];
+		DrawDebugSphere(world, point, pointSize, 12, color, false, 0.f, (uint8)'\000', 1.f);
+
+		if (i != 0)
+		{
+			DrawDebugLine(world, point, points[i - 1], color, false, 0.f, (uint8)'\000', lineSize);
+		}
+	}
 }
 
 void PrintStringToScreen(FString text)
