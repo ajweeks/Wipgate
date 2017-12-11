@@ -454,6 +454,7 @@ void ARTS_Entity::Kill()
 		if (baseGameState && castedGameState)
 		{
 			castedGameState->SelectedEntities.Remove(this);
+			castedGameState->Entities.Remove(this);
 
 			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
 			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
