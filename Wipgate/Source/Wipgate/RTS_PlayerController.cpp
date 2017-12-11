@@ -115,7 +115,10 @@ void ARTS_PlayerController::BeginPlay()
 		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
 
-	m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	}
 }
 
 void ARTS_PlayerController::SetupInputComponent()
