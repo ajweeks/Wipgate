@@ -291,21 +291,21 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	case EUnitEffectStat::ARMOR:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
 			CurrentDefenceStats.Armor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
+		else if (effect->Ticks > 0)
 			CurrentDefenceStats.Armor -= effect->Magnitude;
 		break;
 
 	case EUnitEffectStat::DAMAGE:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
 			CurrentAttackStats.Damage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
+		else if(effect->Ticks > 0)
 			CurrentAttackStats.Damage -= effect->Magnitude;
 		break;
 
 	case EUnitEffectStat::MOVEMENT_SPEED:
 		if (effect->Type == EUnitEffectType::OVER_TIME)
 			CurrentMovementStats.Speed -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else
+		else if(effect->Ticks > 0)
 			CurrentMovementStats.Speed -= effect->Magnitude;
 		break;
 
