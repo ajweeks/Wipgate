@@ -4,6 +4,9 @@
 
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "AI/Navigation/NavigationPath.h"
+#include "AI/Navigation/NavigationSystem.h"
+#include "AIController.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -41,5 +44,28 @@ void ARTS_Unit::Kill()
 		skeletalMesh->SetCollisionProfileName("Ragdoll");
 		skeletalMesh->SetEnableGravity(true);
 		skeletalMesh->SetSimulatePhysics(true);
+	}
+}
+
+void ARTS_Unit::SetDirectionLocation(FVector location)
+{
+	UNavigationPath *tpath;
+	UNavigationSystem* NavSys = UNavigationSystem::GetCurrent(GetWorld());
+
+	//Get path
+	tpath = NavSys->FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), FinalTarget);
+
+	//TODO:Debug
+
+	//Check if there are multiple waypoints
+	if (tpath->PathPoints.Num() >= 2)
+	{
+		CurrentTarget = tpath->PathPoints[1];
+
+		AAIController* aiControl = Cast<AAIController>(GetController());
+		if (aiControl)
+		{
+			aiControl->MoveToLocation(location, 0.1f, false, true, false, false);
+		}
 	}
 }

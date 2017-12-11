@@ -424,6 +424,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
 	AActor* actorUnderCursor = hitResult.Actor.Get();
 	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
+	if (unitUnderCursor)
+	{
+		if (unitUnderCursor->CurrentDefenceStats.Health <= 0)
+		{
+			unitUnderCursor = nullptr; // Don't select dead people
+		}
+	}
 
 	if (m_SelectedAbility)
 	{
@@ -446,7 +453,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (!m_SpecialistShowingAbilities)
 				{
-					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before ground click!"));
+					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before ground click!"));
 				}
 				else
 				{
@@ -475,7 +482,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (!m_SpecialistShowingAbilities)
 				{
-					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before entity click!"));
+					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before entity click!"));
 				}
 				else
 				{
@@ -508,7 +515,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
-						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set ally ground click!"));
+						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set ally ground click!"));
 					}
 					else
 					{
@@ -546,7 +553,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
-						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit show abilities not set before enemy click!"));
+						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before enemy click!"));
 					}
 					else
 					{

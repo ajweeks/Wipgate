@@ -22,6 +22,38 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;
 
+	void SetDirectionLocation(FVector location);
+
+	//Properties
+	UPROPERTY(BlueprintReadWrite)
+		FVector CurrentTarget;
+	UPROPERTY(BlueprintReadWrite)
+		FVector OriginalTarget;
+	UPROPERTY(BlueprintReadWrite)
+		FVector FinalTarget;
+
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float CohesionWeight = 0.25f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float CohesionDistanceClamp = 500.f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float CohesionWeightClamp = 1.f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float AvoidWeight = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float AvoidDistanceClamp = 500.f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float AvoidWeightClamp = 1.f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float AlignWeight = 0.3f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float AlignWeightClamp = 1.f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float SeekWeight = 4.0f;
+	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
+		float SeekWeightClamp = 1.f;
+
+
 private:
 	
 };
