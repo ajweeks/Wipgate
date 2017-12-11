@@ -27,6 +27,7 @@
 #include "RTS_Entity.h"
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
+#include "RTS_Squad.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -402,6 +403,19 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		UpdateAbilityButtons();
 	}
+
+	//Update squads
+	for (URTS_Squad* squad : m_Squads)
+	{
+		if (squad->Units.Num() <= 0)
+		{
+			m_Squads.Remove(squad);
+			continue;
+		}
+
+		squad->Update(DeltaSeconds);
+
+	}
 }
 
 void ARTS_PlayerController::ActionPrimaryClickPressed()
@@ -701,6 +715,13 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 		ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
 		break;
 	}
+}
+
+URTS_Squad* ARTS_PlayerController::AddSquad()
+{
+	URTS_Squad* squad = NewObject<URTS_Squad>(this);
+	m_Squads.Push(squad);
+	return squad;
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray)
