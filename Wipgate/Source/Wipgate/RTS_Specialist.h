@@ -16,6 +16,8 @@ public:
 	
 	ARTS_Specialist();
 
+	virtual void Kill() override;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
 	AAbility* AbilityActive;
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
