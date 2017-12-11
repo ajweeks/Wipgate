@@ -50,7 +50,8 @@ FVector URTS_Squad::GetCentreOfMass()
 
 	for (int32 i = 0; i < Units.Num(); ++i)
 	{
-		output += Units[i]->GetActorLocation();
+		if(Units[i])
+			output += Units[i]->GetActorLocation();
 	}
 	return output / (Units.Num());
 }

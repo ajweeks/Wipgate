@@ -42,6 +42,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
 		void Deselect();
 
+	void SetTarget(AActor* Target);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		EAbilityType Type = EAbilityType::E_TARGET_UNIT;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability parameters")
@@ -66,8 +68,6 @@ public:
 	// True once this ability has finished executing
 	UPROPERTY(BlueprintReadWrite)
 		bool IsCompleted;
-
-	void SetTarget(AActor* Target);
 
 protected:
 	/* protected non virtuals */
