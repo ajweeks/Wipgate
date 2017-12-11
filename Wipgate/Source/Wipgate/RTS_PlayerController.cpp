@@ -400,7 +400,17 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (m_SpecialistShowingAbilities)
 	{
-		UpdateAbilityButtons();
+		if (m_SpecialistShowingAbilities->CurrentDefenceStats.Health <= 0)
+		{
+			ClearAbilityButtons();
+			m_RTS_GameState->SelectedEntities.Empty();
+			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
+			m_SpecialistShowingAbilities = nullptr;
+		}
+		else
+		{
+			UpdateAbilityButtons();
+		}
 	}
 }
 
@@ -725,7 +735,7 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist)
+		if (specialist && specialist->CurrentDefenceStats.Health > 0)
 		{
 			m_SpecialistShowingAbilities = specialist;
 			CreateAbilityButtons();
