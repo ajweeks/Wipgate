@@ -31,5 +31,12 @@ float UUI_Bar::GetHealthBarPercent()
 
 FLinearColor UUI_Bar::GetTeamColor()
 {
-	return EntityRef->Team.Color;
+	if (EntityRef)
+	{
+		return EntityRef->Team.Color;
+	}
+	else
+	{
+		return FLinearColor::White;
+	}
 }
