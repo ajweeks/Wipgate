@@ -7,6 +7,7 @@
 #include "AI/Navigation/NavigationPath.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "AIController.h"
+#include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -54,8 +55,7 @@ void ARTS_Unit::SetDirectionLocation(FVector location)
 
 	//Get path
 	tpath = NavSys->FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), FinalTarget);
-
-	//TODO:Debug
+	UGeneralFunctionLibrary_CPP::DrawPointArray(GetWorld(), tpath->PathPoints, FColor(255, 0, 0), 10.f, 2.f);
 
 	//Check if there are multiple waypoints
 	if (tpath->PathPoints.Num() >= 2)

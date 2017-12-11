@@ -11,6 +11,7 @@ void UUI_Bar::Initialize(AActor* Owner)
 	{
 		EntityRef = castedOwner;
 	}
+	SetColorAndOpacity(EntityRef->Team.Color);
 }
 
 float UUI_Bar::GetHealthBarPercent()
@@ -27,9 +28,4 @@ float UUI_Bar::GetHealthBarPercent()
 	{
 		return 0.0f;
 	}
-}
-
-FLinearColor UUI_Bar::GetTeamColor()
-{
-	return EntityRef->Team.Color;
 }
