@@ -16,13 +16,16 @@ void ARTS_Specialist::Kill()
 	if (AbilityActive)
 	{
 		AbilityActive->Destroy();
+		AbilityActive = nullptr;
 	}
 	if (AbilityConstruct)
 	{
 		AbilityConstruct->Destroy();
+		AbilityConstruct = nullptr;
 	}
 	if (AbilityPassive)
 	{
 		AbilityPassive->Destroy();
+		AbilityPassive = nullptr;
 	}
 }

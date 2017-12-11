@@ -441,7 +441,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		if (unitUnderCursor->CurrentDefenceStats.Health <= 0)
 		{
-			unitUnderCursor = nullptr; // Don't select dead people
+			unitUnderCursor = nullptr; // Don't target dead people
+		}
+		else if (unitUnderCursor->Immaterial)
+		{
+			unitUnderCursor = nullptr; // Don't target immaterial people
 		}
 	}
 
