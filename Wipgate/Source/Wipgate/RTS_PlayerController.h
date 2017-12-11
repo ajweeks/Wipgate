@@ -17,6 +17,7 @@ class AAbility;
 class ARTS_Entity;
 class ARTS_Unit;
 class ARTS_Specialist;
+class URTS_Squad;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -69,6 +70,9 @@ public:
 	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
 	void ActionSelectionGroup(int32 Index);
+
+	UFUNCTION(BlueprintCallable)
+		URTS_Squad* AddSquad();
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
@@ -154,6 +158,8 @@ private:
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
+
+	TArray<URTS_Squad*> m_Squads;
 
 	// TODO: Remove, not used
 	FVector m_ClickStartWS;
