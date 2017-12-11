@@ -8,6 +8,7 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "AIController.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "RTS_Squad.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -48,6 +49,18 @@ void ARTS_Unit::Kill()
 	}
 }
 
+void ARTS_Unit::SetCurrentSquad(URTS_Squad * squad)
+{
+	//Remove from previous squad
+	if (CurrentSquad)
+	{
+		auto index = CurrentSquad->Units.Find(this);
+		if(index != INDEX_NONE)
+			CurrentSquad->Units.RemoveAt(index);
+	}
+	CurrentSquad = squad;
+}
+
 void ARTS_Unit::SetDirectionLocation(FVector location)
 {
 	UNavigationPath *tpath;
@@ -60,7 +73,16 @@ void ARTS_Unit::SetDirectionLocation(FVector location)
 	//Check if there are multiple waypoints
 	if (tpath->PathPoints.Num() >= 2)
 	{
-		CurrentTarget = tpath->PathPoints[1];
+		//Check distance
+		if ((tpath->PathPoints[1] - GetActorLocation()).Size() < WaypointMargin &&
+			tpath->PathPoints.Num() >= 3)
+		{
+			CurrentTarget = tpath->PathPoints[2];
+		}
+		else
+		{
+			CurrentTarget = tpath->PathPoints[1];
+		}
 
 		AAIController* aiControl = Cast<AAIController>(GetController());
 		if (aiControl)

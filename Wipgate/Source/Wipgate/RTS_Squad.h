@@ -22,6 +22,7 @@ public:
 
 	//Functions
 	void Update(float dt);
+	void DrawDebug();
 	
 	//Steering
 	FVector GetCentreOfMass();
