@@ -116,7 +116,10 @@ void ARTS_PlayerController::BeginPlay()
 		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
 
-	m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	}
 }
 
 void ARTS_PlayerController::SetupInputComponent()
@@ -401,7 +404,17 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (m_SpecialistShowingAbilities)
 	{
-		UpdateAbilityButtons();
+		if (m_SpecialistShowingAbilities->CurrentDefenceStats.Health <= 0)
+		{
+			ClearAbilityButtons();
+			m_RTS_GameState->SelectedEntities.Empty();
+			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
+			m_SpecialistShowingAbilities = nullptr;
+		}
+		else
+		{
+			UpdateAbilityButtons();
+		}
 	}
 
 	//Update squads
@@ -746,7 +759,7 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist)
+		if (specialist && specialist->CurrentDefenceStats.Health > 0)
 		{
 			m_SpecialistShowingAbilities = specialist;
 			CreateAbilityButtons();

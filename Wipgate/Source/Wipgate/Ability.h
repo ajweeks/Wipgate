@@ -63,6 +63,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability parameters")
 		float CastTime;
 
+	// True once this ability has finished executing
+	UPROPERTY(BlueprintReadWrite)
+		bool IsCompleted;
+
 	void SetTarget(AActor* Target);
 
 protected:

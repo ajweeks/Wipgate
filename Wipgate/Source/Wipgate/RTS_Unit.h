@@ -53,6 +53,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
 		float SeekWeightClamp = 1.f;
 
+	// When true, this unit's stats can not be changed, and it can not be targeted
+	UPROPERTY(EditAnywhere, Category = "", BlueprintReadWrite)
+		bool Immaterial = false;
 
 private:
 	
