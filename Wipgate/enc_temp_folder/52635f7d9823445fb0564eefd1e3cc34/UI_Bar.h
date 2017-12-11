@@ -19,8 +19,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetHealthBarPercent();
-	UFUNCTION(BlueprintCallable)
-		FLinearColor GetTeamColor();
 
 private:
 	ARTS_Entity* EntityRef;
