@@ -2,6 +2,7 @@
 
 #include "RTS_Squad.h"
 #include "RTS_Unit.h"
+#include "DrawDebugHelpers.h"
 
 void URTS_Squad::Update(float dt)
 {
@@ -24,7 +25,7 @@ void URTS_Squad::Update(float dt)
 	CurrentTimer += dt;
 	if (CurrentTimer <= MaxTimer)
 	{
-		//TODO: Debugging
+		DrawDebug();
 		return;
 	}
 	
@@ -34,6 +35,13 @@ void URTS_Squad::Update(float dt)
 		unit->OriginalTarget = ClickedTarget;
 		unit->FinalTarget = ClickedTarget;
 	}
+
+	DrawDebug();
+}
+
+void URTS_Squad::DrawDebug()
+{
+	DrawDebugSphere(GetWorld(), CentreOfMass, 10, 12, FColor(255, 255, 0), false, 0.f, (uint8)'\000', 1.f);
 }
 
 FVector URTS_Squad::GetCentreOfMass()
@@ -42,7 +50,8 @@ FVector URTS_Squad::GetCentreOfMass()
 
 	for (int32 i = 0; i < Units.Num(); ++i)
 	{
-		output += Units[i]->GetActorLocation();
+		if(Units[i])
+			output += Units[i]->GetActorLocation();
 	}
 	return output / (Units.Num());
 }
