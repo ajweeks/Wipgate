@@ -48,28 +48,27 @@ void ALevelGenerator::GenerateStreets(const int granularity)
 		else if (rnd == 1)
 			street->Tighten();
 	}*/
-	ExecuteSteps();
 
-	m_Grid->GetRandomStreet()->Widen();
+	//m_Grid->GetRandomStreet()->Widen();
 
-	vector<Tile*> intersectionTiles = m_Grid->GetTilesWithType(m_Grid->GetTiles(), INTERSECTION);
-	vector<Tile*> adjacents;
-	for (auto t : intersectionTiles)
-	{
-		// adjacent to wall?
-		adjacents = m_Grid->GetAdjacentTiles(t);
-		if (!m_Grid->GetTilesFilled(adjacents).empty() && 
-			(m_Grid->IsAdjTileWithType(t, STREET_HOR) || m_Grid->IsAdjTileWithType(t, STREET_VERT)))
-		{
-			Tile* filled = m_Grid->GetTilesFilled(adjacents)[0];
-			vector<Tile*> adjEmpties = m_Grid->GetTilesFilled(m_Grid->GetAdjacentTiles(filled), false);
-			if (adjEmpties.size() > 1 && !m_Grid->GetTilesWithTypes(adjEmpties, vector<TileType> { STREET_HOR, STREET_VERT}).empty())
-			{
-				m_Grid->SetFilled(filled, false);
-				m_Grid->SetType(filled, INTERSECTION);
-			}
-		}
-	}
+	//vector<Tile*> intersectionTiles = m_Grid->GetTilesWithType(m_Grid->GetTiles(), INTERSECTION);
+	//vector<Tile*> adjacents;
+	//for (auto t : intersectionTiles)
+	//{
+	//	// adjacent to wall?
+	//	adjacents = m_Grid->GetAdjacentTiles(t);
+	//	if (!m_Grid->GetTilesFilled(adjacents).empty() && 
+	//		(m_Grid->IsAdjTileWithType(t, STREET_HOR) || m_Grid->IsAdjTileWithType(t, STREET_VERT)))
+	//	{
+	//		Tile* filled = m_Grid->GetTilesFilled(adjacents)[0];
+	//		vector<Tile*> adjEmpties = m_Grid->GetTilesFilled(m_Grid->GetAdjacentTiles(filled), false);
+	//		if (adjEmpties.size() > 1 && !m_Grid->GetTilesWithTypes(adjEmpties, vector<TileType> { STREET_HOR, STREET_VERT}).empty())
+	//		{
+	//			m_Grid->SetFilled(filled, false);
+	//			m_Grid->SetType(filled, INTERSECTION);
+	//		}
+	//	}
+	//}
 
 	//Street* street = m_Grid->GetRandomStreet();
 	//if (street)
@@ -82,13 +81,13 @@ void ALevelGenerator::GenerateStreets(const int granularity)
 
 
 
-	//// remove streets while ensuring connectivity
-	//SparsifyStreetsRandom(4);
+	// remove streets while ensuring connectivity
+	SparsifyStreetsRandom(4);
 
-	//// Reset unfilled tiles to floor and flag streets again
-	//m_Grid->SetTilesType(m_Grid->GetTilesFilled(m_Grid->GetTiles(), false), FLOOR);
-	//FlagStreets();
-	//CreateStreetsFromFlagged();
+	// Reset unfilled tiles to floor and flag streets again
+	m_Grid->SetTilesType(m_Grid->GetTilesFilled(m_Grid->GetTiles(), false), FLOOR);
+	FlagStreets();
+	CreateStreetsFromFlagged();
 
 	m_Grid->SetFilled((*m_Grid)[0][0], false);
 }
@@ -142,7 +141,7 @@ void ALevelGenerator::FlagStreets()
 	// complete street flagging by flagging intersections completely
 	// flag the 3 opposite tiles from the building corner
 	vector<Tile*> intersectionTiles = m_Grid->GetTilesWithType(tiles, FLOOR);
-	m_Grid->SetTilesType(intersectionTiles, INTERSECTION);
+	m_Grid->SetTilesType(intersectionTiles, FLOOR);
 	Tile* blockCorner;
 	vector<Tile*> oppositeTiles;
 	for (auto t : intersectionTiles)
@@ -151,7 +150,7 @@ void ALevelGenerator::FlagStreets()
 		blockCorner = m_Grid->GetTilesFilled(m_Grid->GetNearbyTiles(t), true).front();
 		Direction cornerDir = m_Grid->GetTileDirection(t, blockCorner);
 		oppositeTiles = m_Grid->GetOppositeDirTiles(t, cornerDir);
-		m_Grid->SetTilesType(oppositeTiles, INTERSECTION);
+		m_Grid->SetTilesType(oppositeTiles, FLOOR);
 	}
 }
 
