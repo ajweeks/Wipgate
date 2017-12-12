@@ -37,21 +37,12 @@ void UUnitEffect::StopParticleConstant()
 
 void UUnitEffect::AttachParticleToSocket(USceneComponent * skeletalMesh)
 {
-	//for (auto socket : skeletalMesh->GetAllSocketNames())
-	//{
-	//	UE_LOG(LogTemp, Log, TEXT("%s"), *socket.ToString());
-
-	//}
 	if (!ParticleComponent) return;
 
 	FAttachmentTransformRules rules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
 	
 	if (skeletalMesh->GetAllSocketNames().Contains(SocketName))
-	{
-		PrintStringToScreen(SocketName.ToString());
-
 		ParticleComponent->AttachToComponent(skeletalMesh, rules, SocketName);
-	}
 }
 
 //UUnitEffect * UUnitEffect::GetCopy()
