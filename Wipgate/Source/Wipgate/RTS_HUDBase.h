@@ -38,6 +38,12 @@ public:
 		void UpdateSelectionBox(FVector2D Position, FVector2D Size);
 
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void SetVisible(bool Visible);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void ToggleVisible();
+
 	// Entity icon functions
 	UFUNCTION(BlueprintImplementableEvent)
 		void AddEntityIconToGrid(ARTS_Entity* Entity);

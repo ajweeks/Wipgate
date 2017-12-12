@@ -55,6 +55,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
+	UFUNCTION(BlueprintCallable)
 	URTS_HUDBase* GetHUD();
 
 private:
