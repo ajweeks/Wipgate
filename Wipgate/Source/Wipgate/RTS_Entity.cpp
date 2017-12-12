@@ -57,8 +57,6 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->CastShadow = 1;
 	}
 
-	AbilityIcons.SetNumZeroed(NUM_ABILITIES);
-
 	// Vision debugging meshes
 	{
 		RangeInnerVisionColor = FLinearColor(0.0f, 0.9f, 0.0f, 1.0f);

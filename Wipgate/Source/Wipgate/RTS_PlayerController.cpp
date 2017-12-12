@@ -491,7 +491,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						PrintStringToScreen(TEXT("Targetted ground"));
+						//PrintStringToScreen(TEXT("Targetted ground"));
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
 						m_SelectedAbility = nullptr;
@@ -520,7 +520,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						PrintStringToScreen(TEXT("Targetted entity"));
+						//PrintStringToScreen(TEXT("Targetted entity"));
 						m_SelectedAbility->SetTarget(unitUnderCursor);
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
@@ -553,7 +553,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							PrintStringToScreen(TEXT("Targetted friendly"));
+							//PrintStringToScreen(TEXT("Targetted friendly"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
@@ -591,7 +591,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							PrintStringToScreen(TEXT("Targetted enemy"));
+							//PrintStringToScreen(TEXT("Targetted enemy"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
@@ -870,11 +870,7 @@ void ARTS_PlayerController::ClearAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
-		for (int32 i = 0; i < m_SpecialistShowingAbilities->AbilityIcons.Num(); ++i)
-		{
-			m_SpecialistShowingAbilities->AbilityIcons[i].Button = nullptr;
-			m_SpecialistShowingAbilities->AbilityIcons[i].ProgressBar = nullptr;
-		}
+		m_SpecialistShowingAbilities->ShowingAbilityIcons = false;
 		m_SpecialistShowingAbilities = nullptr;
 		m_RTSHUD->ClearAbilityIconsFromCommandCardGrid();
 	}
@@ -884,22 +880,28 @@ void ARTS_PlayerController::CreateAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
-		for (int32 i = 0; i < m_SpecialistShowingAbilities->AbilityIcons.Num(); ++i)
+		//FAbilityIcon& abilityIcon = m_SpecialistShowingAbilities->AbilityIcons[i];
+
+		if (!m_SpecialistShowingAbilities->ShowingAbilityIcons)
 		{
-			FAbilityIcon& abilityIcon = m_SpecialistShowingAbilities->AbilityIcons[i];
-			if (!abilityIcon.Button)
+			m_SpecialistShowingAbilities->ShowingAbilityIcons = true;
+			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 			{
-				abilityIcon.ProgressBar = m_RTSHUD->ConstructWidget<UProgressBar>();
-				abilityIcon.Button = m_RTSHUD->ConstructWidget<UButton>();
-				int col = i;
-				int row = 1;
-				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
+				m_RTSHUD->AddAbilityIconToCommandCardGrid(m_SpecialistShowingAbilities);
+			}
+		}
 
-				m_RTSHUD->AddAbilityIconToCommandCardGrid(abilityIcon.Button, abilityIcon.ProgressBar);
+		for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
+		{
+			//abilityIcon.ProgressBar = m_RTSHUD->ConstructWidget<UProgressBar>();
+			//abilityIcon.Button = m_RTSHUD->ConstructWidget<UButton>();
+			int col = i;
+			int row = 1;
+			FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
+			FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_SpecialistShowingAbilities);
-
+			m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
+				/*
 				if (i == 0)
 				{
 					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
@@ -912,7 +914,7 @@ void ARTS_PlayerController::CreateAbilityButtons()
 				{
 					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
 				}
-			}
+				*/
 		}
 	}
 }
@@ -926,17 +928,16 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 
 	if (m_SpecialistShowingAbilities && m_RTSHUD)
 	{
-		for (int32 i = 0; i < m_SpecialistShowingAbilities->AbilityIcons.Num(); ++i)
+		if (m_SpecialistShowingAbilities->ShowingAbilityIcons)
 		{
-			FAbilityIcon& abilityIcon = m_SpecialistShowingAbilities->AbilityIcons[i];
-			if (abilityIcon.Button && abilityIcon.ProgressBar)
+			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 			{
 				int col = i;
 				int row = 1;
 				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
 				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-				m_RTSHUD->UpdateAbilityIconProperties(abilityIcon.Button, abilityIcon.ProgressBar, col, row, buttonBGCol, progressBarBGCol, m_SpecialistShowingAbilities);
+				m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
 			}
 		}
 	}

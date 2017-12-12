@@ -37,13 +37,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEdgeMovementEnabled(bool enabled);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityActiveButtonPress();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityConstructButtonPress();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityPassiveButtonPress();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
@@ -73,7 +73,7 @@ public:
 	void ActionSelectionGroup(int32 Index);
 
 	UFUNCTION(BlueprintCallable)
-		URTS_Squad* AddSquad();
+	URTS_Squad* AddSquad();
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
