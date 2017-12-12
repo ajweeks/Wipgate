@@ -60,10 +60,10 @@ public:
 
 	// Ability icon functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddAbilityIconToCommandCardGrid(UButton* Button, UProgressBar* progressBar);
+		void AddAbilityIconToCommandCardGrid(ARTS_Specialist* Specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateAbilityIconProperties(UButton* Button, UProgressBar* progressBar, int Column, int Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor, ARTS_Specialist* Specialist);
+		void UpdateAbilityIconProperties(int32 Index, int32 Column, int32 Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();

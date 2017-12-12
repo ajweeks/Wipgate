@@ -40,7 +40,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = { 32, 32 };// SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D iconSize = (SelectedEntitiesRef[0]->Icon ? SelectedEntitiesRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize() : FVector2D(32, 32));
 		iconSize.X += EntityIconPadding.Left + EntityIconPadding.Right;
 		iconSize.Y += EntityIconPadding.Top + EntityIconPadding.Bottom;
 

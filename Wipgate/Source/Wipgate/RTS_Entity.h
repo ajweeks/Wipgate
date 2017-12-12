@@ -245,13 +245,14 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
 
+	// Selection screen icon
 	UImage* Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 IconIndex = -1;
 
 	const int NUM_ABILITIES = 3;
-	TArray<FAbilityIcon> AbilityIcons; // Set to nullptrs when not visible
+	bool ShowingAbilityIcons = false;
 
 protected:
 	// Called when the game starts
