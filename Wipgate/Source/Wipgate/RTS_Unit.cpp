@@ -17,8 +17,7 @@ ARTS_Unit::ARTS_Unit()
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh)
 	{
-		FRotator rot;
-		rot.Yaw = -90;
+		FRotator rot = FRotator(0, -90, 0);
 		mesh->SetRelativeRotation(rot);
 	}
 }
