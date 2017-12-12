@@ -275,7 +275,9 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 
 	if (effect->ConstantParticles)
 	{
+		//if (effect->SocketName != "None")
 		effect->StartParticleConstant(RootComponent);
+		effect->AttachParticleToSocket(GetMesh());
 	}
 }
 

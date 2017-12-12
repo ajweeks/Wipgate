@@ -1,6 +1,8 @@
 #include "UnitEffect.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Particles/ParticleSystemComponent.h"
+#include "Runtime/Engine/Classes/Engine/SkeletalMesh.h"
+#include "GeneralFunctionLibrary_CPP.h"
 
 void UUnitEffect::Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration)
 {
@@ -12,12 +14,13 @@ void UUnitEffect::Initialize(const EUnitEffectStat stat, const EUnitEffectType t
 	Duration = duration;
 }
 
-void UUnitEffect::SetParticles(UParticleSystem * tick, UParticleSystem * start, UParticleSystem * end, UParticleSystem* constant)
+void UUnitEffect::SetParticles(UParticleSystem * tick, UParticleSystem * start, UParticleSystem * end, UParticleSystem* constant, FName socketName)
 {
 	TickParticles = tick;
 	StartParticles = start;
 	EndParticles = end;
 	ConstantParticles = constant;
+	SocketName = socketName;
 }
 
 void UUnitEffect::StartParticleConstant(USceneComponent* comp)
@@ -29,7 +32,26 @@ void UUnitEffect::StartParticleConstant(USceneComponent* comp)
 void UUnitEffect::StopParticleConstant()
 {
 	if(ParticleComponent)
-		ParticleComponent->Deactivate();
+		ParticleComponent->DestroyComponent();
+}
+
+void UUnitEffect::AttachParticleToSocket(USceneComponent * skeletalMesh)
+{
+	//for (auto socket : skeletalMesh->GetAllSocketNames())
+	//{
+	//	UE_LOG(LogTemp, Log, TEXT("%s"), *socket.ToString());
+
+	//}
+	if (!ParticleComponent) return;
+
+	FAttachmentTransformRules rules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
+	
+	if (skeletalMesh->GetAllSocketNames().Contains(SocketName))
+	{
+		PrintStringToScreen(SocketName.ToString());
+
+		ParticleComponent->AttachToComponent(skeletalMesh, rules, SocketName);
+	}
 }
 
 //UUnitEffect * UUnitEffect::GetCopy()
