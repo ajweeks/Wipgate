@@ -14,6 +14,8 @@ enum class EUnitEffectStat : uint8
 	DAMAGE 			UMETA(DisplayName = "Damage"),
 	ARMOR			UMETA(DisplayName = "Armor"),
 	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
+	ATTACK_RATE		UMETA(DisplayName = "Attack rate"),
+	ATTACK_DAMAGE	UMETA(DisplayName = "Attack damage"),
 };
 
 UENUM(BlueprintType)
@@ -36,10 +38,11 @@ public:
 	
 	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
 	UFUNCTION(BlueprintCallable)
-	void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant);
+	void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant, FName socketName);
 	UFUNCTION(BlueprintCallable)
 	void StartParticleConstant(USceneComponent* comp);
 	void StopParticleConstant();
+	void AttachParticleToSocket(USceneComponent * skeletalMesh);
 
 	//UFUNCTION(BlueprintCallable)
 	//UUnitEffect* GetCopy();
@@ -60,6 +63,8 @@ public:
 	EUnitEffectStat AffectedStat;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
 	EUnitEffectType Type;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+	FName SocketName;
 
 	UParticleSystem* StartParticles = nullptr;
 	UParticleSystem* TickParticles = nullptr;

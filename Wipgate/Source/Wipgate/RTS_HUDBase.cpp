@@ -2,12 +2,18 @@
 
 #include "RTS_HUDBase.h"
 
+#include "Components/Button.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
 #include "Components/PanelSlot.h"
+#include "Components/Image.h"
 #include "Engine/Engine.h"
 
-#include "RTS_UnitCharacter.h"
+#include "RTS_Entity.h"
+#include "RTS_Unit.h"
+#include "RTS_Specialist.h"
+#include "RTS_GameState.h"
+#include "RTS_UnitIcon.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 
@@ -15,7 +21,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::Tick(MyGeometry, InDeltaTime);
 
-	if (!SelectedUnitIconGridRef)
+	if (!SelectedEntityIconGridRef)
 	{
 		UE_LOG(RTS_HUD_BASE_LOG, Error, TEXT("Selected unit icons grid not set! (Should be set in HUD BP's constructor)"));
 		return;
@@ -27,78 +33,78 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		return;
 	}
 
-	if (SelectedUnitsRef.Num() > 1) // If one unit was selected, there won't be an icon for it
+	if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
 	{
 		FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
-		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedUnitIconGridRef->GetCachedGeometry().GetAbsoluteSize();
+		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedEntityIconGridRef->GetCachedGeometry().GetAbsoluteSize();
 		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
 		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = SelectedUnitsRef[0]->Icon->GetCachedGeometry().GetAbsoluteSize();
-		iconSize.X += UnitIconPadding.Left + UnitIconPadding.Right;
-		iconSize.Y += UnitIconPadding.Top + UnitIconPadding.Bottom;
+		FVector2D iconSize = (FVector2D(32, 32));
+		iconSize.X += EntityIconPadding.Left + EntityIconPadding.Right;
+		iconSize.Y += EntityIconPadding.Top + EntityIconPadding.Bottom;
 
 		FVector2D maxSelectedUnitImageCountF = (selectedUnitsBGImageAbsoluteSize / iconSize);
 		FIntPoint maxSelectedUnitImageCount = FIntPoint(
 			FMath::TruncToInt(maxSelectedUnitImageCountF.X) - 1, 
 			FMath::TruncToInt(maxSelectedUnitImageCountF.Y) - 1);
 
-		m_MaxUnitImageCount = maxSelectedUnitImageCount;
-		UpdateSelectedUnits(SelectedUnitsRef, false);
+		m_MaxEntityImageCount = maxSelectedUnitImageCount;
+		UpdateSelectedEntities(SelectedEntitiesRef, false);
 	}
 }
 
-void URTS_HUDBase::UpdateSelectedUnits(const TArray<ARTS_UnitCharacter*>& SelectedUnits, bool ClearArray)
+void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
 {
-	int32 newSelectedUnitCount = SelectedUnits.Num();
-	int32 newSelectedUnitIconCount = FMath::Min(newSelectedUnitCount, m_MaxUnitImageCount.X * m_MaxUnitImageCount.Y);
+	int32 newSelectedEntityCount = SelectedEntities.Num();
+	int32 newSelectedEntityIconCount = FMath::Min(newSelectedEntityCount, m_MaxEntityImageCount.X * m_MaxEntityImageCount.Y);
 
 	if (ClearArray)
 	{
-		if (SelectedUnitsRef.Num() > 1)
+		ClearEntityIconsFromGrid();
+		//if (SelectedEntitiesRef.Num() > 1)
+		//{
+		//	for (auto oldSelectedEntity : SelectedEntitiesRef)
+		//	{
+		//		RemoveEntityIconFromGrid(oldSelectedEntity->IconIndex);
+		//		oldSelectedEntity->Icon = nullptr;
+		//	}
+		//}
+
+		if (SelectedEntities.Num() > 1)
 		{
-			for (auto oldSelectedUnit : SelectedUnitsRef)
+			for (auto newSelectedEntity : SelectedEntities)
 			{
-				RemoveUnitIconFromGrid(oldSelectedUnit->Icon);
-				oldSelectedUnit->Icon = nullptr;
+				newSelectedEntity->Icon = WidgetTree->ConstructWidget<UImage>();
+				AddEntityIconToGrid(newSelectedEntity);
 			}
 		}
 
-		if (SelectedUnits.Num() > 1)
-		{
-			for (auto newSelectedUnit : SelectedUnits)
-			{
-				newSelectedUnit->Icon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-				AddUnitIconToGrid(newSelectedUnit->Icon);
-			}
-		}
-
-		SelectedUnitsRef = SelectedUnits;
+		SelectedEntitiesRef = SelectedEntities;
 	}
 
-	if (newSelectedUnitIconCount > 1)
+	if (newSelectedEntityIconCount > 1)
 	{
-		for (int32 i = 0; i < newSelectedUnitIconCount; ++i)
+		for (int32 i = 0; i < newSelectedEntityIconCount; ++i)
 		{
-			ARTS_UnitCharacter* unit = SelectedUnitsRef[i];
-			checkSlow(unit);
-			URTS_UnitCoreComponent* unitCoreComponent = unit->UnitCoreComponent;
-			checkSlow(unitCoreComponent);
+			ARTS_Entity* entity = SelectedEntitiesRef[i];
+			checkSlow(entity);
 
-			int col = i % m_MaxUnitImageCount.X;
-			int row = i / m_MaxUnitImageCount.X;
-			float unitHealthNorm = (float)unitCoreComponent->CurrentHealth / (float)unitCoreComponent->BaseHealth;
+			int col = i % m_MaxEntityImageCount.X;
+			int row = i / m_MaxEntityImageCount.X;
+			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health / (float)entity->BaseDefenceStats.Health;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{
-				color = FMath::Lerp(UnitHealthColor_LowHealth, UnitHealthColor_FullHealth, unitHealthNorm);
+				color = FMath::Lerp(EntityIconHealthColor_LowHealth, EntityIconHealthColor_FullHealth, unitHealthNorm);
 			}
 			else
 			{
-				color = UnitHealthColor_Dead;
+				color = EntityIconHealthColor_Dead;
 			}
 
-			UpdateUnitIconProperties(unit->Icon, col, row, color);
+			UpdateEntityIconProperties(entity->IconIndex, col, row, color);
 		}
 	}
 }
+

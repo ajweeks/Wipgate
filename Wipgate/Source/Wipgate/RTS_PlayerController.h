@@ -8,14 +8,16 @@
 #include "RTS_PlayerController.generated.h"
 
 class UUserWidget;
-class APawn;
 class UCameraComponent;
 class UStaticMeshComponent;
 class USpringArmComponent;
+class APawn;
 class ARTS_GameState;
 class AAbility;
-
-DECLARE_LOG_CATEGORY_EXTERN(Wipgate_Log, Log, All);
+class ARTS_Entity;
+class ARTS_Unit;
+class ARTS_Specialist;
+class URTS_Squad;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -35,33 +37,49 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEdgeMovementEnabled(bool enabled);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityActiveButtonPress();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityConstructButtonPress();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityPassiveButtonPress();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
-	UUserWidget* MainHUDInstance;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AAbility* m_SelectedAbility = nullptr;
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
+
+	UFUNCTION(BlueprintCallable)
+	URTS_HUDBase* GetHUD();
+
 private:
-	void ActionMainClickPressed();
-	void ActionMainClickReleased();
+	void ActionPrimaryClickPressed();
+	void ActionPrimaryClickReleased();
 	void ActionSecondaryClickPressed();
 	void ActionSecondaryClickReleased();
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelection();
 
-	void ActionSelectionGroup(TArray<ARTS_UnitCharacter*>& selectionGroupArray);
+public:
+	// Helper function for selecting a selection group (index is 0-based)
+	UFUNCTION(BlueprintCallable)
+	void ActionSelectionGroup(int32 Index);
+
+	UFUNCTION(BlueprintCallable)
+	URTS_Squad* AddSquad();
+
+private:
+	static const int32 SELECTION_GROUP_COUNT = 5;
+
+	void ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray);
+	void ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup, bool* SelectionGroupIconCreated);
 	void ActionSelectionGroup1();
 	void ActionCreateSelectionGroup1();
 	void ActionSelectionGroup2();
@@ -79,14 +97,9 @@ private:
 
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
-	void UpdateAbilityButtons();
 
-	// TODO: Move these to the general function library
-	bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
-	void FVector2DMinMax(FVector2D& vec1, FVector2D& vec2);
-	void FVectorMinMax(FVector& vec1, FVector& vec2);
-	FVector2D GetNormalizedMousePosition() const;
-	FVector2D GetMousePositionVector2D();
+private:
+
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
 	void MoveToTarget();
@@ -95,10 +108,13 @@ private:
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
+
+	UUserWidget* MainHUDInstance;
+
 	URTS_HUDBase* m_RTSHUD = nullptr;
 	ARTS_GameState* m_RTS_GameState = nullptr;
 
-	ARTS_UnitCharacter* m_UnitShowingAbilities = nullptr;
+	ARTS_Specialist* m_SpecialistShowingAbilities = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Misc")
 	bool m_EdgeMovementEnabled = true;
@@ -143,6 +159,8 @@ private:
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
+
+	TArray<URTS_Squad*> m_Squads;
 
 	// TODO: Remove, not used
 	FVector m_ClickStartWS;
