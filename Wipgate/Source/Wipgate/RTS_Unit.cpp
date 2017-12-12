@@ -22,6 +22,24 @@ ARTS_Unit::ARTS_Unit()
 	}
 }
 
+void ARTS_Unit::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (m_PostKillTimer < POSTKILLDELAY && CurrentDefenceStats.Health <= 0)
+	{
+		m_PostKillTimer += DeltaTime;
+		if (m_PostKillTimer > POSTKILLDELAY)
+		{
+			USkeletalMeshComponent* skeletalMesh = GetMesh();
+			//skeletalMesh->SetCollisionProfileName("None");
+			skeletalMesh->SetComponentTickEnabled(false);
+
+			//skeletalMesh->SetActive(false);
+		}
+	}
+}
+
 void ARTS_Unit::SetTeamMaterial()
 {
 	ARTS_Entity::SetTeamMaterial();
