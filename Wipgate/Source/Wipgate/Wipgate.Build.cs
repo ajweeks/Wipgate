@@ -7,6 +7,11 @@ public class Wipgate : ModuleRules
 	public Wipgate(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		PrivateIncludePaths.AddRange(new string[] {
+             "Wipgate/LevelGenerator",
+             "Wipgate"
+         });
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "AIModule" });
 
