@@ -95,6 +95,10 @@ public:
 		void HideSelectionGroupIcon(int32 Index);
 
 
+	UFUNCTION(BlueprintCallable)
+		void DeselectEntity(ARTS_Entity* Entity);
+
+
 
 	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
