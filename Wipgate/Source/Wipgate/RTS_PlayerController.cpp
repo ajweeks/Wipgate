@@ -189,6 +189,21 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 
+	if (m_ZoomingToTarget)
+	{
+		float armDeltaLength = (m_TargetZoomArmLength - m_RTS_CameraPawnSpringArmComponent->TargetArmLength) * DeltaSeconds * m_ZoomSpeed;
+		m_RTS_CameraPawnSpringArmComponent->TargetArmLength += armDeltaLength;
+
+		if ((armDeltaLength > 0.0f &&
+			m_RTS_CameraPawnSpringArmComponent->TargetArmLength >= m_TargetZoomArmLength) ||
+			(armDeltaLength < 0.0f &&
+				m_RTS_CameraPawnSpringArmComponent->TargetArmLength <= m_TargetZoomArmLength))
+		{
+			m_RTS_CameraPawnSpringArmComponent->TargetArmLength = m_TargetZoomArmLength;
+			m_ZoomingToTarget = false;
+		}
+	}
+
 	// TODO: Find out how to use input mapped key
 	if (IsInputKeyDown(EKeys::SpaceBar))
 	{
@@ -851,12 +866,17 @@ void ARTS_PlayerController::AxisZoom(float AxisValue)
 {
 	if (m_RTS_CameraPawnSpringArmComponent && AxisValue != 0.0f)
 	{
-		float deltaArmLength = -AxisValue * GetWorld()->DeltaTimeSeconds * m_ZoomSpeed * m_FastMoveMultiplier;
+		float deltaArmLength = -AxisValue * m_FastMoveMultiplier * m_ZoomDistance;
 
 		float newArmLength = m_RTS_CameraPawnSpringArmComponent->TargetArmLength + deltaArmLength;
 		newArmLength = FMath::Clamp(newArmLength, m_MinArmDistance, m_MaxArmDistance);
 
-		m_RTS_CameraPawnSpringArmComponent->TargetArmLength = newArmLength;
+		m_TargetZoomArmLength = newArmLength;
+
+		if (!FMath::IsNearlyEqual(m_TargetZoomArmLength, m_RTS_CameraPawnSpringArmComponent->TargetArmLength))
+		{
+			m_ZoomingToTarget = true;
+		}
 	}
 }
 
@@ -1051,6 +1071,4 @@ void ARTS_PlayerController::MoveToTarget()
 	{
 		m_MovingToTarget = false;
 	}
-
-	// TODO: Zoom camera in/out on selection
 }
