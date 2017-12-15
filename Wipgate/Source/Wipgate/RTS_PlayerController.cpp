@@ -607,6 +607,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
 	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
 
+	const int32 prevNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
+
 	if (!isAddToSelectionKeyDown)
 	{
 		m_RTS_GameState->SelectedEntities.Empty();
@@ -651,17 +653,30 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 
-	if (!m_SelectedAbility && !m_SpecialistShowingAbilities && m_RTS_GameState->SelectedEntities.Num() == 1)
+	if (m_RTS_GameState->SelectedEntities.Num() == 1)
 	{
-		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
-
-		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist)
+		if (!m_SelectedAbility && !m_SpecialistShowingAbilities)
 		{
-			m_SpecialistShowingAbilities = specialist;
-			CreateAbilityButtons();
+			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
+
+			ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
+			if (specialist)
+			{
+				m_SpecialistShowingAbilities = specialist;
+				CreateAbilityButtons();
+			}
+		}
+
+		m_RTSHUD->ShowSelectedUnitStats(m_RTS_GameState->SelectedEntities[0]);
+	}
+	else
+	{
+		if (prevNumEntitiesSelected == 1)
+		{
+			m_RTSHUD->HideSelectedUnitStats();
 		}
 	}
+
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()

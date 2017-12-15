@@ -71,6 +71,14 @@ public:
 		void ClearAbilityIconsFromCommandCardGrid();
 
 
+	// Entity stats functions
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowSelectedUnitStats(ARTS_Entity* Entity);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSelectedUnitStats();
+
+
 	// Selection group icon functions
 	/* 
 		This function should be called once at startup to create all necessary buttons
