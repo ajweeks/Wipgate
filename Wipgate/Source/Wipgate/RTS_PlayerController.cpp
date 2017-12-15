@@ -364,7 +364,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		//	}
 		//}
 
-		if (!m_SelectedAbility)
+		if (!m_SelectedAbility && entity->Team.Alignment != EAlignment::E_ENEMY)
 		{
 			if (!entityIsDead)
 			{
