@@ -193,7 +193,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		float armDeltaLength = (m_TargetZoomArmLength - m_RTS_CameraPawnSpringArmComponent->TargetArmLength) * DeltaSeconds * m_ZoomSpeed;
 		m_RTS_CameraPawnSpringArmComponent->TargetArmLength += armDeltaLength;
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("armDeltaLength %f, m_TargetZoomArmLength %f"), armDeltaLength, m_TargetZoomArmLength);
 
 		if ((armDeltaLength > 0.0f &&
 			m_RTS_CameraPawnSpringArmComponent->TargetArmLength >= m_TargetZoomArmLength) ||
@@ -202,7 +201,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 			m_RTS_CameraPawnSpringArmComponent->TargetArmLength = m_TargetZoomArmLength;
 			m_ZoomingToTarget = false;
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("stop"));
 		}
 	}
 

@@ -167,8 +167,4 @@ private:
 	FVector2D m_ClickEndSS;
 
 	TArray<URTS_Squad*> m_Squads;
-
-	// TODO: Remove, not used
-	FVector m_ClickStartWS;
-	FVector m_ClickEndWS;
 };
