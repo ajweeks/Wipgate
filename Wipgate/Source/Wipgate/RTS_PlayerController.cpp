@@ -172,7 +172,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (IsInputKeyDown(EKeys::Escape))
 	{
-		// TODO: Look into alternative to this
 		GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
 		return;
 	}
@@ -277,21 +276,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	const bool isAddToSelectionKeyPressed = WasInputKeyJustPressed(addToSelectionKey);
 	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
 
-	//if (isAddToSelectionKeyPressed)
-	//{
-	//	// Keep a reference to the selected entities when shift is pressed
-	//	SelectedUnitsWhenAddToSelectionKeyPressed = m_RTS_GameState->SelectedEntities;
-	//}
-	//
-	//if (isAddToSelectionKeyReleased)
-	//{
-	//	m_RTS_GameState->SelectedUnits = SelectedUnitsWhenAddToSelectionKeyPressed;
-
-	//	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
-	//	{
-	//		m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
-	//	}
-	//}
 
 	if (!isAddToSelectionKeyDown)
 	{
@@ -385,11 +369,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 					{
 						entity->SetSelected(true);
 
-						if (!isPrimaryClickButtonDown)
-						{
-							//entity->HoveredOver = true;
-						}
-
 						if ((isAddToSelectionKeyDown && !isPrimaryClickButtonReleased))
 						{
 							m_RTS_GameState->SelectedEntities.AddUnique(entity);
@@ -423,7 +402,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	//Update squads
+	// Update squads
 	for (URTS_Squad* squad : m_Squads)
 	{
 		if (squad->Units.Num() <= 0)
@@ -433,7 +412,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 
 		squad->Update(DeltaSeconds);
-
 	}
 }
 
@@ -446,7 +424,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 {
 	if (!m_RTS_GameState || !m_RTSHUD)
 	{
-		return; // Game state hasn't been initialized yet, we can't do anything
+		return;
 	}
 
 	// Hide selection box when mouse isn't being held
@@ -497,14 +475,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						//PrintStringToScreen(TEXT("Targetted ground"));
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
 						m_SelectedAbility = nullptr;
-					}
-					else
-					{
-						PrintStringToScreen(FString::Printf(TEXT("%f > %f"), entityDist, abilityRange));
 					}
 				}
 			}
@@ -526,15 +499,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						//PrintStringToScreen(TEXT("Targetted entity"));
 						m_SelectedAbility->SetTarget(unitUnderCursor);
 						m_SelectedAbility->Activate();
 						m_SelectedAbility->Deselect();
 						m_SelectedAbility = nullptr;
-					}
-					else
-					{
-						PrintStringToScreen(FString::Printf(TEXT("%f > %f"), entityDist, abilityRange));
 					}
 				}
 			}
@@ -559,15 +527,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							//PrintStringToScreen(TEXT("Targetted friendly"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
 							m_SelectedAbility = nullptr;
-						}
-						else
-						{
-							PrintStringToScreen(FString::Printf(TEXT("%f > %f"), entityDist, abilityRange));
 						}
 					}
 				}
@@ -597,15 +560,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							//PrintStringToScreen(TEXT("Targetted enemy"));
 							m_SelectedAbility->SetTarget(unitUnderCursor);
 							m_SelectedAbility->Activate();
 							m_SelectedAbility->Deselect();
 							m_SelectedAbility = nullptr;
-						}
-						else
-						{
-							PrintStringToScreen(FString::Printf(TEXT("%f > %f"), entityDist, abilityRange));
 						}
 					}
 				}
@@ -624,18 +582,49 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	const int32 prevNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
 
-	if (!isAddToSelectionKeyDown)
+	bool doubleClicked = false;
+	if (unitUnderCursor)
 	{
-		m_RTS_GameState->SelectedEntities.Empty();
+		float currentTimeSeconds = GetWorld()->GetTimeSeconds();
+
+		if ((currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
+		{
+			doubleClicked = true;
+			float targetRange = unitUnderCursor->CurrentAttackStats.Range;
+
+			for (auto entity : m_RTS_GameState->Entities)
+			{
+				if (entity->Team.Alignment != ETeamAlignment::E_ENEMY && entity->CurrentAttackStats.Range == targetRange)
+				{
+					entity->SetSelected(true);
+					m_RTS_GameState->SelectedEntities.AddUnique(entity);
+				}
+			}
+		}
+
+		m_LastEntityClicked = unitUnderCursor;
+		m_LastEntityClickedFrameTime = currentTimeSeconds;
+	}
+	else
+	{
+		m_LastEntityClicked = nullptr;
 	}
 
-	for (size_t i = 0; i < m_RTS_GameState->Entities.Num(); i++)
+	if (!doubleClicked)
 	{
-		ARTS_Entity* entity = m_RTS_GameState->Entities[i];
-
-		if (entity->IsSelected())
+		if (!isAddToSelectionKeyDown)
 		{
-			m_RTS_GameState->SelectedEntities.AddUnique(entity);
+			m_RTS_GameState->SelectedEntities.Empty();
+		}
+
+		for (size_t i = 0; i < m_RTS_GameState->Entities.Num(); i++)
+		{
+			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
+
+			if (entity->IsSelected())
+			{
+				m_RTS_GameState->SelectedEntities.AddUnique(entity);
+			}
 		}
 	}
 
@@ -648,23 +637,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			ClearAbilityButtons();
 		}
 	}
-
-
-	/*
-	if (!m_SelectedAbility)
-	{
-	// Selected entities array must be cleared if shift isn't down
-	if (!isShiftDown && m_RTS_GameState->SelectedEntities.Num() > 0)
-	{
-	for (int i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
-	{
-	ARTS_UnitCharacter* selectedUnit = m_RTS_GameState->SelectedEntities[i];
-	selectedUnit->SetSelected(false);
-	}
-	//m_RTS_GameState->SelectedEntities.Empty();
-	}
-	}
-	*/
 
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 
@@ -906,8 +878,6 @@ void ARTS_PlayerController::CreateAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
-		//FAbilityIcon& abilityIcon = m_SpecialistShowingAbilities->AbilityIcons[i];
-
 		if (!m_SpecialistShowingAbilities->ShowingAbilityIcons)
 		{
 			m_SpecialistShowingAbilities->ShowingAbilityIcons = true;
@@ -919,28 +889,12 @@ void ARTS_PlayerController::CreateAbilityButtons()
 
 		for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 		{
-			//abilityIcon.ProgressBar = m_RTSHUD->ConstructWidget<UProgressBar>();
-			//abilityIcon.Button = m_RTSHUD->ConstructWidget<UButton>();
 			int col = i;
 			int row = 1;
 			FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
 			FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
 			m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
-				/*
-				if (i == 0)
-				{
-					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-				}
-				else if (i == 1)
-				{
-					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-				}
-				else if (i == 2)
-				{
-					abilityIcon.Button->OnClicked.AddDynamic(this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
-				}
-				*/
 		}
 	}
 }

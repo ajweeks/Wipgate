@@ -166,5 +166,9 @@ private:
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
 
+	float m_LastEntityClickedFrameTime = 0.0f;
+	float m_DoubleClickPeriodSeconds = 0.5f;
+	ARTS_Entity* m_LastEntityClicked = nullptr;
+
 	TArray<URTS_Squad*> m_Squads;
 };
