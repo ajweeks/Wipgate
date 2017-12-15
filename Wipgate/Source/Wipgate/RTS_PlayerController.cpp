@@ -355,16 +355,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		//if (entity->HoveredOver && !isThisUnitUnderCursor && !entityInSelectionBox)
-		//{
-		//	entity->SetSelected(false);
-		//	if (m_RTS_GameState->SelectedUnits.Contains(entity))
-		//	{
-		//		m_RTS_GameState->SelectedUnits.Remove(entity);
-		//	}
-		//}
-
-		if (!m_SelectedAbility && entity->Team.Alignment != EAlignment::E_ENEMY)
+		if (!m_SelectedAbility && entity->Team.Alignment != ETeamAlignment::E_ENEMY)
 		{
 			if (!entityIsDead)
 			{
@@ -541,8 +532,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				EAlignment entityAlignment = unitUnderCursor->Team.Alignment;
-				if (entityAlignment == EAlignment::E_FRIENDLY)
+				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
+				if (entityAlignment == ETeamAlignment::E_FRIENDLY)
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
@@ -579,8 +570,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				EAlignment entityAlignment = unitUnderCursor->Team.Alignment;
-				if (entityAlignment == EAlignment::E_ENEMY)
+				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
+				if (entityAlignment == ETeamAlignment::E_ENEMY)
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
