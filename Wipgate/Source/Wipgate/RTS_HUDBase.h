@@ -23,6 +23,8 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	URTS_HUDBase(const FObjectInitializer& ObjectInitializer);
+
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)

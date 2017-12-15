@@ -17,6 +17,12 @@
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 
+URTS_HUDBase::URTS_HUDBase(const FObjectInitializer& ObjectInitializer) :
+	UUserWidget(ObjectInitializer)
+{
+	m_MaxEntityImageCount = { 15, 1 };
+}
+
 void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::Tick(MyGeometry, InDeltaTime);
@@ -35,22 +41,22 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
 	{
-		FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
-		FVector2D selectedUnitsBGImageAbsoluteSize = SelectedEntityIconGridRef->GetCachedGeometry().GetAbsoluteSize();
-		selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
-		selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
+		//FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+		//FVector2D selectedUnitsBGImageAbsoluteSize = SelectedEntityIconGridRef->GetCachedGeometry().GetAbsoluteSize();
+		//selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
+		//selectedUnitsBGImageAbsoluteSize.Y = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.Y, 0.0f, (float)viewportSize.Y);
 
-		FVector2D iconSize = (FVector2D(32, 32));
-		iconSize.X += EntityIconPadding.Left + EntityIconPadding.Right;
-		iconSize.Y += EntityIconPadding.Top + EntityIconPadding.Bottom;
+		//FVector2D iconSize = (FVector2D(32, 32));
+		//iconSize.X += EntityIconPadding.Left + EntityIconPadding.Right;
+		//iconSize.Y += EntityIconPadding.Top + EntityIconPadding.Bottom;
 
-		FVector2D maxSelectedUnitImageCountF = (selectedUnitsBGImageAbsoluteSize / iconSize);
-		FIntPoint maxSelectedUnitImageCount = FIntPoint(
-			FMath::TruncToInt(maxSelectedUnitImageCountF.X) - 1, 
-			FMath::TruncToInt(maxSelectedUnitImageCountF.Y) - 1);
+		//FVector2D maxSelectedUnitImageCountF = (selectedUnitsBGImageAbsoluteSize / iconSize);
+		//FIntPoint maxSelectedUnitImageCount = FIntPoint(
+		//	FMath::TruncToInt(maxSelectedUnitImageCountF.X) - 1, 
+		//	FMath::TruncToInt(maxSelectedUnitImageCountF.Y) - 1);
 
-		m_MaxEntityImageCount = maxSelectedUnitImageCount;
-		UpdateSelectedEntities(SelectedEntitiesRef, false);
+		//m_MaxEntityImageCount = maxSelectedUnitImageCount;
+		//UpdateSelectedEntities(SelectedEntitiesRef, false);
 	}
 }
 
