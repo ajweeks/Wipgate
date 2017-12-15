@@ -23,6 +23,8 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	URTS_HUDBase(const FObjectInitializer& ObjectInitializer);
+
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -67,6 +69,14 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearAbilityIconsFromCommandCardGrid();
+
+
+	// Entity stats functions
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowSelectedUnitStats(ARTS_Entity* Entity);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSelectedUnitStats();
 
 
 	// Selection group icon functions

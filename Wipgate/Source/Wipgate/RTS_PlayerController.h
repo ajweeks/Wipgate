@@ -131,13 +131,16 @@ private:
 	float m_FastMoveSpeed = 5.0f;
 	// Equals Fast Move Speed when shift is down, otherwise 1.0f
 	float m_FastMoveMultiplier = 1.0f;
-	// Higer values = faster movement when more zoomed out
+	// The closer to zero this value is, the smaller the difference between movement speed while zoomed out and zoomed in (make denominator larger to make difference smaller)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_MoveSpeedZoomMultiplier = 1.0f / 5.0f;
+	float m_MoveSpeedZoomMultiplier = 1.0f / 3.0f;
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_ZoomSpeed = 6000.0f;
+	float m_ZoomSpeed = 40.0f;
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	// How far to zoom per mouse wheel turn
+	float m_ZoomDistance = 140.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float m_MinArmDistance = 100.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
@@ -157,12 +160,15 @@ private:
 	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
 	FVector m_TargetLocation;
 
+	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
+	float m_TargetZoomArmLength;
+
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
 
-	TArray<URTS_Squad*> m_Squads;
+	float m_LastEntityClickedFrameTime = 0.0f;
+	float m_DoubleClickPeriodSeconds = 0.5f;
+	ARTS_Entity* m_LastEntityClicked = nullptr;
 
-	// TODO: Remove, not used
-	FVector m_ClickStartWS;
-	FVector m_ClickEndWS;
+	TArray<URTS_Squad*> m_Squads;
 };

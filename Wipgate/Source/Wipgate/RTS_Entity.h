@@ -68,7 +68,7 @@ struct FVisionStat
 };
 
 UENUM(BlueprintType)
-enum class EAlignment : uint8
+enum class ETeamAlignment : uint8
 {
 	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
 	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
@@ -86,7 +86,7 @@ public:
 	FLinearColor Color = FLinearColor(1, 1, 1, 1);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EAlignment Alignment = EAlignment::E_NEUTRAL;
+	ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL;
 };
 
 USTRUCT(BlueprintType)
@@ -101,7 +101,7 @@ struct FTeam
 	FLinearColor Color = FLinearColor(1, 1, 1, 1);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EAlignment Alignment = EAlignment::E_NEUTRAL;
+	ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL;
 };
 
 UENUM(BlueprintType)

@@ -247,14 +247,21 @@ void ARTS_Entity::SetTeamMaterial()
 	}
 
 	//Set minimap icon color
-	if (MinimapIcon && MinimapIcon->GetMaterials().Num() > 0)
+	if (MinimapIcon)
 	{
-		UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
-		mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
+		if (MinimapIcon->GetMaterials().Num() > 0)
+		{
+			UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
+			mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("Entity's minimap mesh's material is not set!"));
+		}
 	}
 	else
 	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("No minimap material found!"));
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("Entitiy's minimap mesh icon was not created!"));
 	}
 }
 
