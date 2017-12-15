@@ -39,8 +39,8 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		return;
 	}
 
-	if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
-	{
+	//if (SelectedEntitiesRef.Num() > 1) // If one unit was selected, there won't be an icon for it
+	//{
 		//FIntPoint viewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
 		//FVector2D selectedUnitsBGImageAbsoluteSize = SelectedEntityIconGridRef->GetCachedGeometry().GetAbsoluteSize();
 		//selectedUnitsBGImageAbsoluteSize.X = FMath::Clamp(selectedUnitsBGImageAbsoluteSize.X, 0.0f, (float)viewportSize.X);
@@ -57,7 +57,7 @@ void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 		//m_MaxEntityImageCount = maxSelectedUnitImageCount;
 		//UpdateSelectedEntities(SelectedEntitiesRef, false);
-	}
+	//}
 }
 
 void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities, bool ClearArray)
@@ -68,14 +68,6 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 	if (ClearArray)
 	{
 		ClearEntityIconsFromGrid();
-		//if (SelectedEntitiesRef.Num() > 1)
-		//{
-		//	for (auto oldSelectedEntity : SelectedEntitiesRef)
-		//	{
-		//		RemoveEntityIconFromGrid(oldSelectedEntity->IconIndex);
-		//		oldSelectedEntity->Icon = nullptr;
-		//	}
-		//}
 
 		if (SelectedEntities.Num() > 1)
 		{
@@ -114,3 +106,13 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 	}
 }
 
+void URTS_HUDBase::DeselectEntity(ARTS_Entity* Entity)
+{
+	ClearEntityIconsFromGrid();
+
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	ARTS_GameState* RTS_GameState = Cast<ARTS_GameState>(baseGameState);
+
+	RTS_GameState->SelectedEntities.Remove(Entity);
+	UpdateSelectedEntities(RTS_GameState->SelectedEntities, true);
+}
