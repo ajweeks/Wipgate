@@ -928,6 +928,34 @@ URTS_HUDBase* ARTS_PlayerController::GetHUD()
 	return m_RTSHUD;
 }
 
+void ARTS_PlayerController::AddLuma(int32 LumaAmount)
+{
+	m_CurrentLuma += LumaAmount;
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
+	}
+}
+
+void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
+{
+	m_CurrentCurrency += CurrencyAmount;
+	if (m_RTSHUD)
+	{
+		m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
+	}
+}
+
+int32 ARTS_PlayerController::GetCurrentLumaAmount()
+{
+	return m_CurrentLuma;
+}
+
+int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
+{
+	return m_CurrentCurrency;
+}
+
 void ARTS_PlayerController::AxisMoveForward(float AxisValue)
 {
 	if (m_RTS_CameraPawn && AxisValue != 0.0f)

@@ -46,14 +46,26 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OnAbilityPassiveButtonPress();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<UUserWidget> MainHUD;
-
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
 	URTS_HUDBase* GetHUD();
+
+	UFUNCTION(BlueprintCallable)
+	void AddLuma(int32 LumaAmount);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetCurrentLumaAmount();
+
+	UFUNCTION(BlueprintCallable)
+	void AddCurrency(int32 CurrencyAmount);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetCurrentCurrencyAmount();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget> MainHUD;
 
 	UPROPERTY(BlueprintReadWrite)
 	AAbility* SelectedAbility = nullptr;
@@ -162,6 +174,11 @@ private:
 
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;
+
+	// These two fields are private so that the setters must be used, which will update the HUD with the new values
+	int32 m_CurrentLuma;
+	int32 m_CurrentCurrency;
+
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
