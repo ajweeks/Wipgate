@@ -7,13 +7,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -21,6 +21,7 @@
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
+#include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"
 #include "RTS_PlayerController.h"
@@ -103,7 +104,6 @@ ARTS_Entity::ARTS_Entity()
 void ARTS_Entity::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!TeamRow.IsNull())
 	{
 		FTeamRow tr;
@@ -111,6 +111,27 @@ void ARTS_Entity::BeginPlay()
 		Team.Name = TeamRow.RowName;
 		Team.Color = tr.Color;
 		Team.Alignment = tr.Alignment;
+	}
+
+	if (BarWidget)
+	{
+		UUserWidget* barUserWidget = BarWidget->GetUserWidgetObject();
+		if (barUserWidget)
+		{
+			UUI_Bar* bar = Cast<UUI_Bar>(barUserWidget);
+			if (bar)
+			{
+				bar->Initialize(this);
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's type is not derived from UI_Bar!"));
+			}
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's user widget object was not set!"));
+		}
 	}
 
 	CurrentMovementStats = BaseMovementStats;
@@ -133,8 +154,7 @@ void ARTS_Entity::BeginPlay()
 		SetRangeDebug();
 	}
 
-	//Bars
-	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
+	// Bars
 	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	if (playerPawn)
 	{
@@ -153,6 +173,11 @@ void ARTS_Entity::BeginPlay()
 		{
 			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
 		}
+	}
+
+	if (BarWidget)
+	{
+		BarWidget->SetWorldRotation(BarRotation);
 	}
 
 	SetTeamMaterial();
@@ -177,12 +202,6 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
-
-	/* Update bar rotation */
-	if (BarWidget)
-	{
-		BarWidget->SetWorldRotation(BarRotation);
-	}
 
 	/* Apply effects */
 	for (auto e : UnitEffects)

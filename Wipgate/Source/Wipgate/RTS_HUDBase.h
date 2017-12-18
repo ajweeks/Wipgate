@@ -73,10 +73,10 @@ public:
 
 	// Entity stats functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void ShowSelectedUnitStats(ARTS_Entity* Entity);
+		void ShowSelectedEntityStats(ARTS_Entity* Entity);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void HideSelectedUnitStats();
+		void HideSelectedEntityStats();
 
 
 	// Selection group icon functions
@@ -98,6 +98,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void DeselectEntity(ARTS_Entity* Entity);
 
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateCurrencyAmount(int32 CurrencyAmount);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateLumaAmount(int32 LumaAmount);
 
 
 	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)

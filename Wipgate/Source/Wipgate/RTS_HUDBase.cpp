@@ -20,7 +20,7 @@ DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
 URTS_HUDBase::URTS_HUDBase(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget(ObjectInitializer)
 {
-	m_MaxEntityImageCount = { 15, 1 };
+	m_MaxEntityImageCount = { 13, 1 };
 }
 
 void URTS_HUDBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -71,10 +71,15 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 
 		if (SelectedEntities.Num() > 1)
 		{
+			int32 createdIconCount = 0;
 			for (auto newSelectedEntity : SelectedEntities)
 			{
 				newSelectedEntity->Icon = WidgetTree->ConstructWidget<UImage>();
 				AddEntityIconToGrid(newSelectedEntity);
+				if (++createdIconCount >= newSelectedEntityIconCount)
+				{
+					break;
+				}
 			}
 		}
 
