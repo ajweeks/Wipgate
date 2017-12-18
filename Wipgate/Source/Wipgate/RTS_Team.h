@@ -16,5 +16,5 @@ class WIPGATE_API URTS_Team : public UObject
 	public:
 		FName Name = "Team";
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
-		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL;
+		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };

@@ -108,7 +108,7 @@ void ARTS_Entity::BeginPlay()
 	{
 		FTeamRow tr;
 		tr = *TeamRow.GetRow<FTeamRow>("ARTS_Entity::ARTS_Entity > Row not found!");
-		Team.Name = TeamRow.RowName;
+		//Team.Name = TeamRow.RowName;
 		Team.Color = tr.Color;
 		Team.Alignment = tr.Alignment;
 	}
