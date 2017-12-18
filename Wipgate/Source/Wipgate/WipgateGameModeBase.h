@@ -96,9 +96,6 @@ struct FTeam
 {
 	GENERATED_USTRUCT_BODY()
 
-		//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		//FName Name = "Team";
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
 

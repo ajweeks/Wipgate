@@ -14,7 +14,8 @@ class WIPGATE_API URTS_Team : public UObject
 	GENERATED_BODY()
 	
 	public:
-		FName Name = "Team";
+		UPROPERTY(BlueprintReadOnly)
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
+		UPROPERTY(BlueprintReadOnly)
 		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };

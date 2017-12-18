@@ -7,7 +7,7 @@
 
 #include "AbilityIcon.h"
 #include "WipgateGameModeBase.h"
-
+#include "RTS_Team.h"
 #include "RTS_Entity.generated.h"
 
 class UImage;
@@ -38,6 +38,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
+
+	void PostInitialize();
+	void SetTeam(URTS_Team* team);
 
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
@@ -143,10 +146,13 @@ public:
 	FDataTableRowHandle TeamRow;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
-	FTeam Team;
+	URTS_Team* Team;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UStaticMeshComponent*> DebugMeshes;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
+		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;

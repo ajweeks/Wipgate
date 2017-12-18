@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI_Bar.h"
-
+#include "RTS_Team.h"
 #include "RTS_Entity.h"
 
 DEFINE_LOG_CATEGORY_STATIC(UI_BAR_LOG, Log, All);
@@ -14,7 +14,8 @@ void UUI_Bar::Initialize(AActor* Owner)
 	if (castedOwner)
 	{
 		EntityRef = castedOwner;
-		m_FrozenColor = EntityRef->Team.Color.Desaturate(m_FrozenColorDesaturationAmount);
+		if(EntityRef->Team)
+			m_FrozenColor = EntityRef->Team->Color.Desaturate(m_FrozenColorDesaturationAmount);
 	}
 	else
 	{
@@ -50,7 +51,7 @@ FLinearColor UUI_Bar::GetTeamColor()
 	FLinearColor result = FLinearColor::White;
 	if (EntityRef)
 	{
-		result = EntityRef->Team.Color;
+		result = EntityRef->Team->Color;
 	}
 
 	return result;

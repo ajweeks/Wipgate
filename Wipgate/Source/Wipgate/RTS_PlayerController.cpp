@@ -28,6 +28,7 @@
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
 #include "RTS_Squad.h"
+#include "RTS_Team.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -354,7 +355,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team.Alignment == ETeamAlignment::E_PLAYER)
+		if (!SelectedAbility && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 		{
 			if (!entityIsDead)
 			{
@@ -520,7 +521,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
+				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
 				if (entityAlignment == ETeamAlignment::E_PLAYER)
 				{
 					if (!m_SpecialistShowingAbilities)
@@ -553,7 +554,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
+				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
 				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI)
 				{
 					if (!m_SpecialistShowingAbilities)
@@ -592,7 +593,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		float currentTimeSeconds = GetWorld()->GetTimeSeconds();
 
-		if (unitUnderCursor->Team.Alignment == ETeamAlignment::E_PLAYER &&
+		if (unitUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER &&
 			(currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
 		{
 			doubleClicked = true;
@@ -600,7 +601,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 			for (auto entity : m_RTS_GameState->Entities)
 			{
-				if (entity->Team.Alignment == ETeamAlignment::E_PLAYER && entity->CurrentAttackStats.Range == targetRange)
+				if (entity->Team->Alignment == ETeamAlignment::E_PLAYER && entity->CurrentAttackStats.Range == targetRange)
 				{
 					entity->SetSelected(true);
 					m_RTS_GameState->SelectedEntities.AddUnique(entity);
