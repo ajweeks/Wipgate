@@ -354,7 +354,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!m_SelectedAbility && entity->Team.Alignment != ETeamAlignment::E_ENEMY)
+		if (!m_SelectedAbility && entity->Team.Alignment == ETeamAlignment::E_FRIENDLY)
 		{
 			if (!entityIsDead)
 			{
@@ -594,7 +594,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 			for (auto entity : m_RTS_GameState->Entities)
 			{
-				if (entity->Team.Alignment != ETeamAlignment::E_ENEMY && entity->CurrentAttackStats.Range == targetRange)
+				if (entity->Team.Alignment == ETeamAlignment::E_FRIENDLY && entity->CurrentAttackStats.Range == targetRange)
 				{
 					entity->SetSelected(true);
 					m_RTS_GameState->SelectedEntities.AddUnique(entity);
