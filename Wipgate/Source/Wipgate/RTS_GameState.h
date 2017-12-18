@@ -50,7 +50,6 @@ public:
 
 	bool SelectionGroup4IconCreated;
 
-
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
 
