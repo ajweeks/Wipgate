@@ -73,10 +73,10 @@ public:
 
 	// Entity stats functions
 	UFUNCTION(BlueprintImplementableEvent)
-		void ShowSelectedUnitStats(ARTS_Entity* Entity);
+		void ShowSelectedEntityStats(ARTS_Entity* Entity);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void HideSelectedUnitStats();
+		void HideSelectedEntityStats();
 
 
 	// Selection group icon functions
