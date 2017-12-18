@@ -413,6 +413,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		squad->Update(DeltaSeconds);
 	}
+
+	if (m_RTS_GameState->SelectedEntities.Num() == 1)
+	{
+		m_RTSHUD->ShowSelectedUnitStats(m_RTS_GameState->SelectedEntities[0]);
+	}
 }
 
 void ARTS_PlayerController::ActionPrimaryClickPressed()
@@ -761,6 +766,12 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 			m_SpecialistShowingAbilities = specialist;
 			CreateAbilityButtons();
 		}
+
+		m_RTSHUD->ShowSelectedUnitStats(m_RTS_GameState->SelectedEntities[0]);
+	}
+	else
+	{
+		m_RTSHUD->HideSelectedUnitStats();
 	}
 
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
