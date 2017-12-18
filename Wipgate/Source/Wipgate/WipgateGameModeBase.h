@@ -7,8 +7,6 @@
 #include "Engine/DataTable.h"
 #include "WipgateGameModeBase.generated.h"
 
-class URTS_Team;
-
 USTRUCT(BlueprintType)
 struct FMovementStat
 {
@@ -107,11 +105,9 @@ UCLASS()
 class WIPGATE_API AWipgateGameModeBase : public AGameMode
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void BeginPlay() override;
-
-	TArray<URTS_Team*> Teams;
 
 private:
 	UPROPERTY(EditAnywhere)
