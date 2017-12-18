@@ -67,6 +67,10 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool Immaterial = false;
 
+	// True when this unit is inside the level goal collider (through the gate)
+	UPROPERTY(BlueprintReadWrite)
+		bool InLevelGoal = false;
+
 private:
 	
 	float m_PostKillTimer = 0;

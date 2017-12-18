@@ -29,6 +29,10 @@ public:
 		TArray<ARTS_Entity*> SelectedEntities;
 
 
+	UFUNCTION(BlueprintCallable)
+		float GetPercentOfFriendlyUnitsInLevelGoal();
+
+
 	// Selection groups
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup1;
