@@ -110,6 +110,8 @@ private:
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
 
+	void InvertSelection();
+
 private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
