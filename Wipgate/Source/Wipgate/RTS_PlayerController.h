@@ -49,14 +49,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget> MainHUD;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AAbility* m_SelectedAbility = nullptr;
-
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
 	URTS_HUDBase* GetHUD();
+
+	UPROPERTY(BlueprintReadWrite)
+	AAbility* SelectedAbility = nullptr;
 
 private:
 	void ActionPrimaryClickPressed();

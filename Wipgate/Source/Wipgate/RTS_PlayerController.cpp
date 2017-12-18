@@ -177,7 +177,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (!m_SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
+	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
 
@@ -354,7 +354,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!m_SelectedAbility && entity->Team.Alignment == ETeamAlignment::E_FRIENDLY)
+		if (!SelectedAbility && entity->Team.Alignment == ETeamAlignment::E_FRIENDLY)
 		{
 			if (!entityIsDead)
 			{
@@ -447,10 +447,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
-	if (m_SelectedAbility)
+	if (SelectedAbility)
 	{
-		EAbilityType abilityType = m_SelectedAbility->Type;
-		const float abilityRange = m_SelectedAbility->CastRange;
+		EAbilityType abilityType = SelectedAbility->Type;
+		const float abilityRange = SelectedAbility->CastRange;
 		if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
 		{
 			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Ability's cast range is 0! (this is only allowed on abilities whose type is SELF"));
@@ -475,9 +475,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						SelectedAbility->Activate();
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
 					}
 				}
 			}
@@ -499,10 +499,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						m_SelectedAbility->SetTarget(unitUnderCursor);
-						m_SelectedAbility->Activate();
-						m_SelectedAbility->Deselect();
-						m_SelectedAbility = nullptr;
+						SelectedAbility->SetTarget(unitUnderCursor);
+						SelectedAbility->Activate();
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
 					}
 				}
 			}
@@ -527,10 +527,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							m_SelectedAbility->SetTarget(unitUnderCursor);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							SelectedAbility->SetTarget(unitUnderCursor);
+							SelectedAbility->Activate();
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
 						}
 					}
 				}
@@ -560,10 +560,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							m_SelectedAbility->SetTarget(unitUnderCursor);
-							m_SelectedAbility->Activate();
-							m_SelectedAbility->Deselect();
-							m_SelectedAbility = nullptr;
+							SelectedAbility->SetTarget(unitUnderCursor);
+							SelectedAbility->Activate();
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
 						}
 					}
 				}
@@ -642,7 +642,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
 	{
-		if (!m_SelectedAbility && !m_SpecialistShowingAbilities)
+		if (!SelectedAbility && !m_SpecialistShowingAbilities)
 		{
 			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 
@@ -668,10 +668,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
-	if (m_SelectedAbility)
+	if (SelectedAbility)
 	{
-		m_SelectedAbility->Deselect();
-		m_SelectedAbility = nullptr;
+		SelectedAbility->Deselect();
+		SelectedAbility = nullptr;
 	}
 }
 
