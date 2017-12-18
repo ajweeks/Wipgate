@@ -592,7 +592,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		float currentTimeSeconds = GetWorld()->GetTimeSeconds();
 
-		if ((currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
+		if (unitUnderCursor->Team.Alignment == ETeamAlignment::E_FRIENDLY &&
+			(currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
 		{
 			doubleClicked = true;
 			float targetRange = unitUnderCursor->CurrentAttackStats.Range;
