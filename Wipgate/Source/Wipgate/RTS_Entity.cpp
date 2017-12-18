@@ -104,7 +104,6 @@ ARTS_Entity::ARTS_Entity()
 void ARTS_Entity::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!TeamRow.IsNull())
 	{
 		FTeamRow tr;

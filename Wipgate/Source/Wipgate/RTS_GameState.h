@@ -7,6 +7,7 @@
 #include "RTS_GameState.generated.h"
 
 class ARTS_Entity;
+class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Gamestate_log, Log, All);
 
@@ -53,4 +54,6 @@ public:
 		TArray<ARTS_Entity*> SelectionGroup5;
 
 	bool SelectionGroup5IconCreated;
+
+	TArray<URTS_Team*> Teams;
 };
