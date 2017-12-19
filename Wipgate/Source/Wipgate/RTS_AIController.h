@@ -10,13 +10,13 @@
 UENUM(BlueprintType)
 enum class EUNIT_TASK : uint8
 {
-	IDLE 		UMETA(DisplayName = "Does nothing, reacts to environment"),
-	MOVING 		UMETA(DisplayName = "Moving to location"),
-	CHASING		UMETA(DisplayName = "Chasing target"),
-	FOLLOWING	UMETA(DisplayName = "Following target"),
-	ATTACKING	UMETA(DisplayName = "Attacking target"),
-	CASTING		UMETA(DisplayName = "Casting ability"),
-	EXECUTING	UMETA(DisplayName = "Executing unstoppable task"),
+	IDLE 		UMETA(DisplayName = "Idle"),
+	MOVING 		UMETA(DisplayName = "Moving"),
+	CHASING		UMETA(DisplayName = "Chasing"),
+	FOLLOWING	UMETA(DisplayName = "Following"),
+	ATTACKING	UMETA(DisplayName = "Attacking"),
+	CASTING		UMETA(DisplayName = "Casting "),
+	EXECUTING	UMETA(DisplayName = "Executing"),
 };
 
 UCLASS()
@@ -24,12 +24,18 @@ class WIPGATE_API ARTS_AIController : public AAIController
 {
 	GENERATED_BODY()
 
+public:
 	//UFUNCTION(BlueprintCallable, Category = "Setters")
 	//	void SetTargetLocation(const FVector target);
+	UFUNCTION(BlueprintCallable, Category = "Getters")
+		UCommand* GetCurrentCommand() { return m_CurrentCommand; }
+	UFUNCTION(BlueprintCallable, Category = "Getters")
+		bool IsAlert() { return m_IsAlert; }
 
 public:
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity * TargetEntity;
+
 protected:
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity * m_Entity;
@@ -51,7 +57,9 @@ protected:
 
 	/* --- Flocking variables --- */
 	UPROPERTY(BlueprintReadWrite)
-		float m_FlockingMoveRadius;
-	UPROPERTY(BlueprintReadWrite)
-		float m_FlockingChaseRadius;
+		TArray<ARTS_Entity*> m_NearbyEntities;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_FlockingMoveRadius = 200;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_FlockingChaseRadius = 100;
 };
