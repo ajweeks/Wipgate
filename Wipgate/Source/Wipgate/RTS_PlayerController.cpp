@@ -148,6 +148,8 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
 	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
 
+	InputComponent->BindAction("Invert Selection", IE_Released, this, &ARTS_PlayerController::InvertSelection);
+
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -652,10 +654,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 
-			ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-			if (specialist)
+			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(entity);
+			if (specialst)
 			{
-				m_SpecialistShowingAbilities = specialist;
+				m_SpecialistShowingAbilities = specialst;
 				CreateAbilityButtons();
 			}
 		}
@@ -669,7 +671,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			m_RTSHUD->HideSelectedEntityStats();
 		}
 	}
-
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -932,6 +933,59 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 				m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
 			}
 		}
+	}
+}
+
+void ARTS_PlayerController::InvertSelection()
+{
+	if (m_RTS_GameState)
+	{
+		ClearAbilityButtons();
+
+		TArray<ARTS_Entity*> newSelectedEntities;
+
+		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
+		{
+			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
+		}
+
+		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
+		{
+			if (m_RTS_GameState->Entities[i]->Team.Alignment == ETeamAlignment::E_FRIENDLY &&
+				m_RTS_GameState->Entities[i]->CurrentDefenceStats.Health > 0 &&
+				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
+			{
+				newSelectedEntities.Push(m_RTS_GameState->Entities[i]);
+			}
+		}
+
+		m_RTS_GameState->SelectedEntities = newSelectedEntities;
+
+		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
+		{
+			if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.Health > 0)
+			{
+				m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
+			}
+		}
+
+		if (m_RTS_GameState->SelectedEntities.Num() == 1)
+		{
+			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(m_RTS_GameState->SelectedEntities[0]);
+			if (specialst && specialst->CurrentDefenceStats.Health > 0)
+			{
+				m_SpecialistShowingAbilities = specialst;
+				CreateAbilityButtons();
+			}
+
+			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+		}
+		else
+		{
+			m_RTSHUD->HideSelectedEntityStats();
+		}
+
+		m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 	}
 }
 
