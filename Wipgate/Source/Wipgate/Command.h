@@ -25,15 +25,14 @@ class WIPGATE_API UCommand : public UObject
 {
 	GENERATED_BODY()
 public:
-	UCommand() {}
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ability Use Functions")
-	//	void Execute();
+	UCommand() {};
+	UCommand(bool isForced) : IsForced(IsForced) {}
 
 	UPROPERTY(BlueprintReadWrite)
 		ECOMMAND_TYPE Type = ECOMMAND_TYPE::NONE;
 	UPROPERTY(BlueprintReadWrite)
-		bool IsForced;
+		bool IsForced = true;
+
 };
 
 
@@ -42,7 +41,7 @@ class WIPGATE_API UCommand_Stop : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Stop() 
+	UCommand_Stop() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::STOP; }
 };
 
@@ -52,14 +51,14 @@ class WIPGATE_API UCommand_MoveToLocation : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_MoveToLocation(FVector target) : Target(target) 
+	UCommand_MoveToLocation(FVector target, bool isForced) : UCommand(isForced), Target(target)
 	{ Type = ECOMMAND_TYPE::MOVE_TO_LOCATION; }
 	
 	UPROPERTY(BlueprintReadWrite)
 		FVector Target;
 
 private:
-	UCommand_MoveToLocation() 
+	UCommand_MoveToLocation() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::MOVE_TO_LOCATION; }
 };
 
@@ -68,14 +67,14 @@ class WIPGATE_API UCommand_MoveToEntity : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_MoveToEntity(ARTS_Entity* target) : Target(target) 
+	UCommand_MoveToEntity(ARTS_Entity* target, bool isForced) : UCommand(isForced), Target(target)
 	{ Type = ECOMMAND_TYPE::MOVE_TO_ENTITY; }
 
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity* Target;
 
 private:
-	UCommand_MoveToEntity() 
+	UCommand_MoveToEntity() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::MOVE_TO_ENTITY; }
 };
 
@@ -85,14 +84,14 @@ class WIPGATE_API UCommand_AttackMove : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_AttackMove(FVector target) : Target(target) 
+	UCommand_AttackMove(FVector target, bool isForced) : UCommand(isForced), Target(target)
 	{ Type = ECOMMAND_TYPE::ATTACK_MOVE; }
 
 	UPROPERTY(BlueprintReadWrite)
 		FVector Target;
 
 private:
-	UCommand_AttackMove() 
+	UCommand_AttackMove() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::ATTACK_MOVE; }
 };
 
@@ -110,7 +109,7 @@ public:
 		FVector Target;
 
 private:
-	UCommand_Patrol()
+	UCommand_Patrol() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::PATROL; }
 };
 
@@ -127,7 +126,7 @@ public:
 		ARTS_Entity* Target;
 
 private:
-	UCommand_Attack()
+	UCommand_Attack() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::ATTACK; }
 };
 
@@ -144,6 +143,6 @@ public:
 		AAbility* Ability;
 
 private:
-	UCommand_Cast() 
+	UCommand_Cast() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::CAST; }
 };

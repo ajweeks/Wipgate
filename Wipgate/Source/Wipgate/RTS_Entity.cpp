@@ -173,6 +173,11 @@ bool ARTS_Entity::IsSelected() const
 	return Selected;
 }
 
+ARTS_AIController* ARTS_Entity::GetRTS_AIController() const
+{
+	return Cast<ARTS_AIController>(Cast<AAIController>(GetController()));
+}
+
 void ARTS_Entity::SetTeamMaterial()
 {
 	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
