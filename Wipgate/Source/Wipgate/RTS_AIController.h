@@ -27,10 +27,20 @@ class WIPGATE_API ARTS_AIController : public AAIController
 public:
 	//UFUNCTION(BlueprintCallable, Category = "Setters")
 	//	void SetTargetLocation(const FVector target);
-	UFUNCTION(BlueprintCallable, Category = "Getters")
+	UFUNCTION(BlueprintPure, Category = "Getters")
 		UCommand* GetCurrentCommand() { return m_CurrentCommand; }
-	UFUNCTION(BlueprintCallable, Category = "Getters")
+	UFUNCTION(BlueprintPure, Category = "Getters")
 		bool IsAlert() { return m_IsAlert; }
+
+	/* --- Command functions --- */
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued);
+	//UFUNCTION(BlueprintCallable, Category = "Command")
+	//	void AddCommand_Stop();
+	//UFUNCTION(BlueprintCallable, Category = "Command")
+	//	void AddCommand_Attack(ARTS_Entity* target, const bool isForced, const bool isQueued);
+
+
 
 public:
 	UPROPERTY(BlueprintReadWrite)
@@ -62,4 +72,7 @@ protected:
 		float m_FlockingMoveRadius = 200;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_FlockingChaseRadius = 100;
+
+private:
+	ARTS_AIController* GetController(ARTS_Entity* entity);
 };
