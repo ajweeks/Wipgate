@@ -151,7 +151,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UStaticMeshComponent*> DebugMeshes;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
+	UPROPERTY(EditAnywhere, Category = "Team")
 		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
 	UPROPERTY(BlueprintReadWrite)
