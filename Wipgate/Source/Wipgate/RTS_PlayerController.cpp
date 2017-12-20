@@ -781,11 +781,15 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup, bool* SelectionGroupIconCreated)
 {
+	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
 	if (m_RTS_GameState->SelectedEntities.Num() == 0)
 	{
-		m_RTSHUD->HideSelectionGroupIcon(Index - 1);
-		*SelectionGroupIconCreated = false;
+		if (previousSelectionEntityCount != 0)
+		{
+			m_RTSHUD->HideSelectionGroupIcon(Index - 1);
+			*SelectionGroupIconCreated = false;
+		}
 	}
 	else
 	{
