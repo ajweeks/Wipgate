@@ -1,8 +1,6 @@
 #include "BaseGrid.h"
 #include "Wipgate.h"
 #include "GeneralFunctionLibrary_CPP.h"
-#include <algorithm>
-#include <functional>
 
 BaseGrid::BaseGrid(const BaseGrid & other)
 {
