@@ -143,9 +143,6 @@ public:
 	FVisionStat CurrentVisionStats;
 
 	//TEAM
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
-	FDataTableRowHandle TeamRow;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
 	URTS_Team* Team;
 
