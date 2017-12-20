@@ -4,6 +4,8 @@
 #include "Tile.h"
 #include <vector>
 #include "Step.h"
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
