@@ -8,6 +8,8 @@
 #include "UnitEffect.h"
 #include "RTS_Team.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(RTS_TEAM_LOG, Log, All);
+
 class ARTS_Entity;
 
 UENUM(BlueprintType)
