@@ -42,6 +42,7 @@ void AWipgateGameModeBase::BeginPlay()
 				if (entity->Alignment == team->Alignment)
 				{
 					entity->SetTeam(team);
+					team->Entities.Add(entity);
 				}
 			}
 		}
@@ -56,6 +57,7 @@ void AWipgateGameModeBase::BeginPlay()
 			if (gamestate->Teams.Num() > 0)
 			{
 				entity->SetTeam(gamestate->Teams[0]);
+				gamestate->Teams[0]->Entities.Add(entity);
 			}
 			else
 			{
