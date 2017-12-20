@@ -497,6 +497,15 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
+	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
+	//GetMesh()->DetachFromComponent(rules);
+	//GetMesh()->DetachFromParent();
+	//Destroy(true);
+}
+
+bool ARTS_Entity::IsAlive()
+{
+	return (CurrentDefenceStats.Health > 0);
 }
 
 

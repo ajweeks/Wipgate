@@ -1,5 +1,8 @@
 #include "RTS_AIController.h"
 #include "Runtime/Engine/Classes/Kismet/KismetMathLibrary.h"
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
+#include "DrawDebugHelpers.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 void ARTS_AIController::SetTargetLocation(const FVector target)
@@ -58,6 +61,44 @@ void ARTS_AIController::RotateTowardsTarget()
 	newRotation.Roll = 0;
 	newRotation.Pitch = 0;
 	m_Entity->SetActorRotation(newRotation);
+}
+
+ERelativeAlignment ARTS_AIController::GetRelativeAlignment(const ARTS_Entity * a, const ARTS_Entity * b)
+{
+	if (a->Team->Alignment == b->Team->Alignment)
+		return ERelativeAlignment::E_FRIENDLY;
+	else
+		return ERelativeAlignment::E_ENEMY;
+}
+
+TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInAttackRange()
+{
+	TArray<ARTS_Entity*> enemiesInRange;
+	FVector loc = m_Entity->GetActorLocation();
+	float radius = m_Entity->CurrentAttackStats.Range;
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
+	TArray<AActor*> ignore = { m_Entity };
+	TArray<AActor*> out;
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), loc, radius, objectTypes,
+		TSubclassOf<ARTS_Entity>(), ignore, out);
+	//DrawDebugSphere(GetWorld(), loc, radius, 6, FColor::White, false, 0, (uint8)'\000', 1);
+
+	ARTS_Entity* temp;
+	for (auto entity : out)
+	{
+		temp = Cast<ARTS_Entity>(entity);
+		if (temp != NULL && temp->IsAlive() && temp != m_Entity
+			&& GetRelativeAlignment(m_Entity, temp) == ERelativeAlignment::E_ENEMY) {
+			enemiesInRange.Add(Cast<ARTS_Entity>(entity));
+			//DrawDebugBox(GetWorld(), temp->GetActorLocation(), FVector(20, 20, 100), FColor::White, false, 0, (uint8)'\000', 3);
+		}
+	}
+	return enemiesInRange;
+}
+
+bool ARTS_AIController::IsTargetAttacking()
+{
+	return (GetController(TargetEntity)->GetCurrentTask() == EUNIT_TASK::ATTACKING);
 }
 
 void ARTS_AIController::ExecuteCommand(UCommand * command)
