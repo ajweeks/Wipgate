@@ -953,7 +953,7 @@ void ARTS_PlayerController::InvertSelection()
 
 		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
 		{
-			if (m_RTS_GameState->Entities[i]->Team.Alignment == ETeamAlignment::E_FRIENDLY &&
+			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
 				m_RTS_GameState->Entities[i]->CurrentDefenceStats.Health > 0 &&
 				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
 			{
