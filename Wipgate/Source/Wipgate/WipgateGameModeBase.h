@@ -91,18 +91,6 @@ public:
 		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };
 
-USTRUCT(BlueprintType)
-struct FTeam
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FLinearColor Color = FLinearColor(1, 1, 1, 1);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
-};
-
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
 UCLASS()
@@ -114,6 +102,7 @@ public:
 	virtual void BeginPlay() override;
 
 private:
+	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_Table;
 };

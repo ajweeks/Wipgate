@@ -7,6 +7,7 @@
 class UParticleSystem;
 class UParticleSystemComponent;
 
+//TODO: E_ naming convention
 UENUM(BlueprintType)
 enum class EUnitEffectStat : uint8
 {
@@ -18,6 +19,7 @@ enum class EUnitEffectStat : uint8
 	ATTACK_DAMAGE	UMETA(DisplayName = "Attack damage"),
 };
 
+//TODO: E_ naming convention
 UENUM(BlueprintType)
 enum class EUnitEffectType : uint8
 {
