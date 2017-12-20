@@ -22,8 +22,9 @@ public:
 	static UUnitEffect* CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 			const float delay, const int magnitude, const int duration);
 
+	/* --- Command creation functions --- */
 	UFUNCTION(BlueprintCallable, Category = "Commands")
-		static UCommand_MoveToLocation* CreateCommand_MoveToLocation(UObject* outer, FVector location);
+		static UCommand_MoveToLocation* CreateCommand_MoveToLocation(UObject* outer, FVector location, const bool isForced);
 	UFUNCTION(BlueprintCallable, Category = "Commands")
 		static UCommand_Attack* CreateCommand_Attack(UObject* outer, ARTS_Entity* target, const bool isForced);
 
