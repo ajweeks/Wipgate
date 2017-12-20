@@ -12,7 +12,10 @@ void AWipgateGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!m_Table)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > No table was linked. Returning..."));
 		return;
+	}
 
 	TArray<FTeamRow*> rows;
 	m_Table->GetAllRows("WipgateGameModeBase::BeginPlay() > Table not found!", rows);
