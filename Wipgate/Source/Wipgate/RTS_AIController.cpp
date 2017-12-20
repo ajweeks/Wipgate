@@ -1,10 +1,10 @@
 #include "RTS_AIController.h"
+#include "Runtime/Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 void ARTS_AIController::SetTargetLocation(const FVector target)
 {
 	m_TargetLocation = target;
-	m_CurrentTask = EUNIT_TASK::MOVING;
 
  	if (TargetEntity)
 	{
@@ -48,6 +48,55 @@ ARTS_Entity* ARTS_AIController::GetClosestEntity(const TArray<ARTS_Entity*> enti
 		}
 	}
 	return closestEntity;
+}
+
+void ARTS_AIController::RotateTowardsTarget()
+{
+	FVector start = m_Entity->GetActorLocation();
+	FVector end = TargetEntity->GetActorLocation();
+	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
+	newRotation.Roll = 0;
+	newRotation.Pitch = 0;
+	m_Entity->SetActorRotation(newRotation);
+}
+
+void ARTS_AIController::ExecuteCommand(UCommand * command)
+{
+	switch (command->Type)
+	{
+	case ECOMMAND_TYPE::NONE:
+		break;
+	case ECOMMAND_TYPE::STOP:
+		break;
+	case ECOMMAND_TYPE::MOVE_TO_LOCATION:
+		m_CurrentTask = EUNIT_TASK::MOVING;
+		SetTargetLocation(Cast<UCommand_MoveToLocation>(command)->Target);
+		break;
+	case ECOMMAND_TYPE::MOVE_TO_ENTITY:
+		m_CurrentTask = EUNIT_TASK::FOLLOWING;
+		SetTargetEntity(Cast<UCommand_MoveToEntity>(command)->Target);
+		break;
+	case ECOMMAND_TYPE::ATTACK_MOVE:
+		break;
+	case ECOMMAND_TYPE::PATROL:
+		break;
+	case ECOMMAND_TYPE::ATTACK:
+		m_CurrentTask = EUNIT_TASK::ATTACKING;
+		SetTargetEntity(Cast<UCommand_Attack>(command)->Target);
+		break;
+	case ECOMMAND_TYPE::CAST:
+		break;
+	default:
+		break;
+	}
+
+	m_CurrentCommand = command;
+}
+
+void ARTS_AIController::PopCommand()
+{
+	if (m_CommandQueue.Num() > 0)
+		m_CommandQueue.RemoveAt(0);
 }
 
 void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued)

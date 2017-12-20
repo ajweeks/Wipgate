@@ -42,8 +42,15 @@ public:
 		TArray<ARTS_Entity*> GetEntitiesWithTask(const TArray<ARTS_Entity*> entities, const EUNIT_TASK task);
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		ARTS_Entity* GetClosestEntity(const TArray<ARTS_Entity*> entities);
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		void RotateTowardsTarget();
 
 	/* --- Command functions --- */
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void ExecuteCommand(UCommand* command);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void PopCommand();
+
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued);
 	UFUNCTION(BlueprintCallable, Category = "Command")
