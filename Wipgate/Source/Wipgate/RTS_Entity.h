@@ -8,7 +8,6 @@
 #include "AbilityIcon.h"
 #include "WipgateGameModeBase.h"
 #include "RTS_Team.h"
-#include "RTS_AIController.h"
 
 #include "RTS_Entity.generated.h"
 
@@ -37,8 +36,6 @@ public:
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
 		bool IsSelected() const;
-	UFUNCTION(BlueprintGetter, Category = "Getters")
-		ARTS_AIController* GetRTS_AIController() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();

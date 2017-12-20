@@ -25,22 +25,33 @@ class WIPGATE_API ARTS_AIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	//UFUNCTION(BlueprintCallable, Category = "Setters")
-	//	void SetTargetLocation(const FVector target);
+	UFUNCTION(BlueprintCallable, Category = "Setters")
+		void SetTargetLocation(const FVector target);
+	UFUNCTION(BlueprintCallable, Category = "Setters")
+		void SetTargetEntity(ARTS_Entity* targetEntity);
+
 	UFUNCTION(BlueprintPure, Category = "Getters")
 		UCommand* GetCurrentCommand() { return m_CurrentCommand; }
 	UFUNCTION(BlueprintPure, Category = "Getters")
+		EUNIT_TASK GetCurrentTask() { return m_CurrentTask; }
+	UFUNCTION(BlueprintPure, Category = "Getters")
 		bool IsAlert() { return m_IsAlert; }
+
+	/* --- AI functions --- */
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		TArray<ARTS_Entity*> GetEntitiesWithTask(const TArray<ARTS_Entity*> entities, const EUNIT_TASK task);
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		ARTS_Entity* GetClosestEntity(const TArray<ARTS_Entity*> entities);
 
 	/* --- Command functions --- */
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued);
-	//UFUNCTION(BlueprintCallable, Category = "Command")
-	//	void AddCommand_Stop();
-	//UFUNCTION(BlueprintCallable, Category = "Command")
-	//	void AddCommand_Attack(ARTS_Entity* target, const bool isForced, const bool isQueued);
-
-
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_MoveToEntity(ARTS_Entity* target, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_Stop();
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_Attack(ARTS_Entity* target, const bool isForced, const bool isQueued);
 
 public:
 	UPROPERTY(BlueprintReadWrite)
