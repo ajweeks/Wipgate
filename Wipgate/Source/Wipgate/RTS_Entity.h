@@ -61,6 +61,8 @@ public:
 	void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill();
+	UFUNCTION(BlueprintPure, Category = "Health")
+		bool IsAlive();
 
 public:
 	/* Public blueprint editable variables */
@@ -143,9 +145,6 @@ public:
 	FVisionStat CurrentVisionStats;
 
 	//TEAM
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
-	FDataTableRowHandle TeamRow;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
 	URTS_Team* Team;
 
