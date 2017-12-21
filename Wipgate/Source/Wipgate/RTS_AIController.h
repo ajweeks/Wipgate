@@ -10,13 +10,14 @@
 UENUM(BlueprintType)
 enum class EUNIT_TASK : uint8
 {
-	IDLE 		UMETA(DisplayName = "Idle"),
-	MOVING 		UMETA(DisplayName = "Moving"),
-	CHASING		UMETA(DisplayName = "Chasing"),
-	FOLLOWING	UMETA(DisplayName = "Following"),
-	ATTACKING	UMETA(DisplayName = "Attacking"),
-	CASTING		UMETA(DisplayName = "Casting "),
-	EXECUTING	UMETA(DisplayName = "Executing"),
+	IDLE 			UMETA(DisplayName = "Idle"),
+	MOVING 			UMETA(DisplayName = "Moving"),
+	ATTACK_MOVING	UMETA(DisplayName = "Attack moving"),
+	CHASING			UMETA(DisplayName = "Chasing"),
+	FOLLOWING		UMETA(DisplayName = "Following"),
+	ATTACKING		UMETA(DisplayName = "Attacking"),
+	CASTING			UMETA(DisplayName = "Casting "),
+	EXECUTING		UMETA(DisplayName = "Executing"),
 };
 
 UCLASS()
@@ -47,6 +48,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		TArray<ARTS_Entity*> GetEnemiesInAttackRange();
 	UFUNCTION(BlueprintCallable, Category = "AI")
+		TArray<ARTS_Entity*> GetEnemiesInVisionRange();
+	UFUNCTION(BlueprintCallable, Category = "AI")
 		bool IsTargetAttacking();
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
@@ -66,6 +69,8 @@ public:
 		void AddCommand_Stop();
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_Attack(ARTS_Entity* target, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued);
 
 public:
 	UPROPERTY(BlueprintReadWrite)

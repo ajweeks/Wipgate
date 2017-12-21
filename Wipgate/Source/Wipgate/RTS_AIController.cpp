@@ -96,6 +96,29 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInAttackRange()
 	return enemiesInRange;
 }
 
+TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
+{
+	TArray<ARTS_Entity*> enemiesInRange;
+	FVector loc = m_Entity->GetActorLocation();
+	float radius = m_Entity->CurrentVisionStats.InnerRange;
+	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
+	TArray<AActor*> ignore = { m_Entity };
+	TArray<AActor*> out;
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), loc, radius, objectTypes,
+		TSubclassOf<ARTS_Entity>(), ignore, out);
+
+	ARTS_Entity* temp;
+	for (auto entity : out)
+	{
+		temp = Cast<ARTS_Entity>(entity);
+		if (temp != NULL && temp->IsAlive() && temp != m_Entity
+			&& GetRelativeAlignment(m_Entity, temp) == ERelativeAlignment::E_ENEMY) {
+			enemiesInRange.Add(Cast<ARTS_Entity>(entity));
+		}
+	}
+	return enemiesInRange;
+}
+
 bool ARTS_AIController::IsTargetAttacking()
 {
 	return (GetController(TargetEntity)->GetCurrentTask() == EUNIT_TASK::ATTACKING);
@@ -118,6 +141,8 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 		SetTargetEntity(Cast<UCommand_MoveToEntity>(command)->Target);
 		break;
 	case ECOMMAND_TYPE::ATTACK_MOVE:
+		m_CurrentTask = EUNIT_TASK::ATTACK_MOVING;
+		SetTargetLocation(Cast<UCommand_AttackMove>(command)->Target);
 		break;
 	case ECOMMAND_TYPE::PATROL:
 		break;
@@ -175,6 +200,18 @@ void ARTS_AIController::AddCommand_Attack(ARTS_Entity * target, const bool isFor
 {
 	UCommand_Attack* command = NewObject<UCommand_Attack>(this);
 	command->Target = target;
+	command->IsForced = isForced;
+
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+		m_CommandQueue.Empty();
+
+	m_CommandQueue.Add(command);
+}
+
+void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued)
+{
+	UCommand_AttackMove* command = NewObject<UCommand_AttackMove>(this);
+	command->Target = location;
 	command->IsForced = isForced;
 
 	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
