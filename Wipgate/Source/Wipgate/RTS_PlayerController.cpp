@@ -149,6 +149,8 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
 	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
 
+	InputComponent->BindAction("Invert Selection", IE_Released, this, &ARTS_PlayerController::InvertSelection);
+
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
 	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
@@ -653,10 +655,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 
-			ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-			if (specialist)
+			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(entity);
+			if (specialst)
 			{
-				m_SpecialistShowingAbilities = specialist;
+				m_SpecialistShowingAbilities = specialst;
 				CreateAbilityButtons();
 			}
 		}
@@ -670,7 +672,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			m_RTSHUD->HideSelectedEntityStats();
 		}
 	}
-
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -712,28 +713,6 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	MoveToTarget();
 }
 
-void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
-{
-	switch (Index)
-	{
-	case 0:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
-		break;
-	case 1:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
-		break;
-	case 2:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
-		break;
-	case 3:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
-		break;
-	case 4:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
-		break;
-	}
-}
-
 URTS_Squad* ARTS_PlayerController::AddSquad()
 {
 	URTS_Squad* squad = NewObject<URTS_Squad>(this);
@@ -741,7 +720,29 @@ URTS_Squad* ARTS_PlayerController::AddSquad()
 	return squad;
 }
 
-void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray)
+void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
+{
+	switch (Index)
+	{
+	case 0:
+		ActionSelectionGroup(1, m_RTS_GameState->SelectionGroup1);
+		break;
+	case 1:
+		ActionSelectionGroup(2, m_RTS_GameState->SelectionGroup2);
+		break;
+	case 2:
+		ActionSelectionGroup(3, m_RTS_GameState->SelectionGroup3);
+		break;
+	case 3:
+		ActionSelectionGroup(4, m_RTS_GameState->SelectionGroup4);
+		break;
+	case 4:
+		ActionSelectionGroup(5, m_RTS_GameState->SelectionGroup5);
+		break;
+	}
+}
+
+void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity*>& selectionGroupArray)
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
@@ -750,6 +751,8 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	ClearAbilityButtons();
 
 	m_RTS_GameState->SelectedEntities = selectionGroupArray;
+
+	m_RTSHUD->OnSelectionGroupSelected(Index - 1);
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
@@ -779,72 +782,71 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 }
 
-void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup, bool* SelectionGroupIconCreated)
+void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
 {
+	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
 	if (m_RTS_GameState->SelectedEntities.Num() == 0)
 	{
-		m_RTSHUD->HideSelectionGroupIcon(Index - 1);
-		*SelectionGroupIconCreated = false;
+		if (previousSelectionEntityCount != 0)
+		{
+			m_RTSHUD->HideSelectionGroupIcon(Index - 1);
+		}
 	}
 	else
 	{
-		if (!(*SelectionGroupIconCreated))
-		{
-			m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
-			*SelectionGroupIconCreated = true;
-		}
+		m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
 	}
 }
 
 void ARTS_PlayerController::ActionSelectionGroup1()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
+	ActionSelectionGroup(1, m_RTS_GameState->SelectionGroup1);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup1()
 {
-	ActionCreateSelectionGroup(1, &m_RTS_GameState->SelectionGroup1, &m_RTS_GameState->SelectionGroup1IconCreated);
+	ActionCreateSelectionGroup(1, &m_RTS_GameState->SelectionGroup1);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup2()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
+	ActionSelectionGroup(2, m_RTS_GameState->SelectionGroup2);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup2()
 {
-	ActionCreateSelectionGroup(2, &m_RTS_GameState->SelectionGroup2, &m_RTS_GameState->SelectionGroup2IconCreated);
+	ActionCreateSelectionGroup(2, &m_RTS_GameState->SelectionGroup2);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup3()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
+	ActionSelectionGroup(3, m_RTS_GameState->SelectionGroup3);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup3()
 {
-	ActionCreateSelectionGroup(3, &m_RTS_GameState->SelectionGroup3, &m_RTS_GameState->SelectionGroup3IconCreated);
+	ActionCreateSelectionGroup(3, &m_RTS_GameState->SelectionGroup3);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup4()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
+	ActionSelectionGroup(4, m_RTS_GameState->SelectionGroup4);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup4()
 {
-	ActionCreateSelectionGroup(4, &m_RTS_GameState->SelectionGroup4, &m_RTS_GameState->SelectionGroup4IconCreated);
+	ActionCreateSelectionGroup(4, &m_RTS_GameState->SelectionGroup4);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup5()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
+	ActionSelectionGroup(5, m_RTS_GameState->SelectionGroup5);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup5()
 {
-	ActionCreateSelectionGroup(5, &m_RTS_GameState->SelectionGroup5, &m_RTS_GameState->SelectionGroup5IconCreated);
+	ActionCreateSelectionGroup(5, &m_RTS_GameState->SelectionGroup5);
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
@@ -933,6 +935,59 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 				m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
 			}
 		}
+	}
+}
+
+void ARTS_PlayerController::InvertSelection()
+{
+	if (m_RTS_GameState)
+	{
+		ClearAbilityButtons();
+
+		TArray<ARTS_Entity*> newSelectedEntities;
+
+		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
+		{
+			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
+		}
+
+		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
+		{
+			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
+				m_RTS_GameState->Entities[i]->CurrentDefenceStats.Health > 0 &&
+				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
+			{
+				newSelectedEntities.Push(m_RTS_GameState->Entities[i]);
+			}
+		}
+
+		m_RTS_GameState->SelectedEntities = newSelectedEntities;
+
+		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
+		{
+			if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.Health > 0)
+			{
+				m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
+			}
+		}
+
+		if (m_RTS_GameState->SelectedEntities.Num() == 1)
+		{
+			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(m_RTS_GameState->SelectedEntities[0]);
+			if (specialst && specialst->CurrentDefenceStats.Health > 0)
+			{
+				m_SpecialistShowingAbilities = specialst;
+				CreateAbilityButtons();
+			}
+
+			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+		}
+		else
+		{
+			m_RTSHUD->HideSelectedEntityStats();
+		}
+
+		m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 	}
 }
 

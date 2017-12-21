@@ -29,31 +29,25 @@ public:
 		TArray<ARTS_Entity*> SelectedEntities;
 
 
+	UFUNCTION(BlueprintCallable)
+		float GetPercentOfFriendlyUnitsInLevelGoal();
+
+
 	// Selection groups
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup1;
 
-	bool SelectionGroup1IconCreated;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup2;
 	
-	bool SelectionGroup2IconCreated;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup3;
-
-	bool SelectionGroup3IconCreated;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup4;
 
-	bool SelectionGroup4IconCreated;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
-
-	bool SelectionGroup5IconCreated;
 
 	TArray<URTS_Team*> Teams;
 };
