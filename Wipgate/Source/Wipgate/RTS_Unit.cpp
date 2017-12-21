@@ -27,7 +27,7 @@ void ARTS_Unit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_PostKillTimer < POSTKILLDELAY && CurrentDefenceStats.Health <= 0)
+	if (m_PostKillTimer < POSTKILLDELAY && Health <= 0)
 	{
 		m_PostKillTimer += DeltaTime;
 		if (m_PostKillTimer > POSTKILLDELAY)

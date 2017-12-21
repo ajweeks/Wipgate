@@ -351,7 +351,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			entityUnderCursor = entity;
 		}
 
-		const bool entityIsDead = entity->CurrentDefenceStats.Health <= 0;
+		const bool entityIsDead = entity->CurrentDefenceStats.MaxHealth <= 0;
 
 		const bool entityWasSelected = entity->IsSelected();
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
@@ -392,7 +392,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (m_SpecialistShowingAbilities)
 	{
-		if (m_SpecialistShowingAbilities->CurrentDefenceStats.Health <= 0)
+		if (m_SpecialistShowingAbilities->CurrentDefenceStats.MaxHealth <= 0)
 		{
 			ClearAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
@@ -445,7 +445,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
 	if (unitUnderCursor)
 	{
-		if (unitUnderCursor->CurrentDefenceStats.Health <= 0)
+		if (unitUnderCursor->CurrentDefenceStats.MaxHealth <= 0)
 		{
 			unitUnderCursor = nullptr; // Don't target dead people
 		}
@@ -756,7 +756,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
-		if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.Health > 0)
+		if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.MaxHealth > 0)
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
 		}
@@ -766,7 +766,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist && specialist->CurrentDefenceStats.Health > 0)
+		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
 		{
 			m_SpecialistShowingAbilities = specialist;
 			CreateAbilityButtons();
@@ -954,7 +954,7 @@ void ARTS_PlayerController::InvertSelection()
 		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
 		{
 			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
-				m_RTS_GameState->Entities[i]->CurrentDefenceStats.Health > 0 &&
+				m_RTS_GameState->Entities[i]->Health > 0 &&
 				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
 			{
 				newSelectedEntities.Push(m_RTS_GameState->Entities[i]);
@@ -965,7 +965,7 @@ void ARTS_PlayerController::InvertSelection()
 
 		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 		{
-			if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.Health > 0)
+			if (m_RTS_GameState->SelectedEntities[i]->Health > 0)
 			{
 				m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
 			}
@@ -974,7 +974,7 @@ void ARTS_PlayerController::InvertSelection()
 		if (m_RTS_GameState->SelectedEntities.Num() == 1)
 		{
 			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(m_RTS_GameState->SelectedEntities[0]);
-			if (specialst && specialst->CurrentDefenceStats.Health > 0)
+			if (specialst && specialst->Health > 0)
 			{
 				m_SpecialistShowingAbilities = specialst;
 				CreateAbilityButtons();

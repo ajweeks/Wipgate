@@ -158,7 +158,7 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 
 			int col = i % m_MaxEntityImageCount.X;
 			int row = i / m_MaxEntityImageCount.X;
-			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health / (float)entity->BaseDefenceStats.Health;
+			float unitHealthNorm = (float)entity->Health / (float)entity->BaseDefenceStats.MaxHealth;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{
