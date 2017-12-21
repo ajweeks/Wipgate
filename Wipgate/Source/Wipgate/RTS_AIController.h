@@ -43,6 +43,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		ARTS_Entity* GetClosestEntity(const TArray<ARTS_Entity*> entities);
 	UFUNCTION(BlueprintCallable, Category = "AI")
+		ERelativeAlignment GetRelativeAlignment(const ARTS_Entity* a, const ARTS_Entity* b);
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		TArray<ARTS_Entity*> GetEnemiesInAttackRange();
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		bool IsTargetAttacking();
+
+	UFUNCTION(BlueprintCallable, Category = "AI")
 		void RotateTowardsTarget();
 
 	/* --- Command functions --- */
