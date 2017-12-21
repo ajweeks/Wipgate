@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Engine/DataTable.h"
 
 #include "AbilityIcon.h"
+#include "WipgateGameModeBase.h"
+#include "RTS_Team.h"
 
 #include "RTS_Entity.generated.h"
 
-class UImage;
+class UTexture2D;
 class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
@@ -18,100 +19,6 @@ class UStaticMeshComponent;
 struct FAbilityIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
-
-USTRUCT(BlueprintType)
-struct FMovementStat
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Speed = 500;
-};
-
-USTRUCT(BlueprintType)
-struct FAttackStat
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Damage = 10;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RateOfFire = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Range = 250.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FDefenceStat
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Armor = 2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Health = 100;
-};
-
-USTRUCT(BlueprintType)
-struct FVisionStat
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float OuterRange = 500;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float InnerRange = 500;
-};
-
-UENUM(BlueprintType)
-enum class EAlignment : uint8
-{
-	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
-	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
-	E_ENEMY 		UMETA(DisplayName = "Enemy"),
-};
-
-USTRUCT(BlueprintType)
-struct FTeamRow : public FTableRowBase
-{
-	FTeamRow(){}
-public:
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FLinearColor Color = FLinearColor(1, 1, 1, 1);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EAlignment Alignment = EAlignment::E_NEUTRAL;
-};
-
-USTRUCT(BlueprintType)
-struct FTeam
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName Name = "Team";
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FLinearColor Color = FLinearColor(1, 1, 1, 1);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EAlignment Alignment = EAlignment::E_NEUTRAL;
-};
-
-UENUM(BlueprintType)
-enum class EEntityType : uint8
-{
-	E_UNIT 				UMETA(DisplayName = "Unit Character"),
-	E_STRUCTURE 		UMETA(DisplayName = "Static Structure")
-};
-
-
 
 UCLASS()
 class WIPGATE_API ARTS_Entity : public ACharacter
@@ -128,10 +35,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
-	bool IsSelected() const;
+		bool IsSelected() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
+
+	void PostInitialize();
+	void SetTeam(URTS_Team* team);
 
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
@@ -151,6 +61,8 @@ public:
 	void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill();
+	UFUNCTION(BlueprintPure, Category = "Health")
+		bool IsAlive();
 
 public:
 	/* Public blueprint editable variables */
@@ -233,23 +145,23 @@ public:
 	FVisionStat CurrentVisionStats;
 
 	//TEAM
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
-	FDataTableRowHandle TeamRow;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
-	FTeam Team;
+	URTS_Team* Team;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UStaticMeshComponent*> DebugMeshes;
 
+	UPROPERTY(EditAnywhere, Category = "Team")
+		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
 
-	// Selection screen icon
-	UImage* Icon = nullptr;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 IconIndex = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* IconTexture;
 
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;

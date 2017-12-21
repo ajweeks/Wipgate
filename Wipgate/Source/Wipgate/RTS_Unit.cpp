@@ -9,6 +9,7 @@
 #include "AIController.h"
 #include "GeneralFunctionLibrary_CPP.h"
 #include "RTS_Squad.h"
+#include "RTS_Team.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -22,6 +23,24 @@ ARTS_Unit::ARTS_Unit()
 	}
 }
 
+void ARTS_Unit::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (m_PostKillTimer < POSTKILLDELAY && CurrentDefenceStats.Health <= 0)
+	{
+		m_PostKillTimer += DeltaTime;
+		if (m_PostKillTimer > POSTKILLDELAY)
+		{
+			USkeletalMeshComponent* skeletalMesh = GetMesh();
+			//skeletalMesh->SetCollisionProfileName("None");
+			skeletalMesh->SetComponentTickEnabled(false);
+
+			//skeletalMesh->SetActive(false);
+		}
+	}
+}
+
 void ARTS_Unit::SetTeamMaterial()
 {
 	ARTS_Entity::SetTeamMaterial();
@@ -30,7 +49,7 @@ void ARTS_Unit::SetTeamMaterial()
 	if (mesh && mesh->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
-		bodyMatInst->SetVectorParameterValue("BodyColor", Team.Color);
+		bodyMatInst->SetVectorParameterValue("BodyColor", Team->Color);
 		mesh->SetReceivesDecals(false);
 	}
 }

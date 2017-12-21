@@ -7,13 +7,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
@@ -21,9 +21,11 @@
 
 #include "UnitEffect.h"
 #include "AbilityIcon.h"
+#include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"
 #include "RTS_PlayerController.h"
+#include "RTS_Team.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -103,59 +105,6 @@ ARTS_Entity::ARTS_Entity()
 void ARTS_Entity::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (!TeamRow.IsNull())
-	{
-		FTeamRow tr;
-		tr = *TeamRow.GetRow<FTeamRow>("ARTS_Entity::ARTS_Entity > Row not found!");
-		Team.Name = TeamRow.RowName;
-		Team.Color = tr.Color;
-		Team.Alignment = tr.Alignment;
-	}
-
-	CurrentMovementStats = BaseMovementStats;
-	CurrentAttackStats = BaseAttackStats;
-	CurrentDefenceStats = BaseDefenceStats;
-	CurrentVisionStats = BaseVisionStats;
-
-	//TODO: Remove hardcoding
-	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
-
-	SetSelected(false);
-
-	for (auto debugMesh : DebugMeshes)
-	{
-		debugMesh->SetVisibility(ShowRange);
-	}
-
-	if (ShowRange)
-	{
-		SetRangeDebug();
-	}
-
-	//Bars
-	//APawn* player = UGameplayStatics::GetPlayerPawn(this, 0);
-	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-	if (playerPawn)
-	{
-		TArray<UCameraComponent*> cameracomponents;
-		playerPawn->GetComponents(cameracomponents);
-		if (cameracomponents.Num() > 0)
-		{
-			UCameraComponent* camera = cameracomponents[0];
-			FRotator rot = camera->GetComponentRotation();
-
-			BarRotation.Roll = rot.Roll;
-			BarRotation.Pitch = rot.Pitch + 90;
-			BarRotation.Yaw = rot.Yaw + 180;
-		}
-		else
-		{
-			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
-		}
-	}
-
-	SetTeamMaterial();
 }
 
 void ARTS_Entity::SetSelected(bool selected)
@@ -177,12 +126,6 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
-
-	/* Update bar rotation */
-	if (BarWidget)
-	{
-		BarWidget->SetWorldRotation(BarRotation);
-	}
 
 	/* Apply effects */
 	for (auto e : UnitEffects)
@@ -232,7 +175,7 @@ bool ARTS_Entity::IsSelected() const
 
 void ARTS_Entity::SetTeamMaterial()
 {
-	FLinearColor selectionColorHSV = Team.Color.LinearRGBToHSV();
+	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
 	selectionColorHSV.B = SelectionBrightness;
 	FLinearColor selectionColorRGB = selectionColorHSV.HSVToLinearRGB();
 	if (SelectionStaticMeshComponent->GetMaterials().Num() > 0)
@@ -247,15 +190,99 @@ void ARTS_Entity::SetTeamMaterial()
 	}
 
 	//Set minimap icon color
-	if (MinimapIcon && MinimapIcon->GetMaterials().Num() > 0)
+	if (MinimapIcon)
 	{
-		UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
-		mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team.Color);
+		if (MinimapIcon->GetMaterials().Num() > 0)
+		{
+			UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
+			mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team->Color);
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("Entity's minimap mesh's material is not set!"));
+		}
 	}
 	else
 	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("No minimap material found!"));
+		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("Entitiy's minimap mesh icon was not created!"));
 	}
+}
+
+void ARTS_Entity::PostInitialize()
+{
+	if (BarWidget)
+	{
+		UUserWidget* barUserWidget = BarWidget->GetUserWidgetObject();
+		if (barUserWidget)
+		{
+			UUI_Bar* bar = Cast<UUI_Bar>(barUserWidget);
+			if (bar)
+			{
+				bar->Initialize(this);
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's type is not derived from UI_Bar!"));
+			}
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's user widget object was not set!"));
+		}
+	}
+
+	CurrentMovementStats = BaseMovementStats;
+	CurrentAttackStats = BaseAttackStats;
+	CurrentDefenceStats = BaseDefenceStats;
+	CurrentVisionStats = BaseVisionStats;
+
+	//TODO: Remove hardcoding
+	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
+
+	SetSelected(false);
+
+	for (auto debugMesh : DebugMeshes)
+	{
+		debugMesh->SetVisibility(ShowRange);
+	}
+
+	if (ShowRange)
+	{
+		SetRangeDebug();
+	}
+
+	// Bars
+	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (playerPawn)
+	{
+		TArray<UCameraComponent*> cameracomponents;
+		playerPawn->GetComponents(cameracomponents);
+		if (cameracomponents.Num() > 0)
+		{
+			UCameraComponent* camera = cameracomponents[0];
+			FRotator rot = camera->GetComponentRotation();
+
+			BarRotation.Roll = rot.Roll;
+			BarRotation.Pitch = rot.Pitch + 90;
+			BarRotation.Yaw = rot.Yaw + 180;
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Camera pawn doesn't contain a camera component!"));
+		}
+	}
+
+	if (BarWidget)
+	{
+		BarWidget->SetWorldRotation(BarRotation);
+	}
+
+	SetTeamMaterial();
+}
+
+void ARTS_Entity::SetTeam(URTS_Team* team)
+{
+	Team = team;
 }
 
 TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const
@@ -470,6 +497,15 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
+	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
+	//GetMesh()->DetachFromComponent(rules);
+	//GetMesh()->DetachFromParent();
+	//Destroy(true);
+}
+
+bool ARTS_Entity::IsAlive()
+{
+	return (CurrentDefenceStats.Health > 0);
 }
 
 

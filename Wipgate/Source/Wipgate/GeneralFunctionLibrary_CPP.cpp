@@ -34,9 +34,10 @@ UUnitEffect * UGeneralFunctionLibrary_CPP::CreateUnitEffect(UObject * outer, con
 	return unitEffect;
 }
 
-UCommand_MoveToLocation * UGeneralFunctionLibrary_CPP::CreateCommand_MoveToLocation(UObject* outer, FVector location)
+UCommand_MoveToLocation * UGeneralFunctionLibrary_CPP::CreateCommand_MoveToLocation(UObject* outer, FVector location, const bool isForced)
 {
 	UCommand_MoveToLocation* command = NewObject<UCommand_MoveToLocation>(outer);
+	command->IsForced = isForced;
 	command->Target = location;
 	return command;
 }
@@ -44,6 +45,7 @@ UCommand_MoveToLocation * UGeneralFunctionLibrary_CPP::CreateCommand_MoveToLocat
 UCommand_Attack * UGeneralFunctionLibrary_CPP::CreateCommand_Attack(UObject * outer, ARTS_Entity* target, const bool isForced)
 {
 	UCommand_Attack* command = NewObject<UCommand_Attack>(outer);
+	command->IsForced = isForced;
 	command->Target = target;
 	return command;
 }

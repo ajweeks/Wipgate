@@ -17,6 +17,8 @@ class WIPGATE_API ARTS_Unit : public ARTS_Entity
 public:
 	ARTS_Unit();
 
+	virtual void Tick(float DeltaTime) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial() override;
 	
@@ -65,6 +67,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool Immaterial = false;
 
+	// True when this unit is inside the level goal collider (through the gate)
+	UPROPERTY(BlueprintReadWrite)
+		bool InLevelGoal = false;
+
 private:
 	
+	float m_PostKillTimer = 0;
+	const float POSTKILLDELAY = 3;
 };

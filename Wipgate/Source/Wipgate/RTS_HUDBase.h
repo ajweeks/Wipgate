@@ -23,6 +23,8 @@ class WIPGATE_API URTS_HUDBase : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	URTS_HUDBase(const FObjectInitializer& ObjectInitializer);
+
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -69,6 +71,14 @@ public:
 		void ClearAbilityIconsFromCommandCardGrid();
 
 
+	// Entity stats functions
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowSelectedEntityStats(ARTS_Entity* Entity);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSelectedEntityStats();
+
+
 	// Selection group icon functions
 	/* 
 		This function should be called once at startup to create all necessary buttons
@@ -84,6 +94,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void HideSelectionGroupIcon(int32 Index);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnSelectionGroupSelected(int32 Index);
+
+
+	UFUNCTION(BlueprintCallable)
+		void DeselectEntity(ARTS_Entity* Entity);
+
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateCurrencyAmount(int32 CurrencyAmount);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void UpdateLumaAmount(int32 LumaAmount);
 
 
 	// Entity's icon's color when at full health (blended with Low Health color when health is less than full but not empty)
