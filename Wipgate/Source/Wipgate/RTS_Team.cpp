@@ -46,7 +46,7 @@ void URTS_Team::CalculateUpgradeEffects()
 				//	entity->CurrentDefenceStats.Health += upgrade.Effect;
 				//	break;
 				case EUpgradeStat::E_RANGE:
-					entity->CurrentMovementStats.Speed += upgrade.Effect;
+					entity->CurrentAttackStats.Range += upgrade.Effect;
 					break;
 				case EUpgradeStat::E_RATEOFFIRE:
 					entity->CurrentAttackStats.RateOfFire += upgrade.Effect;
