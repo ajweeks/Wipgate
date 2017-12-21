@@ -58,9 +58,16 @@ struct FVisionStat
 UENUM(BlueprintType)
 enum class ETeamAlignment : uint8
 {
-	E_FRIENDLY 		UMETA(DisplayName = "Friendly"),
-	E_NEUTRAL 		UMETA(DisplayName = "Neutral"),
-	E_ENEMY 		UMETA(DisplayName = "Enemy"),
+	E_PLAYER 			UMETA(DisplayName = "Player"),
+	E_NEUTRAL_AI 		UMETA(DisplayName = "Neutral AI"),
+	E_AGGRESSIVE_AI 		UMETA(DisplayName = "Aggressive AI")
+};
+
+UENUM(BlueprintType)
+enum class ERelativeAlignment : uint8
+{
+	E_FRIENDLY 			UMETA(DisplayName = "Friendly"),
+	E_ENEMY				UMETA(DisplayName = "Enemy")
 };
 
 UENUM(BlueprintType)
@@ -81,22 +88,7 @@ public:
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL;
-};
-
-USTRUCT(BlueprintType)
-struct FTeam
-{
-	GENERATED_USTRUCT_BODY()
-
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FName Name = "Team";
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FLinearColor Color = FLinearColor(1, 1, 1, 1);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL;
+		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };
 
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
@@ -110,6 +102,7 @@ public:
 	virtual void BeginPlay() override;
 
 private:
+	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_Table;
 };

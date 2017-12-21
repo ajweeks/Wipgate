@@ -7,6 +7,7 @@
 
 #include "AbilityIcon.h"
 #include "WipgateGameModeBase.h"
+#include "RTS_Team.h"
 
 #include "RTS_Entity.generated.h"
 
@@ -34,10 +35,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
-	bool IsSelected() const;
+		bool IsSelected() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
+
+	void PostInitialize();
+	void SetTeam(URTS_Team* team);
 
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
@@ -139,14 +143,14 @@ public:
 	FVisionStat CurrentVisionStats;
 
 	//TEAM
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team")
-	FDataTableRowHandle TeamRow;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
-	FTeam Team;
+	URTS_Team* Team;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UStaticMeshComponent*> DebugMeshes;
+
+	UPROPERTY(EditAnywhere, Category = "Team")
+		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;

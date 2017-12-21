@@ -94,6 +94,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void HideSelectionGroupIcon(int32 Index);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnSelectionGroupSelected(int32 Index);
+
 
 	UFUNCTION(BlueprintCallable)
 		void DeselectEntity(ARTS_Entity* Entity);

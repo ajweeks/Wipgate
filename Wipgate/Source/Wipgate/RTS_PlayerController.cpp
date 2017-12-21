@@ -28,6 +28,7 @@
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
 #include "RTS_Squad.h"
+#include "RTS_Team.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -356,7 +357,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team.Alignment == ETeamAlignment::E_FRIENDLY)
+		if (!SelectedAbility && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 		{
 			if (!entityIsDead)
 			{
@@ -522,8 +523,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
-				if (entityAlignment == ETeamAlignment::E_FRIENDLY)
+				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
+				if (entityAlignment == ETeamAlignment::E_PLAYER)
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
@@ -555,8 +556,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				ETeamAlignment entityAlignment = unitUnderCursor->Team.Alignment;
-				if (entityAlignment == ETeamAlignment::E_ENEMY)
+				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
+				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI)
 				{
 					if (!m_SpecialistShowingAbilities)
 					{
@@ -594,7 +595,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		float currentTimeSeconds = GetWorld()->GetTimeSeconds();
 
-		if (unitUnderCursor->Team.Alignment == ETeamAlignment::E_FRIENDLY &&
+		if (unitUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER &&
 			(currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
 		{
 			doubleClicked = true;
@@ -602,7 +603,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 			for (auto entity : m_RTS_GameState->Entities)
 			{
-				if (entity->Team.Alignment == ETeamAlignment::E_FRIENDLY && entity->CurrentAttackStats.Range == targetRange)
+				if (entity->Team->Alignment == ETeamAlignment::E_PLAYER && entity->CurrentAttackStats.Range == targetRange)
 				{
 					entity->SetSelected(true);
 					m_RTS_GameState->SelectedEntities.AddUnique(entity);
@@ -712,28 +713,6 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	MoveToTarget();
 }
 
-void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
-{
-	switch (Index)
-	{
-	case 0:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
-		break;
-	case 1:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
-		break;
-	case 2:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
-		break;
-	case 3:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
-		break;
-	case 4:
-		ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
-		break;
-	}
-}
-
 URTS_Squad* ARTS_PlayerController::AddSquad()
 {
 	URTS_Squad* squad = NewObject<URTS_Squad>(this);
@@ -741,7 +720,29 @@ URTS_Squad* ARTS_PlayerController::AddSquad()
 	return squad;
 }
 
-void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selectionGroupArray)
+void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
+{
+	switch (Index)
+	{
+	case 0:
+		ActionSelectionGroup(1, m_RTS_GameState->SelectionGroup1);
+		break;
+	case 1:
+		ActionSelectionGroup(2, m_RTS_GameState->SelectionGroup2);
+		break;
+	case 2:
+		ActionSelectionGroup(3, m_RTS_GameState->SelectionGroup3);
+		break;
+	case 3:
+		ActionSelectionGroup(4, m_RTS_GameState->SelectionGroup4);
+		break;
+	case 4:
+		ActionSelectionGroup(5, m_RTS_GameState->SelectionGroup5);
+		break;
+	}
+}
+
+void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity*>& selectionGroupArray)
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
@@ -750,6 +751,8 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	ClearAbilityButtons();
 
 	m_RTS_GameState->SelectedEntities = selectionGroupArray;
+
+	m_RTSHUD->OnSelectionGroupSelected(Index - 1);
 
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
@@ -779,7 +782,7 @@ void ARTS_PlayerController::ActionSelectionGroup(TArray<ARTS_Entity*>& selection
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 }
 
-void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup, bool* SelectionGroupIconCreated)
+void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
 {
 	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
@@ -788,67 +791,62 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 		if (previousSelectionEntityCount != 0)
 		{
 			m_RTSHUD->HideSelectionGroupIcon(Index - 1);
-			*SelectionGroupIconCreated = false;
 		}
 	}
 	else
 	{
-		if (!(*SelectionGroupIconCreated))
-		{
-			m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
-			*SelectionGroupIconCreated = true;
-		}
+		m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
 	}
 }
 
 void ARTS_PlayerController::ActionSelectionGroup1()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup1);
+	ActionSelectionGroup(1, m_RTS_GameState->SelectionGroup1);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup1()
 {
-	ActionCreateSelectionGroup(1, &m_RTS_GameState->SelectionGroup1, &m_RTS_GameState->SelectionGroup1IconCreated);
+	ActionCreateSelectionGroup(1, &m_RTS_GameState->SelectionGroup1);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup2()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup2);
+	ActionSelectionGroup(2, m_RTS_GameState->SelectionGroup2);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup2()
 {
-	ActionCreateSelectionGroup(2, &m_RTS_GameState->SelectionGroup2, &m_RTS_GameState->SelectionGroup2IconCreated);
+	ActionCreateSelectionGroup(2, &m_RTS_GameState->SelectionGroup2);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup3()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup3);
+	ActionSelectionGroup(3, m_RTS_GameState->SelectionGroup3);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup3()
 {
-	ActionCreateSelectionGroup(3, &m_RTS_GameState->SelectionGroup3, &m_RTS_GameState->SelectionGroup3IconCreated);
+	ActionCreateSelectionGroup(3, &m_RTS_GameState->SelectionGroup3);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup4()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup4);
+	ActionSelectionGroup(4, m_RTS_GameState->SelectionGroup4);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup4()
 {
-	ActionCreateSelectionGroup(4, &m_RTS_GameState->SelectionGroup4, &m_RTS_GameState->SelectionGroup4IconCreated);
+	ActionCreateSelectionGroup(4, &m_RTS_GameState->SelectionGroup4);
 }
 
 void ARTS_PlayerController::ActionSelectionGroup5()
 {
-	ActionSelectionGroup(m_RTS_GameState->SelectionGroup5);
+	ActionSelectionGroup(5, m_RTS_GameState->SelectionGroup5);
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup5()
 {
-	ActionCreateSelectionGroup(5, &m_RTS_GameState->SelectionGroup5, &m_RTS_GameState->SelectionGroup5IconCreated);
+	ActionCreateSelectionGroup(5, &m_RTS_GameState->SelectionGroup5);
 }
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
@@ -955,7 +953,7 @@ void ARTS_PlayerController::InvertSelection()
 
 		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
 		{
-			if (m_RTS_GameState->Entities[i]->Team.Alignment == ETeamAlignment::E_FRIENDLY &&
+			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
 				m_RTS_GameState->Entities[i]->CurrentDefenceStats.Health > 0 &&
 				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
 			{
