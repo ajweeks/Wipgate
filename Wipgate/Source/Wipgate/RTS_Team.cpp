@@ -31,8 +31,6 @@ void URTS_Team::CalculateUpgradeEffects()
 		{
 			for (auto entity : Entities)
 			{
-				//TODO: Vision
-				//TODO: Health
 				//Apply upgrade
 				switch (upgrade.Stat)
 				{
@@ -42,9 +40,9 @@ void URTS_Team::CalculateUpgradeEffects()
 				case EUpgradeStat::E_DAMAGE:
 					entity->CurrentAttackStats.Damage += upgrade.Effect;
 					break;
-				//case EUpgradeStat::E_HEALTH:
-				//	entity->CurrentDefenceStats.Health += upgrade.Effect;
-				//	break;
+				case EUpgradeStat::E_HEALTH:
+					entity->CurrentDefenceStats.MaxHealth += upgrade.Effect;
+					break;
 				case EUpgradeStat::E_RANGE:
 					entity->CurrentAttackStats.Range += upgrade.Effect;
 					break;
@@ -53,6 +51,10 @@ void URTS_Team::CalculateUpgradeEffects()
 					break;
 				case EUpgradeStat::E_SPEED:
 					entity->CurrentMovementStats.Speed += upgrade.Effect;
+					break;
+				case EUpgradeStat::E_VISION:
+					entity->CurrentVisionStats.InnerRange += upgrade.Effect;
+					entity->CurrentVisionStats.OuterRange += upgrade.Effect;
 					break;
 				default:
 					break;
