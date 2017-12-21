@@ -38,15 +38,15 @@ struct FUpgrade
 	GENERATED_USTRUCT_BODY()
 
 	//The effect it has on the stat its altering
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Effect = 0.f;
 
 	//Type of the upgrade
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EUpgradeType Type = EUpgradeType::E_FLAT;
 
 	//Stat upgrade affects
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EUpgradeStat Stat = EUpgradeStat::E_ARMOR;
 };
 
