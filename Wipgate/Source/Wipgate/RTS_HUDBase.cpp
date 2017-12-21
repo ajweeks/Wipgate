@@ -138,7 +138,6 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 			int32 createdIconCount = 0;
 			for (auto newSelectedEntity : SelectedEntities)
 			{
-				newSelectedEntity->Icon = WidgetTree->ConstructWidget<UImage>();
 				AddEntityIconToGrid(newSelectedEntity);
 				if (++createdIconCount >= newSelectedEntityIconCount)
 				{

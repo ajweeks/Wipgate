@@ -11,7 +11,7 @@
 
 #include "RTS_Entity.generated.h"
 
-class UImage;
+class UTexture2D;
 class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
@@ -157,11 +157,11 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
 
-	// Selection screen icon
-	UImage* Icon = nullptr;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 IconIndex = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* IconTexture;
 
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;

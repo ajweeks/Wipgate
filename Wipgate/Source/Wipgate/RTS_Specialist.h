@@ -19,17 +19,24 @@ public:
 	virtual void Kill() override;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-	AAbility* AbilityActive;
+		AAbility* AbilityActive;
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-	AAbility* AbilityConstruct;
+		AAbility* AbilityConstruct;
 	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-	AAbility* AbilityPassive;
+		AAbility* AbilityPassive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	TSubclassOf<AAbility> AbilityActiveClass;
+		TSubclassOf<AAbility> AbilityActiveClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	TSubclassOf<AAbility> AbilityConstructClass;
+		TSubclassOf<AAbility> AbilityConstructClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	TSubclassOf<AAbility> AbilityPassiveClass;
+		TSubclassOf<AAbility> AbilityPassiveClass;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+		UTexture2D* IconAbilityActive;
+	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+		UTexture2D* IconAbilityConstruct;
+	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+		UTexture2D* IconAbilityPassive;
 	
 };
