@@ -490,7 +490,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						SelectedAbility->Icon->OnAbilityActivate();
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
@@ -515,7 +518,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
-						SelectedAbility->Icon->OnAbilityActivate();
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
 						SelectedAbility->SetTarget(unitUnderCursor);
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
@@ -544,7 +550,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							SelectedAbility->Icon->OnAbilityActivate();
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
@@ -578,7 +587,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
-							SelectedAbility->Icon->OnAbilityActivate();
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
