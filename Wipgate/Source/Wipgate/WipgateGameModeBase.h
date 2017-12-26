@@ -40,7 +40,7 @@ struct FDefenceStat
 		int Armor = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int Health = 100;
+		int MaxHealth = 100;
 };
 
 USTRUCT(BlueprintType)

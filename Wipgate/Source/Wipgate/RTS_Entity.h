@@ -137,6 +137,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	FDefenceStat CurrentDefenceStats;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	int Health = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FVisionStat BaseVisionStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
@@ -150,7 +153,7 @@ public:
 	TArray<UStaticMeshComponent*> DebugMeshes;
 
 	UPROPERTY(EditAnywhere, Category = "Team")
-		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
