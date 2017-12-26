@@ -21,7 +21,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "Ability.h"
-#include "AbilityIcon.h"
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
 #include "RTS_Entity.h"
@@ -29,6 +28,7 @@
 #include "RTS_Specialist.h"
 #include "RTS_Squad.h"
 #include "RTS_Team.h"
+#include "AbilityIconBase.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -134,9 +134,16 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 
-	InputComponent->BindAction("Ability Active", IE_Released, this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-	InputComponent->BindAction("Ability Construct", IE_Released, this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-	InputComponent->BindAction("Ability Passive", IE_Released, this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+	InputComponent->BindAction("Ability Specialist Active Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistActiveSelect);
+	InputComponent->BindAction("Ability Specialist Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistConstructSelect);
+	InputComponent->BindAction("Ability Specialist Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistPassiveSelect);
+
+	InputComponent->BindAction("Ability Movement Active Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
+	InputComponent->BindAction("Ability Movement Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
+	InputComponent->BindAction("Ability Movement Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
+	InputComponent->BindAction("Ability Movement Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
+
+	InputComponent->BindAction("Ability Luma Apply Select", IE_Released, this, &ARTS_PlayerController::OnAbilityLumaApplySelect);
 
 	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
 	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
@@ -483,6 +490,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
+						SelectedAbility->Icon->OnAbilityActivate();
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
@@ -507,6 +515,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
+						SelectedAbility->Icon->OnAbilityActivate();
 						SelectedAbility->SetTarget(unitUnderCursor);
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
@@ -535,6 +544,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
+							SelectedAbility->Icon->OnAbilityActivate();
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
@@ -568,6 +578,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
+							SelectedAbility->Icon->OnAbilityActivate();
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
@@ -648,6 +659,18 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	}
 
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+
+	int32 currentNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
+	if (prevNumEntitiesSelected > 0 && currentNumEntitiesSelected == 0)
+	{
+		m_RTSHUD->HideLumaAbilityIcons();
+		m_RTSHUD->HideMovementAbilityIcons();
+	}
+	else if (prevNumEntitiesSelected == 0 && currentNumEntitiesSelected > 0)
+	{
+		m_RTSHUD->ShowLumaAbilityIcons();
+		m_RTSHUD->ShowMovementAbilityIcons();
+	}
 
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
 	{
@@ -885,7 +908,7 @@ void ARTS_PlayerController::ClearAbilityButtons()
 	{
 		m_SpecialistShowingAbilities->ShowingAbilityIcons = false;
 		m_SpecialistShowingAbilities = nullptr;
-		m_RTSHUD->ClearAbilityIconsFromCommandCardGrid();
+		m_RTSHUD->ClearSpecialistAbilityIcons();
 	}
 }
 
@@ -896,20 +919,15 @@ void ARTS_PlayerController::CreateAbilityButtons()
 		if (!m_SpecialistShowingAbilities->ShowingAbilityIcons)
 		{
 			m_SpecialistShowingAbilities->ShowingAbilityIcons = true;
-			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
-			{
-				m_RTSHUD->AddAbilityIconToCommandCardGrid(m_SpecialistShowingAbilities);
-			}
+			m_RTSHUD->ShowSpecialistAbilityIcons(m_SpecialistShowingAbilities);
 		}
 
 		for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 		{
-			int col = i;
-			int row = 1;
 			FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
 			FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-			m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
+			m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
 		}
 	}
 }
@@ -927,12 +945,10 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 		{
 			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 			{
-				int col = i;
-				int row = 1;
 				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
 				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-				m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
+				m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
 			}
 		}
 	}

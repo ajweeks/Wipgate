@@ -37,14 +37,63 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEdgeMovementEnabled(bool enabled);
 
+	// Abillity icon button press callbacks
+	// Specialst ability callbacks
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void OnAbilityActiveButtonPress();
+		void OnAbilitySpecialistActiveSelect();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void OnAbilityConstructButtonPress();
+		void OnAbilitySpecialistConstructSelect();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void OnAbilityPassiveButtonPress();
+		void OnAbilitySpecialistPassiveSelect();
+
+	// Movement ability callbacks
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementMoveSelect();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementAttackMoveSelect();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementStopSelect();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementHoldPositionSelect();
+
+	// Luma ability callbacks
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityLumaApplySelect();
+
+
+	// Specialst ability callbacks
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilitySpecialistActiveActivate();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilitySpecialistConstructActivate();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilitySpecialistPassiveActivate();
+
+	// Movement ability callbacks
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementMoveActivate();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementAttackMoveActivate();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementStopActivate();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityMovementHoldPositionActivate();
+
+	// Luma ability callbacks
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnAbilityLumaApplyActivate();
+
+
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);

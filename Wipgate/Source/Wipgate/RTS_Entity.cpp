@@ -20,7 +20,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
-#include "AbilityIcon.h"
 #include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"

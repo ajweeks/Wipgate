@@ -14,7 +14,6 @@
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
 #include "RTS_GameState.h"
-#include "RTS_UnitIcon.h"
 #include "RTS_PlayerController.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
