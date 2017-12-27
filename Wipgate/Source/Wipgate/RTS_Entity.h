@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
-#include "AbilityIcon.h"
 #include "WipgateGameModeBase.h"
 #include "RTS_Team.h"
 
@@ -16,7 +15,6 @@ class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
-struct FAbilityIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 

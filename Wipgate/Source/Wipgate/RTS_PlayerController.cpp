@@ -21,7 +21,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "Ability.h"
-#include "AbilityIcon.h"
 #include "RTS_GameState.h"
 #include "RTS_HUDBase.h"
 #include "RTS_Entity.h"
@@ -29,6 +28,7 @@
 #include "RTS_Specialist.h"
 #include "RTS_Squad.h"
 #include "RTS_Team.h"
+#include "AbilityIconBase.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -134,9 +134,16 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 
-	InputComponent->BindAction("Ability Active", IE_Released, this, &ARTS_PlayerController::OnAbilityActiveButtonPress);
-	InputComponent->BindAction("Ability Construct", IE_Released, this, &ARTS_PlayerController::OnAbilityConstructButtonPress);
-	InputComponent->BindAction("Ability Passive", IE_Released, this, &ARTS_PlayerController::OnAbilityPassiveButtonPress);
+	InputComponent->BindAction("Ability Specialist Active Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistActiveSelect);
+	InputComponent->BindAction("Ability Specialist Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistConstructSelect);
+	InputComponent->BindAction("Ability Specialist Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistPassiveSelect);
+
+	InputComponent->BindAction("Ability Movement Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
+	InputComponent->BindAction("Ability Movement Attack Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
+	InputComponent->BindAction("Ability Movement Stop Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
+	InputComponent->BindAction("Ability Movement Hold Position Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
+
+	InputComponent->BindAction("Ability Luma Apply Select", IE_Released, this, &ARTS_PlayerController::OnAbilityLumaApplySelect);
 
 	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
 	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
@@ -152,8 +159,6 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Invert Selection", IE_Released, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
-	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
-	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
 }
 
 bool ARTS_PlayerController::IsEdgeMovementEnabled() const
@@ -164,6 +169,41 @@ bool ARTS_PlayerController::IsEdgeMovementEnabled() const
 void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 {
 	m_EdgeMovementEnabled = enabled;
+}
+
+void ARTS_PlayerController::UpdateSelectedEntities()
+{
+	UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+
+	int32 currentNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
+	if (currentNumEntitiesSelected == 0)
+	{
+		m_RTSHUD->HideLumaAbilityIcons();
+		m_RTSHUD->HideMovementAbilityIcons();
+	}
+	else if (currentNumEntitiesSelected > 0)
+	{
+		m_RTSHUD->ShowLumaAbilityIcons();
+		m_RTSHUD->ShowMovementAbilityIcons();
+	}
+
+	if (currentNumEntitiesSelected == 1)
+	{
+		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
+		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
+		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
+		{
+			m_SpecialistShowingAbilities = specialist;
+			CreateSpecialistAbilityButtons();
+		}
+
+		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+	}
+	else
+	{
+		m_RTSHUD->HideSelectedEntityStats();
+	}
 }
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
@@ -394,14 +434,14 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		if (m_SpecialistShowingAbilities->CurrentDefenceStats.MaxHealth <= 0)
 		{
-			ClearAbilityButtons();
+			ClearSpecialistAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
 			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
 			m_SpecialistShowingAbilities = nullptr;
 		}
 		else
 		{
-			UpdateAbilityButtons();
+			UpdateSpecialistAbilityButtons();
 		}
 	}
 
@@ -483,6 +523,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
@@ -507,6 +551,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
 					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
 						SelectedAbility->SetTarget(unitUnderCursor);
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
@@ -535,6 +583,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
@@ -568,6 +620,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
 						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
 							SelectedAbility->SetTarget(unitUnderCursor);
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
@@ -587,8 +643,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	static const auto addToSelectionKeys = PlayerInput->GetKeysForAction("Add To Selection");
 	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
 	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
-
-	const int32 prevNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
 
 	bool doubleClicked = false;
 	if (unitUnderCursor)
@@ -643,35 +697,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		if ((m_RTS_GameState->SelectedEntities.Num() != 1) ||
 			(m_RTS_GameState->SelectedEntities[0] != m_SpecialistShowingAbilities))
 		{
-			ClearAbilityButtons();
+			ClearSpecialistAbilityButtons();
 		}
 	}
 
-	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
-
-	if (m_RTS_GameState->SelectedEntities.Num() == 1)
-	{
-		if (!SelectedAbility && !m_SpecialistShowingAbilities)
-		{
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
-
-			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(entity);
-			if (specialst)
-			{
-				m_SpecialistShowingAbilities = specialst;
-				CreateAbilityButtons();
-			}
-		}
-
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
-	}
-	else
-	{
-		if (prevNumEntitiesSelected == 1)
-		{
-			m_RTSHUD->HideSelectedEntityStats();
-		}
-	}
+	UpdateSelectedEntities();
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -748,7 +778,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 	{
 		m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
 	}
-	ClearAbilityButtons();
+	ClearSpecialistAbilityButtons();
 
 	m_RTS_GameState->SelectedEntities = selectionGroupArray;
 
@@ -762,24 +792,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 		}
 	}
 
-	if (m_RTS_GameState->SelectedEntities.Num() == 1)
-	{
-		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
-		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
-		{
-			m_SpecialistShowingAbilities = specialist;
-			CreateAbilityButtons();
-		}
-
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
-	}
-	else
-	{
-		m_RTSHUD->HideSelectedEntityStats();
-	}
-
-	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+	UpdateSelectedEntities();
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
@@ -867,54 +880,37 @@ void ARTS_PlayerController::AxisZoom(float AxisValue)
 	}
 }
 
-void ARTS_PlayerController::AxisMoveRight(float AxisValue)
-{
-	if (m_RTS_CameraPawn && m_RTS_CameraPawnMeshComponent && AxisValue != 0.0f)
-	{
-		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
-
-		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
-
-		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
-	}
-}
-
-void ARTS_PlayerController::ClearAbilityButtons()
+void ARTS_PlayerController::ClearSpecialistAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
 		m_SpecialistShowingAbilities->ShowingAbilityIcons = false;
 		m_SpecialistShowingAbilities = nullptr;
-		m_RTSHUD->ClearAbilityIconsFromCommandCardGrid();
+		m_RTSHUD->ClearSpecialistAbilityIcons();
 	}
 }
 
-void ARTS_PlayerController::CreateAbilityButtons()
+void ARTS_PlayerController::CreateSpecialistAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
 		if (!m_SpecialistShowingAbilities->ShowingAbilityIcons)
 		{
 			m_SpecialistShowingAbilities->ShowingAbilityIcons = true;
-			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
-			{
-				m_RTSHUD->AddAbilityIconToCommandCardGrid(m_SpecialistShowingAbilities);
-			}
+			m_RTSHUD->ShowSpecialistAbilityIcons(m_SpecialistShowingAbilities);
 		}
 
 		for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 		{
-			int col = i;
-			int row = 1;
 			FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
 			FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-			m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
+			m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
 		}
 	}
 }
 
-void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities)
+void ARTS_PlayerController::UpdateSpecialistAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities)
 {
 	if (SpecialistShowingAbilities)
 	{
@@ -927,12 +923,10 @@ void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShow
 		{
 			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 			{
-				int col = i;
-				int row = 1;
 				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
 				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
 
-				m_RTSHUD->UpdateAbilityIconProperties(i, col, row, buttonBGCol, progressBarBGCol);
+				m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
 			}
 		}
 	}
@@ -942,7 +936,7 @@ void ARTS_PlayerController::InvertSelection()
 {
 	if (m_RTS_GameState)
 	{
-		ClearAbilityButtons();
+		ClearSpecialistAbilityButtons();
 
 		TArray<ARTS_Entity*> newSelectedEntities;
 
@@ -977,7 +971,7 @@ void ARTS_PlayerController::InvertSelection()
 			if (specialst && specialst->Health > 0)
 			{
 				m_SpecialistShowingAbilities = specialst;
-				CreateAbilityButtons();
+				CreateSpecialistAbilityButtons();
 			}
 
 			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
@@ -987,7 +981,7 @@ void ARTS_PlayerController::InvertSelection()
 			m_RTSHUD->HideSelectedEntityStats();
 		}
 
-		m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+		UpdateSelectedEntities();
 	}
 }
 
@@ -1022,20 +1016,6 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
 {
 	return m_CurrentCurrency;
-}
-
-void ARTS_PlayerController::AxisMoveForward(float AxisValue)
-{
-	if (m_RTS_CameraPawn && AxisValue != 0.0f)
-	{
-		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
-
-		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
-		forwardVec.Z = 0; // Only move along XY plane
-		forwardVec.Normalize();
-
-		m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
-	}
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)

@@ -18,11 +18,11 @@ public:
 
 	virtual void Kill() override;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+	UPROPERTY(BlueprintReadWrite)
 		AAbility* AbilityActive;
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+	UPROPERTY(BlueprintReadWrite)
 		AAbility* AbilityConstruct;
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
+	UPROPERTY(BlueprintReadWrite)
 		AAbility* AbilityPassive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
