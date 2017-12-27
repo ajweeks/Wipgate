@@ -13,7 +13,7 @@ void URTS_Team::AddUpgrade(FUpgrade upgrade)
 	CalculateUpgradeEffects();
 }
 
-void URTS_Team::AddUpgradesTEST(TArray<FUpgrade> upgrades)
+void URTS_Team::AddUpgrades_CPP(TArray<FUpgrade> upgrades)
 {
 	for (auto upgrade : upgrades)
 	{
