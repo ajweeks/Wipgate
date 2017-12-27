@@ -75,6 +75,9 @@ class WIPGATE_API URTS_Team : public UObject
 		/* Functions */
 		UFUNCTION(BlueprintCallable)
 		void AddUpgrade(FUpgrade upgrade);
+		
+		UFUNCTION(BlueprintCallable)
+		void AddUpgradesTEST(TArray<FUpgrade> upgrades);
 
 		/* Variables */
 		UPROPERTY(BlueprintReadWrite)
