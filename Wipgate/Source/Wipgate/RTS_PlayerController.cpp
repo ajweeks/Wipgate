@@ -171,6 +171,41 @@ void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 	m_EdgeMovementEnabled = enabled;
 }
 
+void ARTS_PlayerController::UpdateSelectedEntities()
+{
+	UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+
+	int32 currentNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
+	if (currentNumEntitiesSelected == 0)
+	{
+		m_RTSHUD->HideLumaAbilityIcons();
+		m_RTSHUD->HideMovementAbilityIcons();
+	}
+	else if (currentNumEntitiesSelected > 0)
+	{
+		m_RTSHUD->ShowLumaAbilityIcons();
+		m_RTSHUD->ShowMovementAbilityIcons();
+	}
+
+	if (currentNumEntitiesSelected == 1)
+	{
+		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
+		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
+		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
+		{
+			m_SpecialistShowingAbilities = specialist;
+			CreateSpecialistAbilityButtons();
+		}
+
+		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+	}
+	else
+	{
+		m_RTSHUD->HideSelectedEntityStats();
+	}
+}
+
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	if (!m_RTS_GameState ||!m_RTSHUD)
@@ -399,14 +434,14 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		if (m_SpecialistShowingAbilities->CurrentDefenceStats.MaxHealth <= 0)
 		{
-			ClearAbilityButtons();
+			ClearSpecialistAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
 			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
 			m_SpecialistShowingAbilities = nullptr;
 		}
 		else
 		{
-			UpdateAbilityButtons();
+			UpdateSpecialistAbilityButtons();
 		}
 	}
 
@@ -609,8 +644,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
 	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
 
-	const int32 prevNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
-
 	bool doubleClicked = false;
 	if (unitUnderCursor)
 	{
@@ -664,48 +697,11 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		if ((m_RTS_GameState->SelectedEntities.Num() != 1) ||
 			(m_RTS_GameState->SelectedEntities[0] != m_SpecialistShowingAbilities))
 		{
-			ClearAbilityButtons();
+			ClearSpecialistAbilityButtons();
 		}
 	}
 
-	UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
-	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
-
-	int32 currentNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
-	if (prevNumEntitiesSelected > 0 && currentNumEntitiesSelected == 0)
-	{
-		m_RTSHUD->HideLumaAbilityIcons();
-		m_RTSHUD->HideMovementAbilityIcons();
-	}
-	else if (prevNumEntitiesSelected == 0 && currentNumEntitiesSelected > 0)
-	{
-		m_RTSHUD->ShowLumaAbilityIcons();
-		m_RTSHUD->ShowMovementAbilityIcons();
-	}
-
-	if (m_RTS_GameState->SelectedEntities.Num() == 1)
-	{
-		if (!SelectedAbility && !m_SpecialistShowingAbilities)
-		{
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
-
-			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(entity);
-			if (specialst)
-			{
-				m_SpecialistShowingAbilities = specialst;
-				CreateAbilityButtons();
-			}
-		}
-
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
-	}
-	else
-	{
-		if (prevNumEntitiesSelected == 1)
-		{
-			m_RTSHUD->HideSelectedEntityStats();
-		}
-	}
+	UpdateSelectedEntities();
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -782,7 +778,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 	{
 		m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
 	}
-	ClearAbilityButtons();
+	ClearSpecialistAbilityButtons();
 
 	m_RTS_GameState->SelectedEntities = selectionGroupArray;
 
@@ -796,24 +792,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 		}
 	}
 
-	if (m_RTS_GameState->SelectedEntities.Num() == 1)
-	{
-		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
-		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
-		{
-			m_SpecialistShowingAbilities = specialist;
-			CreateAbilityButtons();
-		}
-
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
-	}
-	else
-	{
-		m_RTSHUD->HideSelectedEntityStats();
-	}
-
-	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+	UpdateSelectedEntities();
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
@@ -901,7 +880,7 @@ void ARTS_PlayerController::AxisZoom(float AxisValue)
 	}
 }
 
-void ARTS_PlayerController::ClearAbilityButtons()
+void ARTS_PlayerController::ClearSpecialistAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
@@ -911,7 +890,7 @@ void ARTS_PlayerController::ClearAbilityButtons()
 	}
 }
 
-void ARTS_PlayerController::CreateAbilityButtons()
+void ARTS_PlayerController::CreateSpecialistAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
 	{
@@ -931,7 +910,7 @@ void ARTS_PlayerController::CreateAbilityButtons()
 	}
 }
 
-void ARTS_PlayerController::UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities)
+void ARTS_PlayerController::UpdateSpecialistAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities)
 {
 	if (SpecialistShowingAbilities)
 	{
@@ -957,7 +936,7 @@ void ARTS_PlayerController::InvertSelection()
 {
 	if (m_RTS_GameState)
 	{
-		ClearAbilityButtons();
+		ClearSpecialistAbilityButtons();
 
 		TArray<ARTS_Entity*> newSelectedEntities;
 
@@ -992,7 +971,7 @@ void ARTS_PlayerController::InvertSelection()
 			if (specialst && specialst->Health > 0)
 			{
 				m_SpecialistShowingAbilities = specialst;
-				CreateAbilityButtons();
+				CreateSpecialistAbilityButtons();
 			}
 
 			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
@@ -1002,7 +981,7 @@ void ARTS_PlayerController::InvertSelection()
 			m_RTSHUD->HideSelectedEntityStats();
 		}
 
-		m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
+		UpdateSelectedEntities();
 	}
 }
 

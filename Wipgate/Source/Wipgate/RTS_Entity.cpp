@@ -488,7 +488,7 @@ void ARTS_Entity::Kill()
 
 			if (playerController && rtsPlayerController)
 			{
-				rtsPlayerController->UpdateAbilityButtons();
+				rtsPlayerController->UpdateSpecialistAbilityButtons();
 				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
 				if (hud)
 				{

@@ -40,6 +40,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities);
 
+	void UpdateSelectedEntities();
+
 	// Abillity icon button press callbacks
 	// Specialst ability callbacks
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
@@ -99,7 +101,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
+		void UpdateSpecialistAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
 		URTS_HUDBase* GetHUD();
@@ -183,8 +185,8 @@ private:
 
 	void AxisZoom(float AxisValue);
 
-	void ClearAbilityButtons();
-	void CreateAbilityButtons();
+	void ClearSpecialistAbilityButtons();
+	void CreateSpecialistAbilityButtons();
 
 	void InvertSelection();
 
