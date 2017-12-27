@@ -50,22 +50,6 @@ struct FUpgrade
 		EUpgradeStat Stat = EUpgradeStat::E_ARMOR;
 };
 
-//TODO: Compare functor
-struct FUpgradeCompare
-{
-	bool operator() (const FUpgrade a, const FUpgrade b) const 
-	{
-		if (int32(a.Effect) < int32(b.Effect))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-};
-
 UCLASS()
 class WIPGATE_API URTS_Team : public UObject
 {

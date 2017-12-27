@@ -5,8 +5,6 @@
 
 DEFINE_LOG_CATEGORY(RTS_TEAM_LOG);
 
-//TODO: Add upgrades
-
 void URTS_Team::AddUpgrade(FUpgrade upgrade)
 {
 	Upgrades.Add(upgrade);
@@ -79,7 +77,6 @@ void URTS_Team::CalculateUpgradeEffects()
 		}
 	}
 
-	//TODO: Percentual upgrades
 	while (upgradeList.Num() > 0)
 	{
 		//Upgrade to compare with
