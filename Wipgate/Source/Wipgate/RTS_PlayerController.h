@@ -32,10 +32,13 @@ public:
 	virtual void SetupInputComponent() override;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsEdgeMovementEnabled() const;
+		bool IsEdgeMovementEnabled() const;
 
 	UFUNCTION(BlueprintCallable)
-	void SetEdgeMovementEnabled(bool enabled);
+		void SetEdgeMovementEnabled(bool enabled);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities);
 
 	// Abillity icon button press callbacks
 	// Specialst ability callbacks
@@ -96,28 +99,54 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
+		void UpdateAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
-	URTS_HUDBase* GetHUD();
+		URTS_HUDBase* GetHUD();
 
 	UFUNCTION(BlueprintCallable)
-	void AddLuma(int32 LumaAmount);
+		void AddLuma(int32 LumaAmount);
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetCurrentLumaAmount();
+		int32 GetCurrentLumaAmount();
 
 	UFUNCTION(BlueprintCallable)
-	void AddCurrency(int32 CurrencyAmount);
+		void AddCurrency(int32 CurrencyAmount);
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetCurrentCurrencyAmount();
+		int32 GetCurrentCurrencyAmount();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<UUserWidget> MainHUD;
+		TSubclassOf<UUserWidget> MainHUD;
 
 	UPROPERTY(BlueprintReadWrite)
-	AAbility* SelectedAbility = nullptr;
+		AAbility* SelectedAbility = nullptr;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Movement")
+		TSubclassOf<AAbility> AbilityMovementMoveClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Movement")
+		TSubclassOf<AAbility> AbilityMovementAttackMoveClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Movement")
+		TSubclassOf<AAbility> AbilityMovementStopClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Movement")
+		TSubclassOf<AAbility> AbilityMovementHoldPositionClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Luma")
+		TSubclassOf<AAbility> AbilityLumaApplyClass;
+
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* AbilityMovementMove;
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* AbilityMovementAttackMove;
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* AbilityMovementStop;
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* AbilityMovementHoldPosition;
+
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* AbilityLumaApply;
+
 
 private:
 	void ActionPrimaryClickPressed();
@@ -131,10 +160,10 @@ private:
 public:
 	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
-	void ActionSelectionGroup(int32 Index);
+		void ActionSelectionGroup(int32 Index);
 
 	UFUNCTION(BlueprintCallable)
-	URTS_Squad* AddSquad();
+		URTS_Squad* AddSquad();
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
@@ -153,8 +182,6 @@ private:
 	void ActionCreateSelectionGroup5();
 
 	void AxisZoom(float AxisValue);
-	void AxisMoveForward(float AxisValue);
-	void AxisMoveRight(float AxisValue);
 
 	void ClearAbilityButtons();
 	void CreateAbilityButtons();
@@ -180,45 +207,45 @@ private:
 	ARTS_Specialist* m_SpecialistShowingAbilities = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Misc")
-	bool m_EdgeMovementEnabled = true;
+		bool m_EdgeMovementEnabled = true;
 
 	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
-	FVector m_StartingLocation;
+		FVector m_StartingLocation;
 	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
-	FQuat m_StartingRotation;
+		FQuat m_StartingRotation;
 
 	// How much faster to move when move fast key is held (shift)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_FastMoveSpeed = 5.0f;
+		float m_FastMoveSpeed = 5.0f;
 	// Equals Fast Move Speed when shift is down, otherwise 1.0f
-	float m_FastMoveMultiplier = 1.0f;
+		float m_FastMoveMultiplier = 1.0f;
 	// The closer to zero this value is, the smaller the difference between movement speed while zoomed out and zoomed in (make denominator larger to make difference smaller)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_MoveSpeedZoomMultiplier = 1.0f / 3.0f;
+		float m_MoveSpeedZoomMultiplier = 1.0f / 3.0f;
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_ZoomSpeed = 40.0f;
+		float m_ZoomSpeed = 40.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	// How far to zoom per mouse wheel turn
-	float m_ZoomDistance = 140.0f;
+		float m_ZoomDistance = 140.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_MinArmDistance = 100.0f;
+		float m_MinArmDistance = 100.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	float m_MaxArmDistance = 5000.0f;
+		float m_MaxArmDistance = 5000.0f;
 
 	// How quickly to move when the mouse is at the edge of the screen
 	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
-	float m_EdgeMoveSpeed = 10.0f;
+		float m_EdgeMoveSpeed = 10.0f;
 	// Percentage of screen from outer edges that mouse cursor will cause movement in
 	UPROPERTY(EditAnywhere, meta = (UIMin = "0.001", UIMax = "0.05"), Category = "Movement")
-	float m_EdgeSize = 0.005f;
+		float m_EdgeSize = 0.005f;
 
 	// Higher values = faster selection centering
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
-	float m_SelectionCenterMaxMoveSpeed = 25.0f;
+		float m_SelectionCenterMaxMoveSpeed = 25.0f;
 
 	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
 	FVector m_TargetLocation;

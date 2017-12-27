@@ -138,10 +138,10 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Ability Specialist Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistConstructSelect);
 	InputComponent->BindAction("Ability Specialist Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistPassiveSelect);
 
-	InputComponent->BindAction("Ability Movement Active Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
-	InputComponent->BindAction("Ability Movement Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
-	InputComponent->BindAction("Ability Movement Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
-	InputComponent->BindAction("Ability Movement Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
+	InputComponent->BindAction("Ability Movement Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
+	InputComponent->BindAction("Ability Movement Attack Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
+	InputComponent->BindAction("Ability Movement Stop Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
+	InputComponent->BindAction("Ability Movement Hold Position Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
 
 	InputComponent->BindAction("Ability Luma Apply Select", IE_Released, this, &ARTS_PlayerController::OnAbilityLumaApplySelect);
 
@@ -159,8 +159,6 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Invert Selection", IE_Released, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
-	InputComponent->BindAxis("Move Right", this, &ARTS_PlayerController::AxisMoveRight);
-	InputComponent->BindAxis("Move Forward", this, &ARTS_PlayerController::AxisMoveForward);
 }
 
 bool ARTS_PlayerController::IsEdgeMovementEnabled() const
@@ -670,6 +668,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
+	UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 
 	int32 currentNumEntitiesSelected = m_RTS_GameState->SelectedEntities.Num();
@@ -902,18 +901,6 @@ void ARTS_PlayerController::AxisZoom(float AxisValue)
 	}
 }
 
-void ARTS_PlayerController::AxisMoveRight(float AxisValue)
-{
-	if (m_RTS_CameraPawn && m_RTS_CameraPawnMeshComponent && AxisValue != 0.0f)
-	{
-		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
-
-		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
-
-		m_RTS_CameraPawn->AddActorWorldOffset(rightVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
-	}
-}
-
 void ARTS_PlayerController::ClearAbilityButtons()
 {
 	if (m_SpecialistShowingAbilities)
@@ -1050,20 +1037,6 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
 {
 	return m_CurrentCurrency;
-}
-
-void ARTS_PlayerController::AxisMoveForward(float AxisValue)
-{
-	if (m_RTS_CameraPawn && AxisValue != 0.0f)
-	{
-		float camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(GetWorld()->DeltaTimeSeconds);
-
-		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
-		forwardVec.Z = 0; // Only move along XY plane
-		forwardVec.Normalize();
-
-		m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * AxisValue * camDistSpeedMultiplier * m_FastMoveMultiplier);
-	}
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)
