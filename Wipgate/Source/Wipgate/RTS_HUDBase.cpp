@@ -14,7 +14,6 @@
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
 #include "RTS_GameState.h"
-#include "RTS_UnitIcon.h"
 #include "RTS_PlayerController.h"
 
 DEFINE_LOG_CATEGORY(RTS_HUD_BASE_LOG);
@@ -158,7 +157,7 @@ void URTS_HUDBase::UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEn
 
 			int col = i % m_MaxEntityImageCount.X;
 			int row = i / m_MaxEntityImageCount.X;
-			float unitHealthNorm = (float)entity->CurrentDefenceStats.Health / (float)entity->BaseDefenceStats.Health;
+			float unitHealthNorm = (float)entity->Health / (float)entity->BaseDefenceStats.MaxHealth;
 			FLinearColor color;
 			if (unitHealthNorm > 0.0f)
 			{

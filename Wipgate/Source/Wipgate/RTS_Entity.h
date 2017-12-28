@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
-#include "AbilityIcon.h"
 #include "WipgateGameModeBase.h"
 #include "RTS_Team.h"
 
@@ -16,10 +15,10 @@ class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
-struct FAbilityIcon;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
+//TODO: Logging warning when unit is structure (EntityType)
 UCLASS()
 class WIPGATE_API ARTS_Entity : public ACharacter
 {
@@ -139,6 +138,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	FDefenceStat CurrentDefenceStats;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	int Health = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FVisionStat BaseVisionStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
@@ -152,7 +154,11 @@ public:
 	TArray<UStaticMeshComponent*> DebugMeshes;
 
 	UPROPERTY(EditAnywhere, Category = "Team")
-		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+
+	//TYPE
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEntityType EntityType = EEntityType::E_RANGED;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;

@@ -20,7 +20,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
-#include "AbilityIcon.h"
 #include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"
@@ -234,6 +233,7 @@ void ARTS_Entity::PostInitialize()
 	CurrentMovementStats = BaseMovementStats;
 	CurrentAttackStats = BaseAttackStats;
 	CurrentDefenceStats = BaseDefenceStats;
+	Health = BaseDefenceStats.MaxHealth;
 	CurrentVisionStats = BaseVisionStats;
 
 	//TODO: Remove hardcoding
@@ -424,17 +424,17 @@ bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 	{
 		int d = damage;
 		d -= CurrentDefenceStats.Armor;
-		CurrentDefenceStats.Health -= FMath::Clamp(d, 1, damage);
+		Health -= FMath::Clamp(d, 1, damage);
 	}
 	else
 	{
-		CurrentDefenceStats.Health -= FMath::Clamp(damage, 1, damage);
+		Health -= FMath::Clamp(damage, 1, damage);
 	}
 
 	//Check if character is dead
-	if (CurrentDefenceStats.Health <= 0)
+	if (Health <= 0)
 	{
-		CurrentDefenceStats.Health = 0;
+		Health = 0;
 		Kill();
 		return true;
 	}
@@ -443,10 +443,10 @@ bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 
 void ARTS_Entity::ApplyHealing(int healing)
 {
-	CurrentDefenceStats.Health += healing;
-	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
+	Health += healing;
+	if (Health > CurrentDefenceStats.MaxHealth)
 	{
-		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+		Health = CurrentDefenceStats.MaxHealth;
 	}
 }
 
@@ -488,7 +488,7 @@ void ARTS_Entity::Kill()
 
 			if (playerController && rtsPlayerController)
 			{
-				rtsPlayerController->UpdateAbilityButtons();
+				rtsPlayerController->UpdateSpecialistAbilityButtons();
 				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
 				if (hud)
 				{
@@ -505,7 +505,7 @@ void ARTS_Entity::Kill()
 
 bool ARTS_Entity::IsAlive()
 {
-	return (CurrentDefenceStats.Health > 0);
+	return (Health > 0);
 }
 
 

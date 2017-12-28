@@ -78,7 +78,7 @@ void ARTS_AIController::StoreNearbyEntities(const float radius)
 	if (!m_Entity->IsAlive()) return; 
 
 	FVector offset (0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5);
-	DrawDebugCircle(GetWorld(), m_Entity->GetActorLocation() - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
+	// DrawDebugCircle(GetWorld(), m_Entity->GetActorLocation() - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
 	ARTS_GameState * gameState = GetWorld()->GetGameState<ARTS_GameState>();
 	TArray<ARTS_Entity*> entities = gameState->Entities;
 
@@ -241,7 +241,7 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint);
 
-		RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
+		// RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
 		FVector newTarget = separation + cohesion + seek + avoidance;
 		newTarget.Normalize();
 		newTarget *= stepLength;
@@ -279,7 +279,7 @@ bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float s
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint);
 
-		RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
+		// RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
 
 		// increase avoidance when slowed down
 		float maxSpeed = m_Entity->CurrentMovementStats.Speed;

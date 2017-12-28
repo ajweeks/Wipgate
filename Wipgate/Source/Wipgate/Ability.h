@@ -6,6 +6,8 @@
 #include "UnitEffect.h"
 #include "Ability.generated.h"
 
+class UAbilityIconBase;
+
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
@@ -68,6 +70,9 @@ public:
 	// True once this ability has finished executing
 	UPROPERTY(BlueprintReadWrite)
 		bool IsCompleted;
+
+	UPROPERTY(BlueprintReadWrite)
+		UAbilityIconBase* Icon;
 
 protected:
 	/* protected non virtuals */
