@@ -18,6 +18,7 @@ class ARTS_Entity;
 class ARTS_Unit;
 class ARTS_Specialist;
 class URTS_Squad;
+class URTS_Team;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -154,6 +155,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* AbilityLumaApply;
+
+	//Team
+	UPROPERTY(BlueprintReadWrite)
+		URTS_Team* Team;
 
 	// Set true to start the game with luma and currency
 	UPROPERTY(EditAnywhere, Category = "Debug")

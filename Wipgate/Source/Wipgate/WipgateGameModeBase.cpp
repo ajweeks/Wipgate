@@ -5,6 +5,7 @@
 #include "RTS_Team.h"
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
+#include "RTS_PlayerController.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -36,6 +37,12 @@ void AWipgateGameModeBase::BeginPlay()
 
 			gamestate->Teams.Add(team);
 
+			//Set playercontroller team if it's player
+			if (team->Alignment == ETeamAlignment::E_PLAYER)
+			{
+				Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team = team;
+			}
+
 			//Check users in that group
 			for (ARTS_Entity* entity : gamestate->Entities)
 			{
@@ -46,6 +53,12 @@ void AWipgateGameModeBase::BeginPlay()
 				}
 			}
 		}
+	}
+
+	//Check if the playercontroller has a team
+	if (!Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
 	}
 
 	//Check if there are still nullpts
