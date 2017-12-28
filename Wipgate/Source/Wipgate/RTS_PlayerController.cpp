@@ -999,16 +999,19 @@ URTS_HUDBase* ARTS_PlayerController::GetHUD()
 
 void ARTS_PlayerController::AddLuma(int32 LumaAmount)
 {
-	m_CurrentLuma += LumaAmount;
-	if (m_RTSHUD)
+	if (LumaAmount > 0)
 	{
-		m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
+		m_CurrentLuma += LumaAmount;
+		if (m_RTSHUD)
+		{
+			m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
+		}
 	}
 }
 
 void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 {
-	if (m_CurrentLuma >= LumaAmount)
+	if (LumaAmount > 0 && m_CurrentLuma >= LumaAmount)
 	{
 		m_CurrentLuma -= LumaAmount;
 		if (m_RTSHUD)
@@ -1025,16 +1028,19 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 
 void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
 {
-	m_CurrentCurrency += CurrencyAmount;
-	if (m_RTSHUD)
+	if (CurrencyAmount > 0)
 	{
-		m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
+		m_CurrentCurrency += CurrencyAmount;
+		if (m_RTSHUD)
+		{
+			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
+		}
 	}
 }
 
 void ARTS_PlayerController::SpendCurrency(int32 CurrencyAmount)
 {
-	if (m_CurrentCurrency >= CurrencyAmount)
+	if (CurrencyAmount > 0 && m_CurrentCurrency >= CurrencyAmount)
 	{
 		m_CurrentCurrency -= CurrencyAmount;
 		if (m_RTSHUD)
