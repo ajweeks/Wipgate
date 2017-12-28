@@ -5,6 +5,7 @@
 #include "RTS_Team.h"
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
+#include "RTS_PlayerController.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -13,12 +14,12 @@ void AWipgateGameModeBase::BeginPlay()
 	Super::BeginPlay();
 	if (!m_Table)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > No table was linked. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No table was linked. Returning..."));
 		return;
 	}
 
 	TArray<FTeamRow*> rows;
-	m_Table->GetAllRows("WipgateGameModeBase::BeginPlay() > Table not found!", rows);
+	m_Table->GetAllRows("BeginPlay > Table not found!", rows);
 	TArray<FName> rowNames = m_Table->GetRowNames();
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
@@ -36,6 +37,12 @@ void AWipgateGameModeBase::BeginPlay()
 
 			gamestate->Teams.Add(team);
 
+			//Set playercontroller team if it's player
+			if (team->Alignment == ETeamAlignment::E_PLAYER)
+			{
+				Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team = team;
+			}
+
 			//Check users in that group
 			for (ARTS_Entity* entity : gamestate->Entities)
 			{
@@ -48,12 +55,18 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 	}
 
+	//Check if the playercontroller has a team
+	if (!Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
+	}
+
 	//Check if there are still nullpts
 	for (ARTS_Entity* entity : gamestate->Entities)
 	{
 		if (entity->Team == nullptr)
 		{
-			UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > Unit does not have a team, attempting to assign default"));
+			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s does not have a team, attempting to assign default"), *entity->GetHumanReadableName());
 			if (gamestate->Teams.Num() > 0)
 			{
 				entity->SetTeam(gamestate->Teams[0]);
@@ -61,15 +74,9 @@ void AWipgateGameModeBase::BeginPlay()
 			}
 			else
 			{
-				UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > No team present"));
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No team present"));
 				break;
 			}
-		}
-		if (entity->Alignment != ETeamAlignment::E_PLAYER)
-		{
-			UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > Unit does not have a team, attempting to assign default"));
-			auto i = 0;
-			i -= 1;
 		}
 		entity->PostInitialize();
 	}

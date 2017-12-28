@@ -18,6 +18,7 @@ class UStaticMeshComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
+//TODO: Logging warning when unit is structure (EntityType)
 UCLASS()
 class WIPGATE_API ARTS_Entity : public ACharacter
 {
@@ -154,6 +155,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Team")
 	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+
+	//TYPE
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEntityType EntityType = EEntityType::E_RANGED;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;

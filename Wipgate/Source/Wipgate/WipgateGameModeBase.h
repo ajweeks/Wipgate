@@ -73,8 +73,10 @@ enum class ERelativeAlignment : uint8
 UENUM(BlueprintType)
 enum class EEntityType : uint8
 {
-	E_UNIT 				UMETA(DisplayName = "Unit Character"),
-	E_STRUCTURE 		UMETA(DisplayName = "Static Structure")
+	E_STRUCTURE 		UMETA(DisplayName = "Static Structure"),
+	E_RANGED			UMETA(DisplayName = "Ranged unit"),
+	E_MELEE				UMETA(DisplayName = "Melee unit"),
+	E_SPECIALIST		UMETA(DisplayName = "Specialist unit")
 };
 
 USTRUCT(BlueprintType)
