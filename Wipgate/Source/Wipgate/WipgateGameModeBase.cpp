@@ -13,12 +13,12 @@ void AWipgateGameModeBase::BeginPlay()
 	Super::BeginPlay();
 	if (!m_Table)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > No table was linked. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No table was linked. Returning..."));
 		return;
 	}
 
 	TArray<FTeamRow*> rows;
-	m_Table->GetAllRows("WipgateGameModeBase::BeginPlay() > Table not found!", rows);
+	m_Table->GetAllRows("BeginPlay > Table not found!", rows);
 	TArray<FName> rowNames = m_Table->GetRowNames();
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
@@ -53,7 +53,7 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		if (entity->Team == nullptr)
 		{
-			UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > Unit does not have a team, attempting to assign default"));
+			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s does not have a team, attempting to assign default"), *entity->GetHumanReadableName());
 			if (gamestate->Teams.Num() > 0)
 			{
 				entity->SetTeam(gamestate->Teams[0]);
@@ -61,15 +61,9 @@ void AWipgateGameModeBase::BeginPlay()
 			}
 			else
 			{
-				UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > No team present"));
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No team present"));
 				break;
 			}
-		}
-		if (entity->Alignment != ETeamAlignment::E_PLAYER)
-		{
-			UE_LOG(WipgateGameModeBase, Error, TEXT("WipgateGameModeBase::BeginPlay > Unit does not have a team, attempting to assign default"));
-			auto i = 0;
-			i -= 1;
 		}
 		entity->PostInitialize();
 	}
