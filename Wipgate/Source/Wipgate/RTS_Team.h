@@ -48,6 +48,10 @@ struct FUpgrade
 	//Stat upgrade affects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EUpgradeStat Stat = EUpgradeStat::E_ARMOR;
+
+	//Unit it affects
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EEntityType AffectedType;
 };
 
 UCLASS()
