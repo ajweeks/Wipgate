@@ -110,10 +110,16 @@ public:
 		void AddLuma(int32 LumaAmount);
 
 	UFUNCTION(BlueprintCallable)
+		void SpendLuma(int32 LumaAmount);
+
+	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentLumaAmount();
 
 	UFUNCTION(BlueprintCallable)
 		void AddCurrency(int32 CurrencyAmount);
+
+	UFUNCTION(BlueprintCallable)
+		void SpendCurrency(int32 CurrencyAmount);
 
 	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentCurrencyAmount();
@@ -148,6 +154,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* AbilityLumaApply;
+
+	// Set true to start the game with luma and currency
+	UPROPERTY(EditAnywhere, Category = "Debug")
+		bool DEBUG_StartWithCurrency;
 
 
 private:
@@ -256,8 +266,8 @@ private:
 	float m_TargetZoomArmLength;
 
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
-	int32 m_CurrentLuma;
-	int32 m_CurrentCurrency;
+	int32 m_CurrentLuma = 0;
+	int32 m_CurrentCurrency = 0;
 
 
 	FVector2D m_ClickStartSS;

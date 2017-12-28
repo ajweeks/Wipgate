@@ -19,6 +19,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "Ability.h"
 #include "RTS_GameState.h"
@@ -120,6 +121,12 @@ void ARTS_PlayerController::BeginPlay()
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	}
+
+	if (DEBUG_StartWithCurrency)
+	{
+		AddCurrency(1000);
+		AddLuma(1000);
 	}
 }
 
@@ -999,6 +1006,23 @@ void ARTS_PlayerController::AddLuma(int32 LumaAmount)
 	}
 }
 
+void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
+{
+	if (m_CurrentLuma >= LumaAmount)
+	{
+		m_CurrentLuma -= LumaAmount;
+		if (m_RTSHUD)
+		{
+			m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
+		}
+	}
+}
+
+int32 ARTS_PlayerController::GetCurrentLumaAmount()
+{
+	return m_CurrentLuma;
+}
+
 void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
 {
 	m_CurrentCurrency += CurrencyAmount;
@@ -1008,9 +1032,16 @@ void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
 	}
 }
 
-int32 ARTS_PlayerController::GetCurrentLumaAmount()
+void ARTS_PlayerController::SpendCurrency(int32 CurrencyAmount)
 {
-	return m_CurrentLuma;
+	if (m_CurrentCurrency >= CurrencyAmount)
+	{
+		m_CurrentCurrency -= CurrencyAmount;
+		if (m_RTSHUD)
+		{
+			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
+		}
+	}
 }
 
 int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
