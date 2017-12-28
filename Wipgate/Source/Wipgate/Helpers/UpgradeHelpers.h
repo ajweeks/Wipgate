@@ -3,8 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "EntityHelpers.h"
+//#include "Runtime/Engine/Classes/Engine/Texture2D.h"
 #include "UpgradeHelpers.generated.h"
+
+class UTexture2D;
 
 UENUM(BlueprintType)
 enum class EUpgradeType : uint8
@@ -46,4 +50,30 @@ struct FUpgrade
 	//Unit it affects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EEntityType AffectedType;
+};
+
+USTRUCT(BlueprintType)
+struct FUpgradeRow : public FTableRowBase
+{
+	FUpgradeRow() {}
+public:
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FName Title = "Title";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString Description = "Description";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Price = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* Texture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FLinearColor Color;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FUpgrade> Upgrades;
 };
