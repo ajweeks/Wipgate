@@ -131,7 +131,9 @@ public:
 	FAttackStat CurrentAttackStats;
 
 	UPROPERTY(BlueprintReadWrite)
-	float TimerRateOfFire = 0.f;
+		float TimerRateOfFire = 0.f;
+	UPROPERTY(BlueprintReadWrite)
+		float TimerAttack = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FDefenceStat BaseDefenceStats;

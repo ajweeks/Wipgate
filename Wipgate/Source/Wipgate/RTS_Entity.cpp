@@ -122,6 +122,11 @@ void ARTS_Entity::Tick(float DeltaTime)
 		TimerRateOfFire -= DeltaTime;
 	}
 
+	//if (TimerAttack < CurrentAttackStats.AttackDuration)
+	//{
+	//	TimerRateOfFire += DeltaTime;
+	//}
+
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
