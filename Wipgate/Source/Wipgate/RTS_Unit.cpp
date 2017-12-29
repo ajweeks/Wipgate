@@ -8,7 +8,6 @@
 #include "AI/Navigation/NavigationSystem.h"
 #include "AIController.h"
 #include "GeneralFunctionLibrary_CPP.h"
-#include "RTS_Squad.h"
 #include "RTS_Team.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
@@ -67,45 +66,3 @@ void ARTS_Unit::Kill()
 	}
 }
 
-void ARTS_Unit::SetCurrentSquad(URTS_Squad * squad)
-{
-	//Remove from previous squad
-	if (CurrentSquad)
-	{
-		auto index = CurrentSquad->Units.Find(this);
-		if(index != INDEX_NONE)
-			CurrentSquad->Units.RemoveAt(index);
-	}
-	CurrentSquad = squad;
-}
-
-void ARTS_Unit::SetDirectionLocation(FVector location)
-{
-	//UNavigationPath *tpath;
-	//UNavigationSystem* NavSys = UNavigationSystem::GetCurrent(GetWorld());
-
-	////Get path
-	//tpath = NavSys->FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), FinalTarget);
-	//UGeneralFunctionLibrary_CPP::DrawPointArray(GetWorld(), tpath->PathPoints, FColor(255, 0, 0), 10.f, 2.f);
-
-	////Check if there are multiple waypoints
-	//if (tpath->PathPoints.Num() >= 2)
-	//{
-	//	//Check distance
-	//	if ((tpath->PathPoints[1] - GetActorLocation()).Size() < WaypointMargin &&
-	//		tpath->PathPoints.Num() >= 3)
-	//	{
-	//		CurrentTarget = tpath->PathPoints[2];
-	//	}
-	//	else
-	//	{
-	//		CurrentTarget = tpath->PathPoints[1];
-	//	}
-
-	//	AAIController* aiControl = Cast<AAIController>(GetController());
-	//	if (aiControl)
-	//	{
-	//		aiControl->MoveToLocation(location, 0.1f, false, true, false, false);
-	//	}
-	//}
-}
