@@ -461,6 +461,7 @@ void ARTS_Entity::Kill()
 {
 	SetSelected(false);
 
+	//Play sound
 	if (Sound)
 		UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 
@@ -507,8 +508,6 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
-
-	//Play sound
 
 
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
