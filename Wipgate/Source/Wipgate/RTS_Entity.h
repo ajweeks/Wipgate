@@ -15,6 +15,7 @@ class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
+class USoundCue;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -174,6 +175,9 @@ public:
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
 
+	//Sounds
+	UPROPERTY(EditAnywhere)
+		USoundCue* Sound;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
