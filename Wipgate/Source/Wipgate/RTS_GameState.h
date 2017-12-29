@@ -31,7 +31,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		float GetPercentOfFriendlyUnitsInLevelGoal();
-
+	UFUNCTION(BlueprintCallable)
+		bool AreEnemiesInEndZone();
 
 	// Selection groups
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
