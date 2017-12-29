@@ -24,7 +24,10 @@ struct FAttackStat
 		int Damage = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float RateOfFire = 1.0f;
+		float AttackCooldown = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float AttackDuration = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Range = 250.0f;
