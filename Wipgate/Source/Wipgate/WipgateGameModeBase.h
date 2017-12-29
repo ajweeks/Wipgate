@@ -7,6 +7,7 @@
 #include "Engine/DataTable.h"
 #include "WipgateGameModeBase.generated.h"
 
+<<<<<<< HEAD
 USTRUCT(BlueprintType)
 struct FMovementStat
 {
@@ -96,6 +97,8 @@ public:
 		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };
 
+=======
+>>>>>>> 215ba312b56e313535b16f65cbcd5cbc9d2ade1e
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
 UCLASS()
