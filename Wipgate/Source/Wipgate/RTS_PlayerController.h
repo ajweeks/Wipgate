@@ -179,9 +179,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ActionSelectionGroup(int32 Index);
 
-	UFUNCTION(BlueprintCallable)
-		URTS_Squad* AddSquad();
-
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
 

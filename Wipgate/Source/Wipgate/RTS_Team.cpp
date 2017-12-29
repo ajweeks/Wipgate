@@ -61,7 +61,7 @@ void URTS_Team::CalculateUpgradeEffects()
 					entity->CurrentAttackStats.Range += upgrade.Effect;
 					break;
 				case EUpgradeStat::E_RATEOFFIRE:
-					entity->CurrentAttackStats.RateOfFire += upgrade.Effect;
+					entity->CurrentAttackStats.AttackCooldown += upgrade.Effect;
 					break;
 				case EUpgradeStat::E_SPEED:
 					entity->CurrentMovementStats.Speed += upgrade.Effect;
@@ -137,7 +137,7 @@ void URTS_Team::CalculateUpgradeEffects()
 				entity->CurrentAttackStats.Range *= totalEffect;
 				break;
 			case EUpgradeStat::E_RATEOFFIRE:
-				entity->CurrentAttackStats.RateOfFire *= totalEffect;
+				entity->CurrentAttackStats.AttackCooldown *= totalEffect;
 				break;
 			case EUpgradeStat::E_SPEED:
 				entity->CurrentMovementStats.Speed *= totalEffect;

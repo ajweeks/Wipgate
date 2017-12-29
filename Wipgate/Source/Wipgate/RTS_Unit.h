@@ -7,7 +7,6 @@
 #include "RTS_Unit.generated.h"
 
 class USkeletalMeshComponent;
-class URTS_Squad;
 
 UCLASS()
 class WIPGATE_API ARTS_Unit : public ARTS_Entity
@@ -25,11 +24,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Squads")
-		void SetCurrentSquad(URTS_Squad* squad);
-
-	void SetDirectionLocation(FVector location);
-
 	//Properties
 	UPROPERTY(BlueprintReadWrite)
 		FVector CurrentTarget;
@@ -39,8 +33,6 @@ public:
 		FVector FinalTarget;
 	UPROPERTY(EditAnywhere, Category = "AI")
 		float WaypointMargin = 150.f;
-
-	URTS_Squad* CurrentSquad;
 
 	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
 		float CohesionWeight = 0.25f;

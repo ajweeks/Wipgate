@@ -27,7 +27,6 @@
 #include "RTS_Entity.h"
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
-#include "RTS_Squad.h"
 #include "RTS_Team.h"
 #include "AbilityIconBase.h"
 #include "GeneralFunctionLibrary_CPP.h"
@@ -452,18 +451,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	// Update squads
-	for (URTS_Squad* squad : m_Squads)
-	{
-		if (squad->Units.Num() <= 0)
-		{
-			m_Squads.Remove(squad);
-			continue;
-		}
-
-		squad->Update(DeltaSeconds);
-	}
-
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
 	{
 		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
@@ -748,13 +735,6 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 
 	m_MovingToTarget = true;
 	MoveToTarget();
-}
-
-URTS_Squad* ARTS_PlayerController::AddSquad()
-{
-	URTS_Squad* squad = NewObject<URTS_Squad>(this);
-	m_Squads.Push(squad);
-	return squad;
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
