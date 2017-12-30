@@ -142,5 +142,7 @@ protected:
 
 private:
 
+	FVector m_FlockCenter;
+
 	FVector FlattenVector(FVector vec);
 };

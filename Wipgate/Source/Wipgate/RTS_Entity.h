@@ -103,6 +103,9 @@ public:
 	bool ShowUnitStats = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool RenderFlockingDebugInfo = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowSelectionBox = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")

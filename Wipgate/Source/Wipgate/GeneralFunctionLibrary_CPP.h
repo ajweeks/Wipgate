@@ -17,7 +17,6 @@ public:
 	//	static ARTS_Entity* GetClosestEntity(ARTS_Entity* self, TArray<ARTS_Entity*> entities);
 
 	/* --- Object creation functions --- */
-
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
 	static UUnitEffect* CreateUnitEffect(UObject * outer, const EUnitEffectStat stat, const EUnitEffectType type,
 			const float delay, const int magnitude, const int duration);
@@ -60,6 +59,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Math")
 		static void DrawPointArray(const UWorld* world, const TArray<FVector> & points, const FColor & color, const float pointSize, const float lineSize);
+
+	UFUNCTION(BlueprintPure, Category = "Math")
+		static void SortByDistance(FVector target, TArray<ARTS_Entity*> in, TArray<ARTS_Entity*>& out);
 };
 
 // Global C++ only functions

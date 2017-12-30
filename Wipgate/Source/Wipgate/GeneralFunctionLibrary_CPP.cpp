@@ -153,6 +153,16 @@ void UGeneralFunctionLibrary_CPP::DrawPointArray(const UWorld* world, const TArr
 	}
 }
 
+void UGeneralFunctionLibrary_CPP::SortByDistance(FVector target, TArray<ARTS_Entity*> in, TArray<ARTS_Entity*>& out)
+{
+	in.Sort([target](const AActor& a, const AActor& b) {
+		float distanceA = FVector::Distance(a.GetActorLocation(), target);
+		float distanceB = FVector::Distance(b.GetActorLocation(), target);
+		return distanceA > distanceB;
+	});
+	out = in;
+}
+
 void PrintStringToScreen(FString text)
 {
 	if (GEngine)
