@@ -27,7 +27,6 @@
 #include "RTS_Entity.h"
 #include "RTS_Unit.h"
 #include "RTS_Specialist.h"
-#include "RTS_Squad.h"
 #include "RTS_Team.h"
 #include "AbilityIconBase.h"
 #include "GeneralFunctionLibrary_CPP.h"
@@ -85,16 +84,6 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
-	AGameStateBase* baseGameState = GetWorld()->GetGameState();
-	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
-	check(m_RTS_GameState != nullptr);
-
-	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
-	FInputModeGameAndUI inputMode;
-	inputMode.SetHideCursorDuringCapture(false);
-	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-	SetInputMode(inputMode);
-
 	// Create and add HUD to viewport
 	if (MainHUD)
 	{
@@ -117,6 +106,16 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
+
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
+	check(m_RTS_GameState != nullptr);
+
+	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
+	FInputModeGameAndUI inputMode;
+	inputMode.SetHideCursorDuringCapture(false);
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	SetInputMode(inputMode);
 
 	if (m_RTSHUD)
 	{
@@ -217,12 +216,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	if (!m_RTS_GameState ||!m_RTSHUD)
 	{
-		return;
-	}
-
-	if (IsInputKeyDown(EKeys::Escape))
-	{
-		GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
 		return;
 	}
 
@@ -450,18 +443,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 			UpdateSpecialistAbilityButtons();
 		}
-	}
-
-	// Update squads
-	for (URTS_Squad* squad : m_Squads)
-	{
-		if (squad->Units.Num() <= 0)
-		{
-			m_Squads.Remove(squad);
-			continue;
-		}
-
-		squad->Update(DeltaSeconds);
 	}
 
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
@@ -750,13 +731,6 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 	MoveToTarget();
 }
 
-URTS_Squad* ARTS_PlayerController::AddSquad()
-{
-	URTS_Squad* squad = NewObject<URTS_Squad>(this);
-	m_Squads.Push(squad);
-	return squad;
-}
-
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 {
 	switch (Index)
@@ -992,7 +966,7 @@ void ARTS_PlayerController::InvertSelection()
 	}
 }
 
-URTS_HUDBase* ARTS_PlayerController::GetHUD()
+URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 {
 	return m_RTSHUD;
 }

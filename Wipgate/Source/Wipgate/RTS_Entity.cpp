@@ -10,14 +10,14 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/DataTable.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/CollisionProfile.h"
-#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
 #include "UI_Bar.h"
@@ -25,6 +25,7 @@
 #include "RTS_GameState.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "RTS_AIController.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -222,7 +223,7 @@ void ARTS_Entity::PostInitialize()
 			UUI_Bar* bar = Cast<UUI_Bar>(barUserWidget);
 			if (bar)
 			{
-				bar->Initialize(this);
+				bar->InitializeFromOwner(this);
 			}
 			else
 			{
@@ -459,6 +460,10 @@ void ARTS_Entity::Kill()
 {
 	SetSelected(false);
 
+	//Play sound
+	if (Sound)
+		UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
 	{
@@ -494,7 +499,7 @@ void ARTS_Entity::Kill()
 			if (playerController && rtsPlayerController)
 			{
 				rtsPlayerController->UpdateSpecialistAbilityButtons();
-				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
+				URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
 				if (hud)
 				{
 					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
@@ -502,6 +507,8 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
+
+
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);
 	//GetMesh()->DetachFromParent();
@@ -513,6 +520,19 @@ bool ARTS_Entity::IsAlive()
 	return (Health > 0);
 }
 
+void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
+{
+	CurrentLumaStats.LumaSaturation += LumaToAdd;
+	if (CurrentLumaStats.LumaSaturation >= CurrentLumaStats.MaxLumaSaturation)
+	{
+		CurrentLumaStats.LumaSaturation = CurrentLumaStats.MaxLumaSaturation;
+		ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+		if (aiController)
+		{
+			aiController->SetCurrentTask(EUNIT_TASK::OVERDOSED);
+		}
+	}
+}
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 {

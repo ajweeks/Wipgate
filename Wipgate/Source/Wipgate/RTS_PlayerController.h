@@ -105,7 +105,7 @@ public:
 		void UpdateSpecialistAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
-		URTS_HUDBase* GetHUD();
+		URTS_HUDBase* GetRTS_HUDBase();
 
 	UFUNCTION(BlueprintCallable)
 		void AddLuma(int32 LumaAmount);
@@ -178,9 +178,6 @@ public:
 	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
 		void ActionSelectionGroup(int32 Index);
-
-	UFUNCTION(BlueprintCallable)
-		URTS_Squad* AddSquad();
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;

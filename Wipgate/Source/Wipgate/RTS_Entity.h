@@ -15,6 +15,7 @@ class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
+class USoundCue;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -34,7 +35,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
-		bool IsSelected() const;
+	bool IsSelected() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
@@ -61,7 +62,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill();
 	UFUNCTION(BlueprintPure, Category = "Health")
-		bool IsAlive();
+	bool IsAlive();
+
+	UFUNCTION(BlueprintCallable)
+	void AddToLumaSaturation(int32 LumaToAdd);
 
 public:
 	/* Public blueprint editable variables */
@@ -139,6 +143,9 @@ public:
 	FDefenceStat BaseDefenceStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	FDefenceStat CurrentDefenceStats;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	FLumaStat CurrentLumaStats;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	int Health = 0;
@@ -174,6 +181,9 @@ public:
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
 
+	//Sounds
+	UPROPERTY(EditAnywhere)
+		USoundCue* Sound;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
