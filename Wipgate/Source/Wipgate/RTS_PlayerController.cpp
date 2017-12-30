@@ -992,7 +992,7 @@ void ARTS_PlayerController::InvertSelection()
 	}
 }
 
-URTS_HUDBase* ARTS_PlayerController::GetHUD()
+URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 {
 	return m_RTSHUD;
 }

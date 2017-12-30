@@ -489,7 +489,7 @@ void ARTS_Entity::Kill()
 			if (playerController && rtsPlayerController)
 			{
 				rtsPlayerController->UpdateSpecialistAbilityButtons();
-				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
+				URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
 				if (hud)
 				{
 					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
