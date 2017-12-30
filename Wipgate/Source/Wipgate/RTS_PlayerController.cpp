@@ -219,12 +219,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		return;
 	}
 
-	if (IsInputKeyDown(EKeys::Escape))
-	{
-		GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
-		return;
-	}
-
 	// Update selection box size if mouse is being dragged
 	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
