@@ -25,6 +25,8 @@
 #include "RTS_GameState.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Sound/SoundCue.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -121,6 +123,11 @@ void ARTS_Entity::Tick(float DeltaTime)
 	{
 		TimerRateOfFire -= DeltaTime;
 	}
+
+	//if (TimerAttack < CurrentAttackStats.AttackDuration)
+	//{
+	//	TimerRateOfFire += DeltaTime;
+	//}
 
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
@@ -454,6 +461,10 @@ void ARTS_Entity::Kill()
 {
 	SetSelected(false);
 
+	//Play sound
+	if (Sound)
+		UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
 	{
@@ -497,6 +508,8 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
+
+
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);
 	//GetMesh()->DetachFromParent();

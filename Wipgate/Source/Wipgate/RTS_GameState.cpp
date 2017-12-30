@@ -42,3 +42,23 @@ float ARTS_GameState::GetPercentOfFriendlyUnitsInLevelGoal()
 
 	return (float)countInGoal / (float)countRequired;
 }
+
+bool ARTS_GameState::AreEnemiesInEndZone()
+{
+	bool result = false;
+
+	for (int32 i = 0; i < Entities.Num(); ++i)
+	{
+		ARTS_Unit* unit = Cast<ARTS_Unit>(Entities[i]);
+		if (unit &&
+			unit->Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI &&
+			unit->Health > 0)
+		{
+			if (unit->InLevelGoal)
+			{
+				result = true;
+			}
+		}
+	}
+		return result;
+}
