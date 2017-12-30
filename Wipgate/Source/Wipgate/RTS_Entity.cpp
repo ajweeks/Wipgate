@@ -122,10 +122,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 		TimerRateOfFire -= DeltaTime;
 	}
 
-	//if (TimerAttack < CurrentAttackStats.AttackDuration)
-	//{
-	//	TimerRateOfFire += DeltaTime;
-	//}
+	if (TimerRateOfFire <= 0 && TimerAttack > 0)
+	{
+		TimerAttack -= DeltaTime;
+	}
 
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
