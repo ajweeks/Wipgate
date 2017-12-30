@@ -10,14 +10,15 @@
 UENUM(BlueprintType)
 enum class EUNIT_TASK : uint8
 {
-	IDLE 			UMETA(DisplayName = "Idle"),
-	MOVING 			UMETA(DisplayName = "Moving"),
-	ATTACK_MOVING	UMETA(DisplayName = "Attack moving"),
-	CHASING			UMETA(DisplayName = "Chasing"),
-	FOLLOWING		UMETA(DisplayName = "Following"),
-	ATTACKING		UMETA(DisplayName = "Attacking"),
-	CASTING			UMETA(DisplayName = "Casting "),
-	EXECUTING		UMETA(DisplayName = "Executing"),
+	IDLE 			UMETA(DisplayName = "Idle"),			// No task
+	MOVING 			UMETA(DisplayName = "Moving"),			// Moving toward a target location
+	ATTACK_MOVING	UMETA(DisplayName = "Attack moving"),	// Moving toward a target location, will switch to attacking when enemy comes in range along the way
+	CHASING			UMETA(DisplayName = "Chasing"),			// Moving toward a unit to attack
+	FOLLOWING		UMETA(DisplayName = "Following"),		// Staying near an ally
+	ATTACKING		UMETA(DisplayName = "Attacking"),		// Attacking an enemy
+	CASTING			UMETA(DisplayName = "Casting "),		// Warming up ability (pre-execute), CAN be cancelled
+	EXECUTING		UMETA(DisplayName = "Executing"),		// Executing ability, not controllable by the player, can NOT be cancelled
+	OVERDOSED		UMETA(DisplayName = "Overdosed"),		// Consumed too much luma, attacks everything in sight, not controllable by the player
 };
 
 UCLASS()
