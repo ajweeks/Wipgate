@@ -84,16 +84,6 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
-	AGameStateBase* baseGameState = GetWorld()->GetGameState();
-	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
-	check(m_RTS_GameState != nullptr);
-
-	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
-	FInputModeGameAndUI inputMode;
-	inputMode.SetHideCursorDuringCapture(false);
-	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-	SetInputMode(inputMode);
-
 	// Create and add HUD to viewport
 	if (MainHUD)
 	{
@@ -116,6 +106,16 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
 	}
+
+	AGameStateBase* baseGameState = GetWorld()->GetGameState();
+	m_RTS_GameState = Cast<ARTS_GameState>(baseGameState);
+	check(m_RTS_GameState != nullptr);
+
+	// Set input mode to show cursor when captured (clicked) and to lock cursor to viewport
+	FInputModeGameAndUI inputMode;
+	inputMode.SetHideCursorDuringCapture(false);
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	SetInputMode(inputMode);
 
 	if (m_RTSHUD)
 	{
@@ -216,12 +216,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	if (!m_RTS_GameState ||!m_RTSHUD)
 	{
-		return;
-	}
-
-	if (IsInputKeyDown(EKeys::Escape))
-	{
-		GetWorld()->GetFirstPlayerController()->ConsoleCommand("quit");
 		return;
 	}
 
@@ -972,7 +966,7 @@ void ARTS_PlayerController::InvertSelection()
 	}
 }
 
-URTS_HUDBase* ARTS_PlayerController::GetHUD()
+URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 {
 	return m_RTSHUD;
 }

@@ -105,7 +105,7 @@ public:
 		void UpdateSpecialistAbilityButtons(ARTS_Specialist* SpecialistShowingAbilities = nullptr);
 
 	UFUNCTION(BlueprintCallable)
-		URTS_HUDBase* GetHUD();
+		URTS_HUDBase* GetRTS_HUDBase();
 
 	UFUNCTION(BlueprintCallable)
 		void AddLuma(int32 LumaAmount);

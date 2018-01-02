@@ -7,6 +7,7 @@
 #include "RTS_Unit.generated.h"
 
 class USkeletalMeshComponent;
+class AAbility;
 
 UCLASS()
 class WIPGATE_API ARTS_Unit : public ARTS_Entity
@@ -31,6 +32,9 @@ public:
 	// True when this unit is inside the level goal collider (through the gate)
 	UPROPERTY(BlueprintReadWrite)
 		bool InLevelGoal = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+		TSubclassOf<AAbility> AbilityAttackClass;
 
 private:
 	

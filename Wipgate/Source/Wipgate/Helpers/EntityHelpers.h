@@ -11,7 +11,7 @@ struct FMovementStat
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Speed = 500;
 };
 
@@ -20,7 +20,7 @@ struct FAttackStat
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Damage = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -38,7 +38,7 @@ struct FDefenceStat
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Armor = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -50,11 +50,23 @@ struct FVisionStat
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float OuterRange = 500;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float InnerRange = 500;
+};
+
+USTRUCT(BlueprintType)
+struct FLumaStat
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 LumaSaturation = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 MaxLumaSaturation = 10;
 };
 
 UENUM(BlueprintType)

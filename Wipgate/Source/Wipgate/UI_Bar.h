@@ -15,13 +15,19 @@ class WIPGATE_API UUI_Bar : public UUserWidget
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void Initialize(AActor* Owner);
+	void InitializeFromOwner(AActor* Owner);
 
 	UFUNCTION(BlueprintCallable)
 	float GetHealthBarPercent();
 
 	UFUNCTION(BlueprintCallable)
-	FLinearColor GetTeamColor();
+	float GetLumaBarPercent();
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetHealthBarColor();
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetLumaBarColor();
 
 	// When true, this bar will not update it's value
 	// (used to freeze commander's bar while leaping)
@@ -32,7 +38,10 @@ private:
 	ARTS_Entity* EntityRef;
 	
 	float m_LastHealthBarPercent = 0.0f;
-	FLinearColor m_FrozenColor;
+	float m_LastLumaBarPercent = 0.0f;
+	FLinearColor m_FrozenHealthBarColor;
+	FLinearColor m_LumaBarColor;
+	FLinearColor m_FrozenLumaBarColor;
 
 	// How much to desaturate the team color in range [0..1] (0 = no desaturation, 1 = fully gray)
 	float m_FrozenColorDesaturationAmount = 0.7f;
