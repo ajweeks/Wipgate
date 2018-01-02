@@ -94,3 +94,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };
+
+USTRUCT(BlueprintType)
+struct FEntitySpawn
+{
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TSubclassOf<class ARTS_Entity> Entity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int Amount = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		ETeamAlignment Alignment;
+};
