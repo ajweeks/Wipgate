@@ -286,11 +286,6 @@ void ARTS_Entity::PostInitialize()
 	SetTeamMaterial();
 }
 
-void ARTS_Entity::SetTeam(URTS_Team* team)
-{
-	Team = team;
-}
-
 TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const
 {
 	return UnitEffects;

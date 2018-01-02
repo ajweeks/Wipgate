@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "Engine/DataTable.h"
+#include "Helpers/EntityHelpers.h"
 #include "WipgateGameModeBase.generated.h"
 
+class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
@@ -17,6 +19,9 @@ class WIPGATE_API AWipgateGameModeBase : public AGameMode
 
 public:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	URTS_Team* GetTeamWithAlignment(ETeamAlignment alignment);
 
 private:
 	//Make sure the datatable is inheriting from FTeamRow

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
-#include "WipgateGameModeBase.h"
 #include "RTS_Team.h"
 
 #include "RTS_Entity.generated.h"
@@ -40,8 +39,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
 
+	UFUNCTION(BlueprintCallable)
 	void PostInitialize();
-	void SetTeam(URTS_Team* team);
 
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
