@@ -46,6 +46,10 @@ public:
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
 	UFUNCTION(BlueprintCallable, Category = "Effects")
+		bool HasEffectWithTag(FName tag);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+		void RemoveUnitEffectWithTag(FName tag);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void AddUnitEffect(UUnitEffect* effect);
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 	void RemoveUnitEffect(UUnitEffect* effect);
@@ -141,6 +145,8 @@ public:
 		float TimerRateOfFire = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 		float TimerAttack = 0.f;
+	UPROPERTY(BlueprintReadWrite)
+		bool m_IsAttackOnCooldown = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FDefenceStat BaseDefenceStats;
@@ -187,6 +193,11 @@ public:
 	//Sounds
 	UPROPERTY(EditAnywhere)
 		USoundCue* Sound;
+
+	//Death
+	UPROPERTY(BlueprintReadOnly)
+		FVector LocationOfDeath;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

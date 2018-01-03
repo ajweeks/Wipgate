@@ -26,6 +26,7 @@
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
 #include "RTS_AIController.h"
+#include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -121,6 +122,12 @@ void ARTS_Entity::Tick(float DeltaTime)
 	if (TimerRateOfFire > 0)
 	{
 		TimerRateOfFire -= DeltaTime;
+		UE_LOG(LogTemp, Log, TEXT("Cooldown: %f"), TimerRateOfFire);
+		if (TimerRateOfFire <= 0)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Cooldown over"));
+			m_IsAttackOnCooldown = false;
+		}
 	}
 
 	if (TimerRateOfFire <= 0 && TimerAttack > 0)
@@ -296,6 +303,25 @@ TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const
 	return UnitEffects;
 }
 
+bool ARTS_Entity::HasEffectWithTag(FName tag)
+{
+	for (auto e : UnitEffects)
+	{
+		if (e->Tag == tag)
+			return true;
+	}
+	return false;
+}
+
+void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
+{
+	for (auto e : UnitEffects)
+	{
+		if (e->Tag == tag)
+			RemoveUnitEffect(e);
+	}
+}
+
 void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 {
 	UnitEffects.Add(effect);
@@ -459,6 +485,7 @@ void ARTS_Entity::ApplyHealing(int healing)
 void ARTS_Entity::Kill()
 {
 	SetSelected(false);
+	LocationOfDeath = GetActorLocation();
 
 	//Play sound
 	if (Sound)

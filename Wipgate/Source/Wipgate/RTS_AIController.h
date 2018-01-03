@@ -108,8 +108,6 @@ public:
 public:
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity * TargetEntity;
-	UPROPERTY(BlueprintReadWrite)
-		bool m_IsAttackOnCooldown = false;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)
