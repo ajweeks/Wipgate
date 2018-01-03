@@ -6,6 +6,8 @@
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
 #include "RTS_PlayerController.h"
+#include "RTS_EntitySpawner.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -48,7 +50,7 @@ void AWipgateGameModeBase::BeginPlay()
 			{
 				if (entity->Alignment == team->Alignment)
 				{
-					entity->SetTeam(team);
+					entity->Team = team;
 					team->Entities.Add(entity);
 				}
 			}
@@ -69,7 +71,7 @@ void AWipgateGameModeBase::BeginPlay()
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s does not have a team, attempting to assign default"), *entity->GetHumanReadableName());
 			if (gamestate->Teams.Num() > 0)
 			{
-				entity->SetTeam(gamestate->Teams[0]);
+				entity->Team = gamestate->Teams[0];
 				gamestate->Teams[0]->Entities.Add(entity);
 			}
 			else
@@ -80,5 +82,28 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 		entity->PostInitialize();
 	}
+
+	//Spawn actors
+	TArray<AActor*> actors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
+	for (auto actor : actors)
+	{
+		auto entitySpawn = Cast<ARTS_EntitySpawner>(actor);
+		entitySpawn->SpawnEntities();
+	}
 }
 
+URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
+{
+	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
+	for (URTS_Team* team : gamestate->Teams)
+	{
+		if (team->Alignment == alignment)
+		{
+			return team;
+		}
+	}
+
+	UE_LOG(WipgateGameModeBase, Error, TEXT("GetTeamWithAlignment > No team was found with that alignment"));
+	return nullptr;
+}
