@@ -121,3 +121,27 @@ struct FEntitySpawn
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		ETeamAlignment Alignment;
 };
+
+USTRUCT(BlueprintType)
+struct FEntitySave
+{
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(BlueprintReadWrite)
+		TSubclassOf<class ARTS_Entity> Entity;
+
+	UPROPERTY(BlueprintReadWrite)
+		FMovementStat MovementStats;
+
+	UPROPERTY(BlueprintReadWrite)
+		FAttackStat Attackstats;
+
+	UPROPERTY(BlueprintReadWrite)
+		FDefenceStat DefenceStats;
+
+	UPROPERTY(BlueprintReadWrite)
+		FVisionStat VisionStats;
+
+	UPROPERTY(BlueprintReadWrite)
+		FLumaStat LumaStats;
+};

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Helpers/UpgradeHelpers.h"
+#include "Helpers/EntityHelpers.h"
 #include "RTS_GameInstance.generated.h"
 
 /**
@@ -25,6 +26,10 @@ public:
 	int CurrentCurrency = 0;
 	UPROPERTY(BlueprintReadWrite)
 	int CurrentLuma = 0;
+	UPROPERTY(BlueprintReadWrite)
+		TArray<FEntitySave> SavedEntities;
+
+
 
 	/* FUNCTION */
 	UFUNCTION(BlueprintCallable)
