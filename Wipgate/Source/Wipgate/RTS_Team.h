@@ -23,7 +23,7 @@ class WIPGATE_API URTS_Team : public UObject
 		void AddUpgrade(FUpgrade upgrade);
 		
 		UFUNCTION(BlueprintCallable)
-		void AddUpgrades_CPP(TArray<FUpgrade> upgrades);
+		void AddUpgrades(TArray<FUpgrade> upgrades);
 
 		/* Variables */
 		UPROPERTY(BlueprintReadWrite)

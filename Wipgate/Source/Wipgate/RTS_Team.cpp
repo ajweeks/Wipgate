@@ -2,6 +2,7 @@
 
 #include "RTS_Team.h"
 #include "RTS_Entity.h"
+#include "RTS_GameInstance.h"
 
 DEFINE_LOG_CATEGORY(RTS_TEAM_LOG);
 
@@ -11,11 +12,21 @@ void URTS_Team::AddUpgrade(FUpgrade upgrade)
 	CalculateUpgradeEffects();
 }
 
-void URTS_Team::AddUpgrades_CPP(TArray<FUpgrade> upgrades)
+void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 {
+	auto gameinstance = GetWorld()->GetGameInstance<URTS_GameInstance>();
+	if (!gameinstance)
+	{
+		UE_LOG(RTS_TEAM_LOG, Warning, TEXT("AddUpgrades > No game instance found"));
+		return;
+	}
+
 	for (auto upgrade : upgrades)
 	{
 		Upgrades.Add(upgrade);
+
+		//Add to game instance
+		gameinstance->ActiveUpgrades.Add(upgrade);
 	}
 	CalculateUpgradeEffects();
 }
@@ -85,7 +96,6 @@ void URTS_Team::CalculateUpgradeEffects()
 		//Upgrade to compare with
 		auto checkUpgrade = upgradeList[upgradeList.Num()-1];
 		float totalEffect = 1.f;
-		//TArray<int32> toRemove;
 		for (int32 i = upgradeList.Num()-1; i >= 0; --i)
 		{
 			auto upgrade = upgradeList[i];
@@ -109,12 +119,6 @@ void URTS_Team::CalculateUpgradeEffects()
 				UE_LOG(RTS_TEAM_LOG, Warning, TEXT("ARTS_Team::CalculateUpgradeEffects > Non-percentual upgrade found!"));
 			}
 		}
-
-		////Remove upgrades
-		//for (int32 i = toRemove.Num() - 1; i >= 0; --i)
-		//{
-		//	upgradeList.RemoveAt(toRemove[i]);
-		//}
 
 		//Apply effect
 		for (auto entity : Entities)
