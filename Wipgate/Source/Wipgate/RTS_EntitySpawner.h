@@ -19,7 +19,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void SpawnEntities();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FEntitySpawn> EntitySpawns;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
