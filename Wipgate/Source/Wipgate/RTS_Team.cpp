@@ -14,7 +14,12 @@ void URTS_Team::AddUpgrade(FUpgrade upgrade)
 
 void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 {
-	auto gameinstance = GetWorld()->GetGameInstance<URTS_GameInstance>();
+	if (!World)
+	{
+		UE_LOG(RTS_TEAM_LOG, Warning, TEXT("AddUpgrades > No world found"));
+		return;
+	}
+	auto gameinstance = World->GetGameInstance<URTS_GameInstance>();
 	if (!gameinstance)
 	{
 		UE_LOG(RTS_TEAM_LOG, Warning, TEXT("AddUpgrades > No game instance found"));

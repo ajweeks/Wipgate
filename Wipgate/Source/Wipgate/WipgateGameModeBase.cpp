@@ -7,6 +7,7 @@
 #include "RTS_Entity.h"
 #include "RTS_PlayerController.h"
 #include "RTS_EntitySpawnerBase.h"
+#include "RTS_GameInstance.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
@@ -42,13 +43,14 @@ void AWipgateGameModeBase::BeginPlay()
 			URTS_Team* team = NewObject<URTS_Team>();
 			team->Alignment = row->Alignment;
 			team->Color = row->Color;
+			team->World = GetWorld();
 
 			gamestate->Teams.Add(team);
 
 			//Set playercontroller team if it's player
 			if (team->Alignment == ETeamAlignment::E_PLAYER)
 			{
-				Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team = team;
+				playercontroller->Team = team;
 			}
 
 			//Check users in that group
@@ -64,7 +66,7 @@ void AWipgateGameModeBase::BeginPlay()
 	}
 
 	//Check if the playercontroller has a team
-	if (!Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team)
+	if (!playercontroller->Team)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
 	}
@@ -99,6 +101,16 @@ void AWipgateGameModeBase::BeginPlay()
 	}
 
 	//Calculate upgrades
+	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	if (gameinstance)
+	{
+		playercontroller->Team->Upgrades.Empty();
+		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
+	}
 }
 
 URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
