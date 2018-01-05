@@ -179,6 +179,19 @@ void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 
 void ARTS_PlayerController::UpdateSelectedEntities()
 {
+	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); /* */)
+	{
+		if (m_RTS_GameState->SelectedEntities[i]->Health > 0)
+		{
+			m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
+			++i;
+		}
+		else
+		{
+			m_RTS_GameState->SelectedEntities.Remove(m_RTS_GameState->SelectedEntities[i]);
+		}
+	}
+
 	UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 	m_RTSHUD->UpdateSelectedEntities(m_RTS_GameState->SelectedEntities);
 
@@ -188,7 +201,7 @@ void ARTS_PlayerController::UpdateSelectedEntities()
 		m_RTSHUD->HideLumaAbilityIcons();
 		m_RTSHUD->HideMovementAbilityIcons();
 	}
-	else if (currentNumEntitiesSelected > 0)
+	else
 	{
 		m_RTSHUD->ShowLumaAbilityIcons();
 		m_RTSHUD->ShowMovementAbilityIcons();
@@ -198,13 +211,16 @@ void ARTS_PlayerController::UpdateSelectedEntities()
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist && specialist->CurrentDefenceStats.MaxHealth > 0)
+		if (specialist && specialist->Health > 0)
 		{
 			m_SpecialistShowingAbilities = specialist;
 			CreateSpecialistAbilityButtons();
 		}
 
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+		if (entity->Health > 0)
+		{
+			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+		}
 	}
 	else
 	{
@@ -346,6 +362,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	const UUserInterfaceSettings* uiSettings = GetDefault<UUserInterfaceSettings>();
 	float viewportScale = uiSettings->GetDPIScaleBasedOnSize(FIntPoint((int)viewportSize.X, (int)viewportSize.Y));
 
+	const int32 prevSelectedEntityCount = m_RTS_GameState->SelectedEntities.Num();
+
 	for (auto entity : m_RTS_GameState->Entities)
 	{
 		FVector entityLocation = entity->GetActorLocation();
@@ -391,7 +409,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			entityUnderCursor = entity;
 		}
 
-		const bool entityIsDead = entity->CurrentDefenceStats.MaxHealth <= 0;
+		const bool entityIsDead = entity->Health <= 0;
 
 		const bool entityWasSelected = entity->IsSelected();
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
@@ -399,7 +417,15 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		if (!SelectedAbility && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 		{
-			if (!entityIsDead)
+			if (entityIsDead)
+			{
+				if (m_RTS_GameState->SelectedEntities.Contains(entity))
+				{
+					m_RTS_GameState->SelectedEntities.Remove(entity);
+					UpdateSelectedEntities();
+				}
+			}
+			else // Entity is alive
 			{
 				if (entityDeselected)
 				{
@@ -432,7 +458,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (m_SpecialistShowingAbilities)
 	{
-		if (m_SpecialistShowingAbilities->CurrentDefenceStats.MaxHealth <= 0)
+		if (m_SpecialistShowingAbilities->Health <= 0)
 		{
 			ClearSpecialistAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
@@ -447,7 +473,24 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (m_RTS_GameState->SelectedEntities.Num() == 1)
 	{
-		m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+		ARTS_Entity* selectedEntity = m_RTS_GameState->SelectedEntities[0];
+		if (selectedEntity->Health <= 0)
+		{
+			//selectedEntity->Kill();
+			selectedEntity = nullptr;
+			m_RTS_GameState->SelectedEntities.Empty();
+			UpdateSelectedEntities();
+			m_RTSHUD->HideSelectedEntityStats();
+		}
+		else
+		{
+			m_RTSHUD->ShowSelectedEntityStats(selectedEntity);
+		}
+	}
+
+	if (prevSelectedEntityCount == 1 && m_RTS_GameState->SelectedEntities.Num() != 1)
+	{
+		m_RTSHUD->HideSelectedEntityStats();
 	}
 }
 
@@ -473,7 +516,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
 	if (unitUnderCursor)
 	{
-		if (unitUnderCursor->CurrentDefenceStats.MaxHealth <= 0)
+		if (unitUnderCursor->Health <= 0)
 		{
 			unitUnderCursor = nullptr; // Don't target dead people
 		}
@@ -765,14 +808,6 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 
 	m_RTSHUD->OnSelectionGroupSelected(Index - 1);
 
-	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
-	{
-		if (m_RTS_GameState->SelectedEntities[i]->CurrentDefenceStats.MaxHealth > 0)
-		{
-			m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
-		}
-	}
-
 	UpdateSelectedEntities();
 }
 
@@ -937,30 +972,6 @@ void ARTS_PlayerController::InvertSelection()
 		}
 
 		m_RTS_GameState->SelectedEntities = newSelectedEntities;
-
-		for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
-		{
-			if (m_RTS_GameState->SelectedEntities[i]->Health > 0)
-			{
-				m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
-			}
-		}
-
-		if (m_RTS_GameState->SelectedEntities.Num() == 1)
-		{
-			ARTS_Specialist* specialst = Cast<ARTS_Specialist>(m_RTS_GameState->SelectedEntities[0]);
-			if (specialst && specialst->Health > 0)
-			{
-				m_SpecialistShowingAbilities = specialst;
-				CreateSpecialistAbilityButtons();
-			}
-
-			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
-		}
-		else
-		{
-			m_RTSHUD->HideSelectedEntityStats();
-		}
 
 		UpdateSelectedEntities();
 	}

@@ -479,12 +479,15 @@ void ARTS_Entity::ApplyHealing(int healing)
 
 void ARTS_Entity::Kill()
 {
+	Health = 0;
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
 
-	//Play sound
+	// Play sound
 	if (Sound)
+	{
 		UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+	}
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
@@ -529,7 +532,6 @@ void ARTS_Entity::Kill()
 			}
 		}
 	}
-
 
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);
