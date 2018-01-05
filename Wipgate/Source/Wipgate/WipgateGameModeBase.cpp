@@ -8,6 +8,7 @@
 #include "RTS_PlayerController.h"
 #include "RTS_EntitySpawnerBase.h"
 #include "RTS_GameInstance.h"
+#include "RTS_LevelEnd.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
@@ -21,9 +22,11 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
+	//Get table rows
 	TArray<FTeamRow*> rows;
 	m_Table->GetAllRows("BeginPlay > Table not found!", rows);
 	TArray<FName> rowNames = m_Table->GetRowNames();
+
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!playercontroller)
@@ -32,6 +35,7 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
+	//Loop over all team rows and make team objects
 	for (int i = 0; i < rows.Num(); ++i)
 	{
 		FTeamRow* row = rows[i];
@@ -69,6 +73,7 @@ void AWipgateGameModeBase::BeginPlay()
 	if (!playercontroller->Team)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
+		return;
 	}
 
 	//Check if there are still nullpts
@@ -100,16 +105,42 @@ void AWipgateGameModeBase::BeginPlay()
 		entitySpawn->SpawnEntities();
 	}
 
-	//Calculate upgrades
 	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
 	{
+		//Calculate upgrades
 		playercontroller->Team->Upgrades.Empty();
 		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
+
+		//Update currency & luma
+		playercontroller->AddCurrency(gameinstance->CurrentCurrency);
+		playercontroller->AddLuma(gameinstance->CurrentLuma);
 	}
 	else
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
+	}
+
+	//Get all endzones
+	TArray<AActor*> levelends;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelends);
+
+	if (levelends.Num() > 0)
+	{
+		//Get potential end zone
+		int index = FMath::RandRange(0, levelends.Num() - 1);
+
+		//Destroy any endzone that wasn't selected
+		for (int i = levelends.Num() - 1; i >= 0; --i)
+		{
+			if (i == index)
+				continue;
+			levelends[i]->Destroy();
+		}
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No level end found!"));
 	}
 }
 

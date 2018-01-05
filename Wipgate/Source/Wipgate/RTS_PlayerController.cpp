@@ -29,6 +29,7 @@
 #include "RTS_Specialist.h"
 #include "RTS_Team.h"
 #include "AbilityIconBase.h"
+#include "RTS_GameInstance.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -122,7 +123,12 @@ void ARTS_PlayerController::BeginPlay()
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
 	}
 
-	if (DEBUG_StartWithCurrency)
+	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	if (!gameinstance)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("BeginPlay > No game instance found!"));
+	}
+	else if (DEBUG_StartWithCurrency && gameinstance->CurrentRound == 0)
 	{
 		AddCurrency(1000);
 		AddLuma(1000);
