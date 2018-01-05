@@ -112,12 +112,27 @@ struct FEntitySpawn
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class ARTS_Entity> Entity;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Amount = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ETeamAlignment Alignment;
+};
+
+USTRUCT(BlueprintType)
+struct FEntitySave
+{
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(EditAnywhere,BlueprintReadWrite)
+		TSubclassOf<class ARTS_Entity> Entity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FLumaStat LumaStats;
 };

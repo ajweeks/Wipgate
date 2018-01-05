@@ -6,7 +6,8 @@
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
 #include "RTS_PlayerController.h"
-#include "RTS_EntitySpawner.h"
+#include "RTS_EntitySpawnerBase.h"
+#include "RTS_GameInstance.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
@@ -23,8 +24,14 @@ void AWipgateGameModeBase::BeginPlay()
 	TArray<FTeamRow*> rows;
 	m_Table->GetAllRows("BeginPlay > Table not found!", rows);
 	TArray<FName> rowNames = m_Table->GetRowNames();
-
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
+	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!playercontroller)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
+		return;
+	}
+
 	for (int i = 0; i < rows.Num(); ++i)
 	{
 		FTeamRow* row = rows[i];
@@ -36,13 +43,14 @@ void AWipgateGameModeBase::BeginPlay()
 			URTS_Team* team = NewObject<URTS_Team>();
 			team->Alignment = row->Alignment;
 			team->Color = row->Color;
+			team->World = GetWorld();
 
 			gamestate->Teams.Add(team);
 
 			//Set playercontroller team if it's player
 			if (team->Alignment == ETeamAlignment::E_PLAYER)
 			{
-				Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team = team;
+				playercontroller->Team = team;
 			}
 
 			//Check users in that group
@@ -58,7 +66,7 @@ void AWipgateGameModeBase::BeginPlay()
 	}
 
 	//Check if the playercontroller has a team
-	if (!Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController())->Team)
+	if (!playercontroller->Team)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
 	}
@@ -85,11 +93,23 @@ void AWipgateGameModeBase::BeginPlay()
 
 	//Spawn actors
 	TArray<AActor*> actors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawnerBase::StaticClass(), actors);
 	for (auto actor : actors)
 	{
-		auto entitySpawn = Cast<ARTS_EntitySpawner>(actor);
+		auto entitySpawn = Cast<ARTS_EntitySpawnerBase>(actor);
 		entitySpawn->SpawnEntities();
+	}
+
+	//Calculate upgrades
+	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	if (gameinstance)
+	{
+		playercontroller->Team->Upgrades.Empty();
+		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
 	}
 }
 
