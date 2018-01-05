@@ -51,6 +51,7 @@ ARTS_Entity::ARTS_Entity()
 		BarWidget->SetupAttachment(RootComponent);
 		BarWidget->SetReceivesDecals(false);
 		BarWidget->SetCanEverAffectNavigation(false);
+		BarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
 		MinimapIcon->SetupAttachment(RootComponent);
