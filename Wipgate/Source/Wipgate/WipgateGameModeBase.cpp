@@ -42,6 +42,7 @@ void AWipgateGameModeBase::BeginPlay()
 			URTS_Team* team = NewObject<URTS_Team>();
 			team->Alignment = row->Alignment;
 			team->Color = row->Color;
+			team->World = GetWorld();
 
 			gamestate->Teams.Add(team);
 
