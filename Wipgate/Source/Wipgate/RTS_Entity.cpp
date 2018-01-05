@@ -482,6 +482,10 @@ void ARTS_Entity::Kill()
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
 
+	//GameState notification
+	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
+	gameState->OnDeathDelegate.Broadcast(this);
+
 	//Play sound
 	if (Sound)
 		UGameplayStatics::PlaySound2D(GetWorld(), Sound);

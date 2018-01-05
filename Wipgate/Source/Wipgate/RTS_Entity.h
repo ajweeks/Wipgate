@@ -42,6 +42,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PostInitialize();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void OnDeathNotify(ARTS_Entity* deadEntity);
+
+	/* --- Unit effect functions --- */
 	UFUNCTION(BlueprintGetter, Category = "Effects")
 	TArray<UUnitEffect*> GetUnitEffects() const;
 	UFUNCTION(BlueprintCallable, Category = "Effects")
