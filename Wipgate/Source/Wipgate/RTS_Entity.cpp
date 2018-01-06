@@ -123,10 +123,8 @@ void ARTS_Entity::Tick(float DeltaTime)
 	if (TimerRateOfFire > 0)
 	{
 		TimerRateOfFire -= DeltaTime;
-		UE_LOG(LogTemp, Log, TEXT("Cooldown: %f"), TimerRateOfFire);
 		if (TimerRateOfFire <= 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Cooldown over"));
 			m_IsAttackOnCooldown = false;
 		}
 	}
