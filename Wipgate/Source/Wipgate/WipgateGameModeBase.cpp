@@ -101,11 +101,11 @@ void AWipgateGameModeBase::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawnerBase::StaticClass(), actors);
 	for (auto actor : actors)
 	{
-		auto entitySpawn = Cast<ARTS_EntitySpawnerBase>(actor);
+		ARTS_EntitySpawnerBase* entitySpawn = Cast<ARTS_EntitySpawnerBase>(actor);
 		entitySpawn->SpawnEntities();
 	}
 
-	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
 	{
 		//Calculate upgrades
@@ -157,4 +157,36 @@ URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 
 	UE_LOG(WipgateGameModeBase, Error, TEXT("GetTeamWithAlignment > No team was found with that alignment"));
 	return nullptr;
+}
+
+void AWipgateGameModeBase::SaveResources()
+{
+	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	if (!playercontroller)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No playercontroller. Returning..."));
+		return;
+	}
+
+	if(!gameinstance)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No gameinstance. Returning..."));
+		return;
+	}
+
+	gameinstance->CurrentCurrency = playercontroller->GetCurrentCurrencyAmount();
+	gameinstance->CurrentLuma = playercontroller->GetCurrentLumaAmount();
+}
+
+void AWipgateGameModeBase::NextLevel()
+{
+	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!playercontroller)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No playercontroller. Returning..."));
+		return;
+	}
+	SaveResources();
+	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
 }

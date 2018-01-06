@@ -23,6 +23,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	URTS_Team* GetTeamWithAlignment(ETeamAlignment alignment);
 
+	UFUNCTION(BlueprintCallable)
+		void SaveResources();
+
+	UFUNCTION(BlueprintCallable)
+		void NextLevel();
+
 private:
 	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
