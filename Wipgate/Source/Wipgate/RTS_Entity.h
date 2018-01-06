@@ -36,14 +36,14 @@ public:
 	UFUNCTION(BlueprintGetter, Category="Selection")
 	bool IsSelected() const;
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetGroundLocation();
+
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
 
 	UFUNCTION(BlueprintCallable)
 	void PostInitialize();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void OnDeathNotify(ARTS_Entity* deadEntity);
 
 	/* --- Unit effect functions --- */
 	UFUNCTION(BlueprintGetter, Category = "Effects")

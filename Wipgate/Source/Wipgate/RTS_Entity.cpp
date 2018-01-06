@@ -184,6 +184,11 @@ bool ARTS_Entity::IsSelected() const
 	return Selected;
 }
 
+FVector ARTS_Entity::GetGroundLocation()
+{
+	return GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+}
+
 void ARTS_Entity::SetTeamMaterial()
 {
 	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
