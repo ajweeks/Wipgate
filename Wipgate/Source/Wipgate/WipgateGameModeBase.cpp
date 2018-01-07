@@ -16,16 +16,23 @@ DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 void AWipgateGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!m_Table)
+	if (!m_TeamTable)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No table was linked. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No team table was linked. Returning..."));
 		return;
 	}
 
+	if (!m_EnemyUpgradeTable)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrade table was linked. Returning..."));
+		return;
+	}
+
+
 	//Get table rows
 	TArray<FTeamRow*> rows;
-	m_Table->GetAllRows("BeginPlay > Table not found!", rows);
-	TArray<FName> rowNames = m_Table->GetRowNames();
+	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
+	TArray<FName> rowNames = m_TeamTable->GetRowNames();
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
@@ -110,9 +117,38 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		for (auto team : gamestate->Teams)
 		{
-			//Calculate upgrades
+			//Empty all upgrades
 			team->Upgrades.Empty();
-			team->AddUpgrades(gameinstance->ActiveUpgrades);
+		}
+
+		//Add upgrades to player
+		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
+
+		//Give random upgrades to enemy based on round amount
+		auto team = GetTeamWithAlignment(ETeamAlignment::E_AGGRESSIVE_AI);
+		if (team)
+		{
+			auto round = gameinstance->CurrentRound;
+			for (int i = 0; i < round; ++i)
+			{
+				//Add random upgrade
+				TArray<FEnemyUpgradeRow*> rows;
+				m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
+				if (rows.Num() > 0)
+				{
+					int randomUpgradeIndex = FMath::RandRange(0, rows.Num() - 1);
+					auto row = rows[randomUpgradeIndex];
+					team->AddUpgrades(row->Upgrades);
+				}
+				else
+				{
+					UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrades in enemy upgrade datatable!"));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy team. Returning..."));
 		}
 
 		//Update currency & luma
@@ -168,13 +204,13 @@ void AWipgateGameModeBase::SaveResources()
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (!playercontroller)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No playercontroller. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveResources > No playercontroller. Returning..."));
 		return;
 	}
 
 	if(!gameinstance)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No gameinstance. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveResources > No gameinstance. Returning..."));
 		return;
 	}
 
@@ -185,11 +221,19 @@ void AWipgateGameModeBase::SaveResources()
 void AWipgateGameModeBase::NextLevel()
 {
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (!playercontroller)
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveCurrency > No playercontroller. Returning..."));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("NextLevel > No playercontroller. Returning..."));
+		return;
+	}
+	if (!gameinstance)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("NextLevel > No gameinstance. Returning..."));
 		return;
 	}
 	SaveResources();
+
+	//Open same level
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
 }

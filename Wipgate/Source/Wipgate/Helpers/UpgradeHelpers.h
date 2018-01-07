@@ -77,3 +77,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FUpgrade> Upgrades;
 };
+
+USTRUCT(BlueprintType)
+struct FEnemyUpgradeRow : public FTableRowBase
+{
+	FEnemyUpgradeRow() {}
+public:
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FUpgrade> Upgrades;
+};

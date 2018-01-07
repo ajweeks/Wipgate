@@ -32,5 +32,9 @@ public:
 private:
 	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
-	UDataTable* m_Table;
+	UDataTable* m_TeamTable;
+
+	//Make sure the datatable is inheriting from FEnemyUpgrade
+	UPROPERTY(EditAnywhere)
+		UDataTable* m_EnemyUpgradeTable;
 };
