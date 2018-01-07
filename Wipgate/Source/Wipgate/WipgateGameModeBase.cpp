@@ -108,9 +108,12 @@ void AWipgateGameModeBase::BeginPlay()
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
 	{
-		//Calculate upgrades
-		playercontroller->Team->Upgrades.Empty();
-		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
+		for (auto team : gamestate->Teams)
+		{
+			//Calculate upgrades
+			team->Upgrades.Empty();
+			team->AddUpgrades(gameinstance->ActiveUpgrades);
+		}
 
 		//Update currency & luma
 		playercontroller->AddCurrency(gameinstance->CurrentCurrency);
