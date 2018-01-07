@@ -551,11 +551,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (hitResult.bBlockingHit)
 			{
-				if (!m_SpecialistShowingAbilities)
-				{
-					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before ground click!"));
-				}
-				else
+				if (m_SpecialistShowingAbilities)
 				{
 					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
@@ -569,6 +565,16 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility = nullptr;
 					}
 				}
+				else // No valid specialist - don't perform range check
+				{
+					if (SelectedAbility->Icon)
+					{
+						SelectedAbility->Icon->OnAbilityActivate();
+					}
+					SelectedAbility->Activate();
+					SelectedAbility->Deselect();
+					SelectedAbility = nullptr;
+				}
 			}
 			else
 			{
@@ -579,11 +585,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			if (unitUnderCursor)
 			{
-				if (!m_SpecialistShowingAbilities)
-				{
-					UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before entity click!"));
-				}
-				else
+				if (m_SpecialistShowingAbilities)
 				{
 					float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 					if (entityDist < abilityRange)
@@ -598,6 +600,17 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility = nullptr;
 					}
 				}
+				else // No valid specialist - don't perform range check
+				{
+					if (SelectedAbility->Icon)
+					{
+						SelectedAbility->Icon->OnAbilityActivate();
+					}
+					SelectedAbility->SetTarget(unitUnderCursor);
+					SelectedAbility->Activate();
+					SelectedAbility->Deselect();
+					SelectedAbility = nullptr;
+				}
 			}
 			else
 			{
@@ -611,11 +624,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
 				if (entityAlignment == ETeamAlignment::E_PLAYER)
 				{
-					if (!m_SpecialistShowingAbilities)
-					{
-						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set ally ground click!"));
-					}
-					else
+					if (m_SpecialistShowingAbilities)
 					{
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
@@ -629,6 +638,17 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
 						}
+					}
+					else // No valid specialist - don't perform range check
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->SetTarget(unitUnderCursor);
+						SelectedAbility->Activate();
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
 					}
 				}
 				else
@@ -648,11 +668,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
 				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI)
 				{
-					if (!m_SpecialistShowingAbilities)
-					{
-						UE_LOG(RTS_PlayerController_Log, Error, TEXT("Specialist showing abilities not set before enemy click!"));
-					}
-					else
+					if (m_SpecialistShowingAbilities)
 					{
 						float entityDist = FVector::DistXY(unitUnderCursor->GetActorLocation(), m_SpecialistShowingAbilities->GetActorLocation());
 						if (entityDist < abilityRange)
@@ -666,6 +682,17 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
 						}
+					}
+					else // No valid specialist - don't perform range check
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->SetTarget(unitUnderCursor);
+						SelectedAbility->Activate();
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
 					}
 				}
 				else
