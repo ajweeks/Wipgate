@@ -228,16 +228,16 @@ private:
 
 	// How much faster to move when move fast key is held (shift)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_FastMoveSpeed = 5.0f;
+		float m_FastMoveSpeed = 3.0f;
 	// Equals Fast Move Speed when shift is down, otherwise 1.0f
 		float m_FastMoveMultiplier = 1.0f;
 	// The closer to zero this value is, the smaller the difference between movement speed while zoomed out and zoomed in (make denominator larger to make difference smaller)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MoveSpeedZoomMultiplier = 1.0f / 3.0f;
+		float m_MoveSpeedZoomMultiplier = 0.2f;
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_ZoomSpeed = 40.0f;
+		float m_ZoomSpeed = 25.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	// How far to zoom per mouse wheel turn
 		float m_ZoomDistance = 140.0f;
@@ -248,7 +248,7 @@ private:
 
 	// How quickly to move when the mouse is at the edge of the screen
 	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
-		float m_EdgeMoveSpeed = 10.0f;
+		float m_EdgeMoveSpeed = 8.0f;
 	// Percentage of screen from outer edges that mouse cursor will cause movement in
 	UPROPERTY(EditAnywhere, meta = (UIMin = "0.001", UIMax = "0.05"), Category = "Movement")
 		float m_EdgeSize = 0.005f;
