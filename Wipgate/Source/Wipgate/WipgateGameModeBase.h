@@ -32,6 +32,7 @@ public:
 		void NextLevel();
 
 	ARTS_PlayerSpawner* GetPlayerSpawner();
+	ARTS_LevelEnd* GetLevelEnd();
 
 private:
 	//Make sure the datatable is inheriting from FTeamRow

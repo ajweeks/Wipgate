@@ -161,31 +161,6 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
 	}
-
-	//Get all endzones
-	TArray<AActor*> levelends;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelends);
-
-	if (levelends.Num() > 0)
-	{
-		//Get potential end zone
-		int index = FMath::RandRange(0, levelends.Num() - 1);
-
-		//Destroy any endzone that wasn't selected
-		for (int i = levelends.Num() - 1; i >= 0; --i)
-		{
-			if (i == index)
-			{
-				m_LevelEnd = Cast<ARTS_LevelEnd>(levelends[i]);
-				continue;
-			}
-			levelends[i]->Destroy();
-		}
-	}
-	else
-	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No level end found!"));
-	}
 }
 
 URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
@@ -260,7 +235,43 @@ ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
 	}
 	else
 	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No player spawner found in map!"));
+		UE_LOG(WipgateGameModeBase, Error, TEXT("No player spawner found in map!"));
 		return nullptr;
 	}
+}
+
+ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
+{
+	if (m_LevelEnd)
+	{
+		return m_LevelEnd;
+	}
+
+	TArray<AActor*> levelEnds;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelEnds);
+
+	if (levelEnds.Num() > 0)
+	{
+		//Get potential end zone
+		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
+
+		//Destroy any endzone that wasn't selected
+		for (int i = levelEnds.Num() - 1; i >= 0; --i)
+		{
+			if (i == chosenEndZoneIndex)
+			{
+				m_LevelEnd = Cast<ARTS_LevelEnd>(levelEnds[i]);
+			}
+			else
+			{
+				levelEnds[i]->Destroy();
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("No level end found in map!"));
+	}
+
+	return m_LevelEnd;
 }

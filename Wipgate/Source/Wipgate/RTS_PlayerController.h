@@ -206,7 +206,11 @@ private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
+	void MoveToSelectionCenter();
 	void MoveToTarget();
+
+	void StartMovingToLevelEnd();
+	void StartMovingToLevelStart();
 
 	APawn* m_RTS_CameraPawn = nullptr;
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
@@ -257,8 +261,17 @@ private:
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
 		float m_SelectionCenterMaxMoveSpeed = 25.0f;
 
-	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		bool m_MoveToLevelEndAtStartup = true;
+
+	bool m_MovingToSelectionCenter = false;
+	float m_MovingToSelectionCenterThreshold = 5.0f;
+	bool m_MovingToTarget = false;
+	float m_MoveToTargetSpeed = 0.09f;
 	FVector m_TargetLocation;
+
+	float m_DelayBeforeMovingToLevelEnd = 1.2f;
+	float m_DelayBeforeMovingBackToLevelStart = 2.0f;
 
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;
