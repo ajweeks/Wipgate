@@ -57,11 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 		void RemoveUnitEffect(UUnitEffect* effect);
 
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void DisableDebug();
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void SetRangeDebug();
-
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	bool ApplyDamage(int damage, bool armor);
 	UFUNCTION(BlueprintCallable, Category = "Health")
@@ -101,12 +96,6 @@ public:
 
 	//DEBUG
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool ShowRange = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	float RangeHeight = 10.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowUnitStats = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
@@ -115,23 +104,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowSelectionBox = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	UMaterial* RangeMaterial = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	UStaticMesh* RangeMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FName RangeColorParameterName = "None";
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeInnerVisionColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeAttackColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeOuterVisionColor;
 
 	//STATS
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
@@ -168,9 +140,6 @@ public:
 	//TEAM
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
 	URTS_Team* Team;
-
-	UPROPERTY(BlueprintReadWrite)
-	TArray<UStaticMeshComponent*> DebugMeshes;
 
 	UPROPERTY(EditAnywhere, Category = "Team")
 	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;

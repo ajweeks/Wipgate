@@ -9,6 +9,8 @@
 #include "WipgateGameModeBase.generated.h"
 
 class URTS_Team;
+class ARTS_PlayerSpawner;
+class ARTS_LevelEnd;
 
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
@@ -29,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void NextLevel();
 
+	ARTS_PlayerSpawner* GetPlayerSpawner();
+	ARTS_LevelEnd* GetLevelEnd();
+
 private:
 	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
@@ -36,5 +41,17 @@ private:
 
 	//Make sure the datatable is inheriting from FEnemyUpgrade
 	UPROPERTY(EditAnywhere)
-		UDataTable* m_EnemyUpgradeTable;
+	UDataTable* m_EnemyUpgradeTable;
+
+	//Base spawn chance of an entity spawner
+	UPROPERTY(EditAnywhere)
+		float BaseSpawnChance = 0.5f;
+
+	//Spawn chance increase per round
+	UPROPERTY(EditAnywhere)
+		float SpawnChanceRoundIncrease = 0.05f;
+
+	ARTS_LevelEnd* m_LevelEnd;
+
+	ARTS_PlayerSpawner* m_PlayerSpawner;
 };

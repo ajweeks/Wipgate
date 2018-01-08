@@ -206,7 +206,11 @@ private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
+	void MoveToSelectionCenter();
 	void MoveToTarget();
+
+	void StartMovingToLevelEnd();
+	void StartMovingToLevelStart();
 
 	APawn* m_RTS_CameraPawn = nullptr;
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
@@ -223,25 +227,21 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Misc")
 		bool m_EdgeMovementEnabled = true;
 
-	// TODO: Store the value for this in each map
-	UPROPERTY(EditAnywhere, Category = "Misc")
-		FVector m_StartingLocation;
-	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
 		FQuat m_StartingRotation;
 
 	// How much faster to move when move fast key is held (shift)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_FastMoveSpeed = 5.0f;
+		float m_FastMoveSpeed = 3.0f;
 	// Equals Fast Move Speed when shift is down, otherwise 1.0f
 		float m_FastMoveMultiplier = 1.0f;
 	// The closer to zero this value is, the smaller the difference between movement speed while zoomed out and zoomed in (make denominator larger to make difference smaller)
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MoveSpeedZoomMultiplier = 1.0f / 3.0f;
+		float m_MoveSpeedZoomMultiplier = 0.2f;
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_ZoomSpeed = 40.0f;
+		float m_ZoomSpeed = 25.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	// How far to zoom per mouse wheel turn
 		float m_ZoomDistance = 140.0f;
@@ -252,7 +252,7 @@ private:
 
 	// How quickly to move when the mouse is at the edge of the screen
 	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
-		float m_EdgeMoveSpeed = 10.0f;
+		float m_EdgeMoveSpeed = 8.0f;
 	// Percentage of screen from outer edges that mouse cursor will cause movement in
 	UPROPERTY(EditAnywhere, meta = (UIMin = "0.001", UIMax = "0.05"), Category = "Movement")
 		float m_EdgeSize = 0.005f;
@@ -261,8 +261,17 @@ private:
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
 		float m_SelectionCenterMaxMoveSpeed = 25.0f;
 
-	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		bool m_MoveToLevelEndAtStartup = true;
+
+	bool m_MovingToSelectionCenter = false;
+	float m_MovingToSelectionCenterThreshold = 5.0f;
+	bool m_MovingToTarget = false;
+	float m_MoveToTargetSpeed = 0.09f;
 	FVector m_TargetLocation;
+
+	float m_DelayBeforeMovingToLevelEnd = 1.2f;
+	float m_DelayBeforeMovingBackToLevelStart = 2.0f;
 
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;

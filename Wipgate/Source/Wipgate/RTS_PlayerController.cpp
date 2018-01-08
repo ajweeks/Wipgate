@@ -20,6 +20,7 @@
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UObject/ConstructorHelpers.h"
+#include "TimerManager.h"
 
 #include "Ability.h"
 #include "RTS_GameState.h"
@@ -31,6 +32,9 @@
 #include "AbilityIconBase.h"
 #include "RTS_GameInstance.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "WipgateGameModeBase.h"
+#include "RTS_PlayerSpawner.h"
+#include "RTS_LevelEnd.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
@@ -45,9 +49,28 @@ void ARTS_PlayerController::BeginPlay()
 	// Get references to camera and its components
 	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
+	
+	auto baseGameMode = GetWorld()->GetAuthGameMode();
+	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
+	FVector startingLocation = FVector::ZeroVector;
+	if (castedGameMode)
+	{
+		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
+		if (playerSpawner)
+		{
+			startingLocation = playerSpawner->GetActorLocation();
+		}
+	}
 
-	m_RTS_CameraPawn->SetActorLocation(m_StartingLocation);
+	m_RTS_CameraPawn->SetActorLocation(startingLocation);
 	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
+
+	// Move to level end after delay (to let world load in)
+	if (m_MoveToLevelEndAtStartup)
+	{
+		FTimerHandle UnusedHandle;
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARTS_PlayerController::StartMovingToLevelEnd, m_DelayBeforeMovingToLevelEnd, false);
+	}
 
 	TArray<UCameraComponent*> cameraComponents;
 	m_RTS_CameraPawn->GetComponents(cameraComponents);
@@ -276,6 +299,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	else if (m_MovingToTarget)
 	{
 		MoveToTarget();
+	}
+	else if (m_MovingToSelectionCenter)
+	{
+		MoveToSelectionCenter();
 	}
 	// If mouse is at edge of screen, update camera pos
 	/*
@@ -1084,14 +1111,14 @@ float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float Delta
 	return 0.0f;
 }
 
-void ARTS_PlayerController::MoveToTarget()
+void ARTS_PlayerController::MoveToSelectionCenter()
 {
 	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
 	const int32 selectedEntityCount = m_RTS_GameState->SelectedEntities.Num();
 
 	if (selectedEntityCount == 0)
 	{
-		m_MovingToTarget = false;
+		m_MovingToSelectionCenter = false;
 		return;
 	}
 
@@ -1123,7 +1150,7 @@ void ARTS_PlayerController::MoveToTarget()
 	averageEntityLocation /= selectedEntityCount;
 
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
-	m_TargetLocation = FVector(averageEntityLocation.X, averageEntityLocation.Y, 
+	m_TargetLocation = FVector(averageEntityLocation.X, averageEntityLocation.Y,
 		oldCameraLocation.Z); // NOTE: Don't change the height of the camera here (handled with zooming)
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
 	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
@@ -1150,10 +1177,84 @@ void ARTS_PlayerController::MoveToTarget()
 	}
 
 	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
-	
-	float locationTolerance = 5.0f + maxEntityVelocityMag ;
+
+	float locationTolerance = m_MovingToSelectionCenterThreshold + maxEntityVelocityMag;
+	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
+	{
+		m_MovingToSelectionCenter = false;
+	}
+}
+
+void ARTS_PlayerController::MoveToTarget()
+{
+	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
+
+	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
+	m_TargetLocation = FVector(m_TargetLocation.X, m_TargetLocation.Y,
+		oldCameraLocation.Z); // NOTE: Don't change the height of the camera here (handled with zooming)
+	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
+	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds * m_MoveToTargetSpeed;
+
+	FVector newCamLocation = oldCameraLocation + camMovement;
+
+	if (newCamLocation.X > m_TargetLocation.X && dCamLocation.X > 0.0f ||
+		newCamLocation.X < m_TargetLocation.X && dCamLocation.X < 0.0f)
+	{
+		// We passed the target in the X direction
+		newCamLocation.X = m_TargetLocation.X;
+	}
+	if (newCamLocation.Y > m_TargetLocation.Y && dCamLocation.Y > 0.0f ||
+		newCamLocation.Y < m_TargetLocation.Y && dCamLocation.Y < 0.0f)
+	{
+		// We passed the target in the Y direction
+		newCamLocation.Y = m_TargetLocation.Y;
+	}
+	if (newCamLocation.Z > m_TargetLocation.Z && dCamLocation.Z > 0.0f ||
+		newCamLocation.Z < m_TargetLocation.Z && dCamLocation.Z < 0.0f)
+	{
+		// We passed the target in the Z direction
+		newCamLocation.Z = m_TargetLocation.Z;
+	}
+
+	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
+
+	float locationTolerance = 300.0f;
 	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
 	{
 		m_MovingToTarget = false;
+	}
+}
+
+void ARTS_PlayerController::StartMovingToLevelEnd()
+{
+	auto baseGameMode = GetWorld()->GetAuthGameMode();
+	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
+	FVector startingLocation = FVector::ZeroVector;
+	if (castedGameMode)
+	{
+		ARTS_LevelEnd* levelEnd = castedGameMode->GetLevelEnd();
+		if (levelEnd)
+		{
+			m_TargetLocation = levelEnd->GetActorLocation();
+			m_MovingToTarget = true;
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARTS_PlayerController::StartMovingToLevelStart, m_DelayBeforeMovingBackToLevelStart, false);
+		}
+	}
+}
+
+void ARTS_PlayerController::StartMovingToLevelStart()
+{
+	auto baseGameMode = GetWorld()->GetAuthGameMode();
+	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
+	FVector startingLocation = FVector::ZeroVector;
+	if (castedGameMode)
+	{
+		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
+		if (playerSpawner)
+		{
+			m_TargetLocation = playerSpawner->GetActorLocation();
+			m_MovingToTarget = true;
+		}
 	}
 }
