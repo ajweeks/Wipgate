@@ -129,11 +129,6 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 	}
 
-	if (TimerRateOfFire <= 0 && TimerAttack > 0)
-	{
-		TimerAttack -= DeltaTime;
-	}
-
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
@@ -367,6 +362,18 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentMovementStats.Speed -= effect->Magnitude;
 		break;
 
+	case EUnitEffectStat::ATTACK_RATE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			break;
+		else
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown += FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			GetMesh()->GlobalAnimRateScale -= percentage;
+		}
+		break;
+
 	default:
 		break;
 	}
@@ -592,6 +599,8 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
+
+			break;
 		default:
 			break;
 		}
@@ -632,6 +641,15 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude;
 			break;
+
+		case EUnitEffectStat::ATTACK_RATE:
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown -= FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			GetMesh()->GlobalAnimRateScale += percentage;
+			break;
+		}
 
 		default:
 			break;

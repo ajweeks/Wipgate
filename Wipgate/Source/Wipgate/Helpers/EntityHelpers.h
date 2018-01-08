@@ -27,9 +27,6 @@ struct FAttackStat
 		float AttackCooldown = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float AttackDuration = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Range = 250.0f;
 };
 
