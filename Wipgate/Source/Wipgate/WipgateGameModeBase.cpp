@@ -6,7 +6,8 @@
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
 #include "RTS_PlayerController.h"
-#include "RTS_EntitySpawnerBase.h"
+#include "RTS_EntitySpawner.h"
+#include "RTS_PlayerSpawner.h"
 #include "RTS_GameInstance.h"
 #include "RTS_LevelEnd.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
@@ -103,18 +104,40 @@ void AWipgateGameModeBase::BeginPlay()
 		entity->PostInitialize();
 	}
 
-	//Spawn actors
-	TArray<AActor*> actors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawnerBase::StaticClass(), actors);
-	for (auto actor : actors)
-	{
-		ARTS_EntitySpawnerBase* entitySpawn = Cast<ARTS_EntitySpawnerBase>(actor);
-		entitySpawn->SpawnEntities();
-	}
-
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
-	{
+		{
+		//Spawn entities
+		TArray<AActor*> actors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
+		for (auto actor : actors)
+		{
+			ARTS_EntitySpawner* entitySpawn = Cast<ARTS_EntitySpawner>(actor);
+
+			//Percentual chance of spawning
+			float rand = FMath::FRandRange(0, 1);
+			if (rand < BaseSpawnChance + (gameinstance->CurrentRound * SpawnChanceRoundIncrease) + entitySpawn->SpawnModifier)
+			{
+				entitySpawn->SpawnEntities();
+			}
+		}
+		actors.Empty();
+
+		//Spawn players
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), actors);
+		if (actors.Num() <= 0)
+		{
+			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No playerspawn available!"));
+		}
+		else 
+		{
+			if (actors.Num() > 1)
+			{
+				UE_LOG(WipgateGameModeBase, Warning, TEXT("BeginPlay > More than 1 playerspawn available, using first one.!"));
+			}
+			Cast<ARTS_PlayerSpawner>(actors[0])->SpawnEntities();
+		}
+
 		for (auto team : gamestate->Teams)
 		{
 			//Empty all upgrades

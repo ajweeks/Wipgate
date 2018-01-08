@@ -37,4 +37,12 @@ private:
 	//Make sure the datatable is inheriting from FEnemyUpgrade
 	UPROPERTY(EditAnywhere)
 		UDataTable* m_EnemyUpgradeTable;
+
+	//Base spawn chance of an entity spawner
+	UPROPERTY(EditAnywhere)
+		float BaseSpawnChance = 0.5f;
+
+	//Spawn chance increase per round
+	UPROPERTY(EditAnywhere)
+		float SpawnChanceRoundIncrease = 0.05f;
 };
