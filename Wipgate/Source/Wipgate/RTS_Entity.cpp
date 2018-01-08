@@ -82,10 +82,8 @@ void ARTS_Entity::Tick(float DeltaTime)
 	if (TimerRateOfFire > 0)
 	{
 		TimerRateOfFire -= DeltaTime;
-		UE_LOG(LogTemp, Log, TEXT("Cooldown: %f"), TimerRateOfFire);
 		if (TimerRateOfFire <= 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Cooldown over"));
 			m_IsAttackOnCooldown = false;
 		}
 	}
@@ -143,6 +141,11 @@ void ARTS_Entity::Tick(float DeltaTime)
 bool ARTS_Entity::IsSelected() const
 {
 	return Selected;
+}
+
+FVector ARTS_Entity::GetGroundLocation()
+{
+	return GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
 void ARTS_Entity::SetTeamMaterial()
