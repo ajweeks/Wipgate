@@ -65,4 +65,4 @@ public:
 };
 
 // Global C++ only functions
-void PrintStringToScreen(FString text);
+void PrintStringToScreen(FString text, FColor Color = FColor::White, float TimeToDisplay = 1.5f);

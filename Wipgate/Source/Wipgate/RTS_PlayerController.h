@@ -19,6 +19,8 @@ class ARTS_Unit;
 class ARTS_Specialist;
 class URTS_Squad;
 class URTS_Team;
+class ARTS_LevelBounds;
+class ATriggerBox;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -212,6 +214,9 @@ private:
 	void StartMovingToLevelEnd();
 	void StartMovingToLevelStart();
 
+	FVector ClampDCamPosWithBounds(FVector dCamPos);
+	FVector ClampCamPosWithBounds(FVector camPos);
+
 	APawn* m_RTS_CameraPawn = nullptr;
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
@@ -275,6 +280,9 @@ private:
 
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		TLazyObjectPtr<ARTS_LevelBounds> m_LevelBounds;
 
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
 	int32 m_CurrentLuma = 0;

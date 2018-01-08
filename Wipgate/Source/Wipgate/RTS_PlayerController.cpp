@@ -9,6 +9,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/Button.h"
+#include "Components/BoxComponent.h"
 #include "Components/ProgressBar.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/GridPanel.h"
@@ -35,6 +36,7 @@
 #include "WipgateGameModeBase.h"
 #include "RTS_PlayerSpawner.h"
 #include "RTS_LevelEnd.h"
+#include "RTS_LevelBounds.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
@@ -144,6 +146,11 @@ void ARTS_PlayerController::BeginPlay()
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
+	}
+
+	if (!m_LevelBounds)
+	{
+		PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
 	}
 
 	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
@@ -261,7 +268,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	if (!m_RTS_GameState ||!m_RTSHUD)
 	{
-		return;
+return;
 	}
 
 	// Update selection box size if mouse is being dragged
@@ -328,24 +335,31 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
 		}
 
+		FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
+		FVector targetDCamLocation;
+
 		FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
 		if (normMousePos.X > 1.0f - m_EdgeSize)
 		{
-			m_RTS_CameraPawn->AddActorWorldOffset(rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+			targetDCamLocation = rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
 		}
 		else if (normMousePos.X < m_EdgeSize)
 		{
-			m_RTS_CameraPawn->AddActorWorldOffset(-rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+			targetDCamLocation = -rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
 		}
 
 		if (normMousePos.Y > 1.0f - m_EdgeSize)
 		{
-			m_RTS_CameraPawn->AddActorWorldOffset(-forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+			targetDCamLocation = -forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
 		}
 		else if (normMousePos.Y < m_EdgeSize)
 		{
-			m_RTS_CameraPawn->AddActorWorldOffset(forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier);
+			targetDCamLocation = forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
 		}
+
+		targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
+
+		m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
 	}
 
 
@@ -1175,6 +1189,8 @@ void ARTS_PlayerController::MoveToSelectionCenter()
 		// We passed the target in the Z direction
 		newCamLocation.Z = m_TargetLocation.Z;
 	}
+	
+	newCamLocation = ClampCamPosWithBounds(newCamLocation);
 
 	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
 
@@ -1215,6 +1231,8 @@ void ARTS_PlayerController::MoveToTarget()
 		// We passed the target in the Z direction
 		newCamLocation.Z = m_TargetLocation.Z;
 	}
+
+	newCamLocation = ClampCamPosWithBounds(newCamLocation);
 
 	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
 
@@ -1257,4 +1275,46 @@ void ARTS_PlayerController::StartMovingToLevelStart()
 			m_MovingToTarget = true;
 		}
 	}
+}
+
+FVector ARTS_PlayerController::ClampCamPosWithBounds(FVector camPos)
+{
+	if (m_LevelBounds)
+	{
+		FVector boundsExtent = m_LevelBounds->BoxComponent->GetScaledBoxExtent();
+		FVector boundsCenter = m_LevelBounds->BoxComponent->GetComponentLocation();
+		if (camPos.X > boundsCenter.X + boundsExtent.X)
+		{
+			camPos.X = (boundsCenter.X + boundsExtent.X);
+		}
+		else if (camPos.X < boundsCenter.X - boundsExtent.X)
+		{
+			camPos.X = (boundsCenter.X - boundsExtent.X);
+		}
+
+		if (camPos.Y > boundsCenter.Y + boundsExtent.Y)
+		{
+			camPos.Y = (boundsCenter.Y + boundsExtent.Y);
+		}
+		else if (camPos.Y < boundsCenter.Y - boundsExtent.Y)
+		{
+			camPos.Y = (boundsCenter.Y - boundsExtent.Y);
+		}
+	}
+
+	return camPos;
+}
+
+FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)
+{
+	if (m_LevelBounds)
+	{
+		FVector pCamPos = m_RTS_CameraPawn->GetActorLocation();
+		FVector newCamPos = pCamPos + dCamPos;
+		newCamPos = ClampCamPosWithBounds(newCamPos);
+
+		dCamPos = newCamPos - pCamPos;
+	}
+
+	return dCamPos;
 }

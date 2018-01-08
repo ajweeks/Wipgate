@@ -163,10 +163,10 @@ void UGeneralFunctionLibrary_CPP::SortByDistance(FVector target, TArray<ARTS_Ent
 	out = in;
 }
 
-void PrintStringToScreen(FString text)
+void PrintStringToScreen(FString text, FColor Color, float TimeToDisplay)
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::White, text);
+		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, text);
 	}
 }
