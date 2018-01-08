@@ -36,6 +36,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 		TSubclassOf<AAbility> AbilityAttackClass;
 
+	//Minimum amount of currency this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MinimumCurrencyDrop = 0;
+
+	//Maximum amount of currency this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MaximumCurrencyDrop = 0;
+
+	//Class to spawn when unit dies
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AActor> CurrencyEffectClass;
 private:
 	
 	float m_PostKillTimer = 0;
