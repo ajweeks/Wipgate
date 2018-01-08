@@ -47,15 +47,15 @@ public:
 
 	/* --- Unit effect functions --- */
 	UFUNCTION(BlueprintGetter, Category = "Effects")
-	TArray<UUnitEffect*> GetUnitEffects() const;
+		TArray<UUnitEffect*> GetUnitEffects() const;
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 		bool HasEffectWithTag(FName tag);
 	UFUNCTION(BlueprintCallable, Category = "Effects")
 		void RemoveUnitEffectWithTag(FName tag);
 	UFUNCTION(BlueprintCallable, Category = "Effects")
-	void AddUnitEffect(UUnitEffect* effect);
+		void AddUnitEffect(UUnitEffect* effect);
 	UFUNCTION(BlueprintCallable, Category = "Effects")
-	void RemoveUnitEffect(UUnitEffect* effect);
+		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	bool ApplyDamage(int damage, bool armor);
@@ -118,8 +118,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		float TimerRateOfFire = 0.f;
-	UPROPERTY(BlueprintReadWrite)
-		float TimerAttack = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAttackOnCooldown = false;
 

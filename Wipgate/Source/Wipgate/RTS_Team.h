@@ -25,6 +25,8 @@ class WIPGATE_API URTS_Team : public UObject
 		UFUNCTION(BlueprintCallable)
 		void AddUpgrades(TArray<FUpgrade> upgrades);
 
+		FAttackStat GetUpgradedAttackStats(ARTS_Entity* entity);
+
 		/* Variables */
 		UPROPERTY(BlueprintReadWrite)
 		TArray<ARTS_Entity*> Entities;

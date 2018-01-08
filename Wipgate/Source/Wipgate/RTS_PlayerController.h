@@ -19,6 +19,8 @@ class ARTS_Unit;
 class ARTS_Specialist;
 class URTS_Squad;
 class URTS_Team;
+class ARTS_LevelBounds;
+class ATriggerBox;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -206,7 +208,14 @@ private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
+	void MoveToSelectionCenter();
 	void MoveToTarget();
+
+	void StartMovingToLevelEnd();
+	void StartMovingToLevelStart();
+
+	FVector ClampDCamPosWithBounds(FVector dCamPos);
+	FVector ClampCamPosWithBounds(FVector camPos);
 
 	APawn* m_RTS_CameraPawn = nullptr;
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
@@ -257,11 +266,23 @@ private:
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
 		float m_SelectionCenterMaxMoveSpeed = 25.0f;
 
-	bool m_MovingToTarget = false; // True when we are taking several frames to move to a target location
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		bool m_MoveToLevelEndAtStartup = true;
+
+	bool m_MovingToSelectionCenter = false;
+	float m_MovingToSelectionCenterThreshold = 5.0f;
+	bool m_MovingToTarget = false;
+	float m_MoveToTargetSpeed = 0.09f;
 	FVector m_TargetLocation;
+
+	float m_DelayBeforeMovingToLevelEnd = 1.2f;
+	float m_DelayBeforeMovingBackToLevelStart = 2.0f;
 
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		TLazyObjectPtr<ARTS_LevelBounds> m_LevelBounds;
 
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
 	int32 m_CurrentLuma = 0;
