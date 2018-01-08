@@ -43,6 +43,14 @@ private:
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_EnemyUpgradeTable;
 
+	//Base spawn chance of an entity spawner
+	UPROPERTY(EditAnywhere)
+		float BaseSpawnChance = 0.5f;
+
+	//Spawn chance increase per round
+	UPROPERTY(EditAnywhere)
+		float SpawnChanceRoundIncrease = 0.05f;
+
 	ARTS_LevelEnd* m_LevelEnd;
 
 	ARTS_PlayerSpawner* m_PlayerSpawner;
