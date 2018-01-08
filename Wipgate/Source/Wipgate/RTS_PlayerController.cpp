@@ -31,6 +31,8 @@
 #include "AbilityIconBase.h"
 #include "RTS_GameInstance.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "WipgateGameModeBase.h"
+#include "RTS_PlayerSpawner.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
@@ -45,8 +47,20 @@ void ARTS_PlayerController::BeginPlay()
 	// Get references to camera and its components
 	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
+	
+	auto baseGameMode = GetWorld()->GetAuthGameMode();
+	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
+	FVector startingLocation = FVector::ZeroVector;
+	if (castedGameMode)
+	{
+		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
+		if (playerSpawner)
+		{
+			startingLocation = playerSpawner->GetActorLocation();
+		}
+	}
 
-	m_RTS_CameraPawn->SetActorLocation(m_StartingLocation);
+	m_RTS_CameraPawn->SetActorLocation(startingLocation);
 	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
 
 	TArray<UCameraComponent*> cameraComponents;

@@ -223,10 +223,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Misc")
 		bool m_EdgeMovementEnabled = true;
 
-	// TODO: Store the value for this in each map
-	UPROPERTY(EditAnywhere, Category = "Misc")
-		FVector m_StartingLocation;
-	// TODO: Store the value for this in each map
 	UPROPERTY(EditAnywhere, Category = "Misc")
 		FQuat m_StartingRotation;
 

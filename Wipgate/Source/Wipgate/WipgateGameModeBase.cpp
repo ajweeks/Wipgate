@@ -2,6 +2,8 @@
 
 #include "WipgateGameModeBase.h"
 #include "Engine/DataTable.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "RTS_Team.h"
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
@@ -9,7 +11,7 @@
 #include "RTS_EntitySpawnerBase.h"
 #include "RTS_GameInstance.h"
 #include "RTS_LevelEnd.h"
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "RTS_PlayerSpawner.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -83,7 +85,7 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	//Check if there are still nullpts
+	//Check if there are still null teams
 	for (ARTS_Entity* entity : gamestate->Entities)
 	{
 		if (entity->Team == nullptr)
@@ -173,7 +175,10 @@ void AWipgateGameModeBase::BeginPlay()
 		for (int i = levelends.Num() - 1; i >= 0; --i)
 		{
 			if (i == index)
+			{
+				m_LevelEnd = Cast<ARTS_LevelEnd>(levelends[i]);
 				continue;
+			}
 			levelends[i]->Destroy();
 		}
 	}
@@ -236,4 +241,26 @@ void AWipgateGameModeBase::NextLevel()
 
 	//Open same level
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
+}
+
+ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
+{
+	if (m_PlayerSpawner)
+	{
+		return m_PlayerSpawner;
+	}
+
+	TArray<AActor*> playerSpawners;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), playerSpawners);
+
+	if (playerSpawners.Num() >= 1)
+	{
+		m_PlayerSpawner = Cast<ARTS_PlayerSpawner>(playerSpawners[0]);
+		return m_PlayerSpawner;
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No player spawner found in map!"));
+		return nullptr;
+	}
 }
