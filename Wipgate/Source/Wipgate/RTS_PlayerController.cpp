@@ -473,7 +473,7 @@ return;
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
+		if (!SelectedAbility && entity->Team && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 		{
 			if (entityIsDead)
 			{
