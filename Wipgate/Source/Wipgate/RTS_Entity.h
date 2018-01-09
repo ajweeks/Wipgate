@@ -79,7 +79,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool Immaterial = false;
 
-	bool IsSelectable() const;
+	bool IsSelectableByPlayer() const;
 
 public:
 	/* Public blueprint editable variables */
@@ -179,9 +179,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		USoundCue* AttackSound;
 
-	//Death
+	//Death variables
 	UPROPERTY(BlueprintReadOnly)
 		FVector LocationOfDeath;
+	UPROPERTY(BlueprintReadOnly)
+		FVector ForwardOnDeath;
 
 protected:
 	// Called when the game starts

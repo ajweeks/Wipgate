@@ -383,6 +383,7 @@ void ARTS_Entity::Kill()
 	Health = 0;
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
+	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
 	//GameState notification
 	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
@@ -476,7 +477,7 @@ void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
 	}
 }
 
-bool ARTS_Entity::IsSelectable() const
+bool ARTS_Entity::IsSelectableByPlayer() const
 {
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
 	if (aiController)
@@ -486,7 +487,7 @@ bool ARTS_Entity::IsSelectable() const
 		return selectable;
 	}
 
-	return false;
+	return (Health > 0);
 }
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
