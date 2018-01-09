@@ -71,7 +71,11 @@ void ARTS_Entity::BeginPlay()
 void ARTS_Entity::SetSelected(bool selected)
 {
 	Selected = selected;
-	SelectionStaticMeshComponent->SetVisibility(selected, true);
+
+	if (SelectionStaticMeshComponent)
+	{
+		SelectionStaticMeshComponent->SetVisibility(selected, true);
+	}
 }
 
 void ARTS_Entity::Tick(float DeltaTime)
@@ -148,7 +152,8 @@ void ARTS_Entity::SetTeamMaterial()
 	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
 	selectionColorHSV.B = SelectionBrightness;
 	FLinearColor selectionColorRGB = selectionColorHSV.HSVToLinearRGB();
-	if (SelectionStaticMeshComponent->GetMaterials().Num() > 0)
+
+	if (SelectionStaticMeshComponent && SelectionStaticMeshComponent->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* selectionMatInst = SelectionStaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, SelectionStaticMeshComponent->GetMaterial(0));
 		selectionMatInst->SetVectorParameterValue("EmissiveColor", selectionColorRGB);
