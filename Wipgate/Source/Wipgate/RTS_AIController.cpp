@@ -180,7 +180,7 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 TArray<ARTS_Entity*> ARTS_AIController::GetObstacles()
 {
 	TArray<ARTS_Entity*> obstacles;
-	if (m_CurrentTask == EUNIT_TASK::CHASING)
+	if (m_CurrentTask == EUNIT_TASK::CHASING && m_CurrentCommand)
 	{
 		// forced attack entity: everyone is an obstacle
 		if (m_CurrentCommand->Type == ECOMMAND_TYPE::ATTACK)
@@ -331,7 +331,9 @@ bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float s
 
 ERelativeAlignment ARTS_AIController::GetRelativeAlignment(const ARTS_Entity * a, const ARTS_Entity * b)
 {
-	if (a->Team->Alignment == b->Team->Alignment)
+	if (a->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI || b->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI) 
+		return ERelativeAlignment::E_ENEMY;
+	if (a->Team->Alignment == b->Team->Alignment || a->Alignment == ETeamAlignment::E_NEUTRAL_AI || b->Alignment == ETeamAlignment::E_NEUTRAL_AI) 
 		return ERelativeAlignment::E_FRIENDLY;
 	else
 		return ERelativeAlignment::E_ENEMY;
@@ -340,7 +342,7 @@ ERelativeAlignment ARTS_AIController::GetRelativeAlignment(const ARTS_Entity * a
 TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInAttackRange()
 {
 	TArray<ARTS_Entity*> enemiesInRange;
-	FVector loc = m_FlockCenter;
+	FVector loc = m_Entity->GetActorLocation();
 	float radius = m_Entity->CurrentAttackStats.Range;
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	TArray<AActor*> ignore = { m_Entity };
@@ -364,8 +366,8 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInAttackRange()
 TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 {
 	TArray<ARTS_Entity*> enemiesInRange;
-	FVector loc = m_FlockCenter;
-	float radius = m_Entity->CurrentVisionStats.InnerRange;
+	FVector loc = m_Entity->GetActorLocation();
+	float radius = m_Entity->CurrentVisionStats.OuterRange;
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	TArray<AActor*> ignore = { m_Entity };
 	TArray<AActor*> out;

@@ -154,7 +154,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
 	URTS_Team* Team;
 
-	UPROPERTY(EditAnywhere, Category = "Team")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team")
 	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
 	//TYPE

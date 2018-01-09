@@ -724,7 +724,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			if (unitUnderCursor)
 			{
 				ETeamAlignment entityAlignment = unitUnderCursor->Team->Alignment;
-				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI)
+				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI || entityAlignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
 				{
 					if (m_SpecialistShowingAbilities)
 					{
