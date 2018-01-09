@@ -385,38 +385,19 @@ void ARTS_Entity::Kill()
 	LocationOfDeath = GetActorLocation();
 	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
-	//GameState notification
-	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-	gameState->OnDeathDelegate.Broadcast(this);
-
-	// Play sound
-	if (DeathSound && SoundAttenuation && SoundConcurrency)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
-	}
-
-	UCapsuleComponent* capsule = GetCapsuleComponent();
-	if (capsule)
-	{
-		capsule->DestroyComponent();
-		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//SetActorTickEnabled(false);
-		//DisableDebug();
-	}
-
-	if (Controller)
-	{
-		Controller->SetActorTickEnabled(false);
-	}
-
-	if (BarWidget)
-	{
-		BarWidget->DestroyComponent();
-	}
-
 	UWorld* world = GetWorld();
 	if (world)
 	{
+		//GameState notification
+		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
+		gameState->OnDeathDelegate.Broadcast(this);
+
+		// Play sound
+	if (DeathSound && SoundAttenuation && SoundConcurrency)
+		{
+			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
+		}
+
 		AGameStateBase* baseGameState = world->GetGameState();
 		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 		if (baseGameState && castedGameState)
@@ -439,6 +420,25 @@ void ARTS_Entity::Kill()
 		}
 	}
 
+	UCapsuleComponent* capsule = GetCapsuleComponent();
+	if (capsule)
+	{
+		capsule->DestroyComponent();
+		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//SetActorTickEnabled(false);
+		//DisableDebug();
+	}
+
+	if (Controller)
+	{
+		Controller->SetActorTickEnabled(false);
+	}
+
+	if (BarWidget)
+	{
+		BarWidget->DestroyComponent();
+	}
+
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);
 	//GetMesh()->DetachFromParent();
@@ -459,7 +459,7 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 		ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
 		if (aiController)
 		{
-			aiController->SetCurrentTask(EUNIT_TASK::OVERDOSED);
+			Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
 		}
 	}
 }
@@ -467,13 +467,11 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
 {
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
-	if (aiController && aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED)
+
+	CurrentLumaStats.LumaSaturation -= LumaToRemove;
+	if (CurrentLumaStats.LumaSaturation < 0)
 	{
-		CurrentLumaStats.LumaSaturation -= LumaToRemove;
-		if (CurrentLumaStats.LumaSaturation < 0)
-		{
-			CurrentLumaStats.LumaSaturation = 0;
-		}
+		CurrentLumaStats.LumaSaturation = 0;
 	}
 }
 
@@ -483,7 +481,7 @@ bool ARTS_Entity::IsSelectableByPlayer() const
 	if (aiController)
 	{
 		bool selectable = (Health > 0) && 
-			(aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED);
+			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI);
 		return selectable;
 	}
 

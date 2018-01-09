@@ -69,9 +69,10 @@ struct FLumaStat
 UENUM(BlueprintType)
 enum class ETeamAlignment : uint8
 {
-	E_PLAYER 			UMETA(DisplayName = "Player"),
-	E_NEUTRAL_AI 		UMETA(DisplayName = "Neutral AI"),
-	E_AGGRESSIVE_AI 		UMETA(DisplayName = "Aggressive AI")
+	E_PLAYER 				UMETA(DisplayName = "Player"),
+	E_NEUTRAL_AI 			UMETA(DisplayName = "Neutral AI"),
+	E_AGGRESSIVE_AI 		UMETA(DisplayName = "Aggressive AI"),
+	E_ATTACKEVERYTHING_AI	UMETA(DisplayName = "Attack everything AI")
 };
 
 UENUM(BlueprintType)
