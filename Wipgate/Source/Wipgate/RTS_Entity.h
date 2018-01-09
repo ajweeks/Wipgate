@@ -69,9 +69,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddToLumaSaturation(int32 LumaToAdd);
 
+	UFUNCTION(BlueprintCallable)
+	void RemoveLumaSaturation(int32 LumaToRemove);
+
+	UPROPERTY(BlueprintReadOnly)
+	int LumaToRemoveOnEnemyDeath = 1;
+
 	// When true, this unit's stats can not be changed, and it can not be targeted
 	UPROPERTY(BlueprintReadWrite)
-		bool Immaterial = false;
+	bool Immaterial = false;
 
 	bool IsSelectable() const;
 

@@ -464,6 +464,19 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 	}
 }
 
+void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+	if (aiController && aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED)
+	{
+		CurrentLumaStats.LumaSaturation -= LumaToRemove;
+		if (CurrentLumaStats.LumaSaturation < 0)
+		{
+			CurrentLumaStats.LumaSaturation = 0;
+		}
+	}
+}
+
 bool ARTS_Entity::IsSelectable() const
 {
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
