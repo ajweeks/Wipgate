@@ -173,9 +173,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		USoundCue* AttackSound;
 
-	//Death
+	//Death variables
 	UPROPERTY(BlueprintReadOnly)
 		FVector LocationOfDeath;
+	UPROPERTY(BlueprintReadOnly)
+		FVector ForwardOnDeath;
 
 protected:
 	// Called when the game starts

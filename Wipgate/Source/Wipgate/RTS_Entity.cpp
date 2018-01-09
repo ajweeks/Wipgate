@@ -383,6 +383,7 @@ void ARTS_Entity::Kill()
 	Health = 0;
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
+	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
 	//GameState notification
 	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
