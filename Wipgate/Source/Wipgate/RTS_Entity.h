@@ -15,6 +15,7 @@ class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
 class USoundCue;
+class USoundConcurrency;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -69,9 +70,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddToLumaSaturation(int32 LumaToAdd);
 
+	UFUNCTION(BlueprintCallable)
+	void RemoveLumaSaturation(int32 LumaToRemove);
+
+	UPROPERTY(BlueprintReadOnly)
+	int LumaToRemoveOnEnemyDeath = 1;
+
 	// When true, this unit's stats can not be changed, and it can not be targeted
 	UPROPERTY(BlueprintReadWrite)
-		bool Immaterial = false;
+	bool Immaterial = false;
+
+	bool IsSelectableByPlayer() const;
 
 public:
 	/* Public blueprint editable variables */
@@ -165,15 +174,23 @@ public:
 	bool ShowingAbilityIcons = false;
 
 	//Sounds
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Sound")
 		USoundCue* DeathSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundCue* AttackSound;
 
-	//Death
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundAttenuation* SoundAttenuation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundConcurrency* SoundConcurrency;
+
+	//Death variables
 	UPROPERTY(BlueprintReadOnly)
 		FVector LocationOfDeath;
+	UPROPERTY(BlueprintReadOnly)
+		FVector ForwardOnDeath;
 
 protected:
 	// Called when the game starts

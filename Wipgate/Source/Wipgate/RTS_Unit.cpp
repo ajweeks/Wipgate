@@ -63,7 +63,7 @@ void ARTS_Unit::Kill()
 		GetWorld()->SpawnActor(CurrencyEffectClass, &transform);
 
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
-	if (playercontroller)
+	if (playercontroller && Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI)
 	{
 		//Add currency
 		int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);

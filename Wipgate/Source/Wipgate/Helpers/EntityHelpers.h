@@ -63,7 +63,7 @@ struct FLumaStat
 		int32 LumaSaturation = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 MaxLumaSaturation = 10;
+		int32 MaxLumaSaturation = 60;
 };
 
 UENUM(BlueprintType)

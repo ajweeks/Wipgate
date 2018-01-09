@@ -383,6 +383,7 @@ void ARTS_Entity::Kill()
 	Health = 0;
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
+	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
 	//GameState notification
 	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
@@ -391,7 +392,7 @@ void ARTS_Entity::Kill()
 	// Play sound
 	if (DeathSound)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
 	}
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();
@@ -461,6 +462,32 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 			aiController->SetCurrentTask(EUNIT_TASK::OVERDOSED);
 		}
 	}
+}
+
+void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+	if (aiController && aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED)
+	{
+		CurrentLumaStats.LumaSaturation -= LumaToRemove;
+		if (CurrentLumaStats.LumaSaturation < 0)
+		{
+			CurrentLumaStats.LumaSaturation = 0;
+		}
+	}
+}
+
+bool ARTS_Entity::IsSelectableByPlayer() const
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+	if (aiController)
+	{
+		bool selectable = (Health > 0) && 
+			(aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED);
+		return selectable;
+	}
+
+	return (Health > 0);
 }
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
