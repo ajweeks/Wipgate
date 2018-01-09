@@ -69,6 +69,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddToLumaSaturation(int32 LumaToAdd);
 
+	// When true, this unit's stats can not be changed, and it can not be targeted
+	UPROPERTY(BlueprintReadWrite)
+		bool Immaterial = false;
+
 public:
 	/* Public blueprint editable variables */
 

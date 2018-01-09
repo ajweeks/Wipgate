@@ -25,10 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;
 
-	// When true, this unit's stats can not be changed, and it can not be targeted
-	UPROPERTY(BlueprintReadWrite)
-		bool Immaterial = false;
-
 	// True when this unit is inside the level goal collider (through the gate)
 	UPROPERTY(BlueprintReadWrite)
 		bool InLevelGoal = false;
