@@ -385,38 +385,19 @@ void ARTS_Entity::Kill()
 	LocationOfDeath = GetActorLocation();
 	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
-	//GameState notification
-	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-	gameState->OnDeathDelegate.Broadcast(this);
-
-	// Play sound
-	if (DeathSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
-	}
-
-	UCapsuleComponent* capsule = GetCapsuleComponent();
-	if (capsule)
-	{
-		capsule->DestroyComponent();
-		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//SetActorTickEnabled(false);
-		//DisableDebug();
-	}
-
-	if (Controller)
-	{
-		Controller->SetActorTickEnabled(false);
-	}
-
-	if (BarWidget)
-	{
-		BarWidget->DestroyComponent();
-	}
-
 	UWorld* world = GetWorld();
 	if (world)
 	{
+		//GameState notification
+		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
+		gameState->OnDeathDelegate.Broadcast(this);
+
+		// Play sound
+		if (DeathSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
+		}
+
 		AGameStateBase* baseGameState = world->GetGameState();
 		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 		if (baseGameState && castedGameState)
@@ -437,6 +418,25 @@ void ARTS_Entity::Kill()
 				}
 			}
 		}
+	}
+
+	UCapsuleComponent* capsule = GetCapsuleComponent();
+	if (capsule)
+	{
+		capsule->DestroyComponent();
+		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//SetActorTickEnabled(false);
+		//DisableDebug();
+	}
+
+	if (Controller)
+	{
+		Controller->SetActorTickEnabled(false);
+	}
+
+	if (BarWidget)
+	{
+		BarWidget->DestroyComponent();
 	}
 
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
