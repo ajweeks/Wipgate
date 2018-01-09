@@ -486,7 +486,7 @@ bool ARTS_Entity::IsSelectable() const
 		return selectable;
 	}
 
-	return false;
+	return (Health > 0);
 }
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
