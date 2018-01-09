@@ -224,7 +224,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); /* */)
 	{
-		if (m_RTS_GameState->SelectedEntities[i]->IsSelectable())
+		if (m_RTS_GameState->SelectedEntities[i]->IsSelectableByPlayer())
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(true);
 			++i;
@@ -260,15 +260,15 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[0];
 		ARTS_Specialist* specialist = Cast<ARTS_Specialist>(entity);
-		if (specialist && specialist->IsSelectable())
+		if (specialist && specialist->IsSelectableByPlayer())
 		{
 			m_SpecialistShowingAbilities = specialist;
 			CreateSpecialistAbilityButtons();
 		}
 
-		if (entity->IsSelectable())
+		if (entity->IsSelectableByPlayer())
 		{
-			m_RTSHUD->ShowSelectedEntityStats(m_RTS_GameState->SelectedEntities[0]);
+			m_RTSHUD->ShowSelectedEntityStats(entity);
 		}
 	}
 	else
@@ -475,7 +475,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			entityUnderCursor = entity;
 		}
 
-		const bool entityIsSelectable = entity->IsSelectable();
+		const bool entityIsSelectable = entity->IsSelectableByPlayer();
 
 		const bool entityWasSelected = entity->IsSelected();
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
@@ -546,7 +546,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			m_RTS_GameState->SelectedEntities.Empty();
 			UpdateSelectedEntitiesBase();
 		}
-		else if (selectedEntity->IsSelectable())
+		else if (selectedEntity->IsSelectableByPlayer())
 		{
 			m_RTSHUD->ShowSelectedEntityStats(selectedEntity);
 		}
@@ -780,7 +780,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			for (auto entity : m_RTS_GameState->Entities)
 			{
 				if (entity->Team->Alignment == ETeamAlignment::E_PLAYER && entity->CurrentAttackStats.Range == targetRange && 
-					entity->IsSelectable())
+					entity->IsSelectableByPlayer())
 				{
 					entity->SetSelected(true);
 					m_RTS_GameState->SelectedEntities.AddUnique(entity);
@@ -1049,7 +1049,7 @@ void ARTS_PlayerController::InvertSelection()
 		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
 		{
 			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
-				m_RTS_GameState->Entities[i]->IsSelectable() &&
+				m_RTS_GameState->Entities[i]->IsSelectableByPlayer() &&
 				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
 			{
 				newSelectedEntities.Push(m_RTS_GameState->Entities[i]);

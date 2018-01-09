@@ -476,7 +476,7 @@ void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
 	}
 }
 
-bool ARTS_Entity::IsSelectable() const
+bool ARTS_Entity::IsSelectableByPlayer() const
 {
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
 	if (aiController)
