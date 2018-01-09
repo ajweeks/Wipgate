@@ -173,7 +173,7 @@ public:
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
 
-	//Sounds
+	//SOUNDS
 	UPROPERTY(EditAnywhere, Category = "Sound")
 		USoundCue* DeathSound;
 
@@ -186,7 +186,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundConcurrency* SoundConcurrency;
 
-	//Death variables
+	//DEATH
 	UPROPERTY(BlueprintReadOnly)
 		FVector LocationOfDeath;
 	UPROPERTY(BlueprintReadOnly)

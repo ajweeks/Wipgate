@@ -42,7 +42,13 @@ public:
 
 	//Class to spawn when unit dies
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AActor> CurrencyEffectClass;
+		TSubclassOf<AActor> DeathEffectClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
+		UStaticMeshComponent* Headpiece = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
+		UStaticMeshComponent* Weapon = nullptr;
 private:
 	
 	float m_PostKillTimer = 0;

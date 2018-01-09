@@ -16,6 +16,11 @@ DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
 ARTS_Unit::ARTS_Unit()
 {
+	Headpiece = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Headpiece"));
+	Headpiece->SetupAttachment(RootComponent);
+	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(RootComponent);
+
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh)
 	{
@@ -59,8 +64,8 @@ void ARTS_Unit::Kill()
 {
 	//Spawn currency particle
 	auto transform = GetActorTransform();
-	if (CurrencyEffectClass)
-		GetWorld()->SpawnActor(CurrencyEffectClass, &transform);
+	if (DeathEffectClass)
+		GetWorld()->SpawnActor(DeathEffectClass, &transform);
 
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (playercontroller && Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI)

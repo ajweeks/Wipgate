@@ -48,10 +48,10 @@ struct FVisionStat
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float OuterRange = 500;
+		float OuterRange = 1000;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float InnerRange = 500;
+		float InnerRange = 1000;
 };
 
 USTRUCT(BlueprintType)
