@@ -303,7 +303,8 @@ return;
 	{
 		ActionCenterOnSelection();
 	}
-	else if (m_MovingToTarget)
+	
+	if (m_MovingToTarget)
 	{
 		MoveToTarget();
 	}
@@ -844,8 +845,7 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 		return; // No selected entities to center on
 	}
 
-	m_MovingToTarget = true;
-	MoveToTarget();
+	m_MovingToSelectionCenter = true;
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
