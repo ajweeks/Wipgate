@@ -11,6 +11,7 @@
 #include "GeneralFunctionLibrary_CPP.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "Components/StaticMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
@@ -51,12 +52,27 @@ void ARTS_Unit::SetTeamMaterial()
 {
 	ARTS_Entity::SetTeamMaterial();
 
+	//Set skeletal mesh color
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh && mesh->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
 		bodyMatInst->SetVectorParameterValue("TeamColor", Team->Color);
 		mesh->SetReceivesDecals(false);
+	}
+
+	//Set hat team color
+	if (Headpiece && Headpiece->GetMaterials().Num() > 0)
+	{
+		UMaterialInstanceDynamic* hatMatInst = Headpiece->CreateAndSetMaterialInstanceDynamicFromMaterial(0, Headpiece->GetMaterial(0));
+		hatMatInst->SetVectorParameterValue("TeamColor", Team->Color);
+		Headpiece->SetReceivesDecals(false);
+	}
+
+	//Disable decals on weapons
+	if (Weapon)
+	{
+		Weapon->SetReceivesDecals(false);
 	}
 }
 
