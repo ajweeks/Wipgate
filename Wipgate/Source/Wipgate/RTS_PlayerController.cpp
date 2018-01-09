@@ -542,12 +542,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		ARTS_Entity* selectedEntity = m_RTS_GameState->SelectedEntities[0];
 		if (selectedEntity->Health <= 0)
 		{
-			//selectedEntity->Kill();
 			selectedEntity = nullptr;
 			m_RTS_GameState->SelectedEntities.Empty();
 			UpdateSelectedEntitiesBase();
 		}
-		else
+		else if (selectedEntity->IsSelectable())
 		{
 			m_RTSHUD->ShowSelectedEntityStats(selectedEntity);
 		}
