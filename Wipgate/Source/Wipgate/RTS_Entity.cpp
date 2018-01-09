@@ -389,9 +389,9 @@ void ARTS_Entity::Kill()
 	gameState->OnDeathDelegate.Broadcast(this);
 
 	// Play sound
-	if (Sound)
+	if (DeathSound)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), Sound);
+		UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
 	}
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();
