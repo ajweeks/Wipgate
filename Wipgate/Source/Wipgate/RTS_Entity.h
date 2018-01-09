@@ -79,7 +79,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool Immaterial = false;
 
-	bool IsSelectable() const;
+	bool IsSelectableByPlayer() const;
 
 public:
 	/* Public blueprint editable variables */
