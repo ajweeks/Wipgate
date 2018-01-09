@@ -62,6 +62,13 @@ void ARTS_PlayerController::BeginPlay()
 		{
 			startingLocation = playerSpawner->GetActorLocation();
 		}
+
+		m_LevelBounds = castedGameMode->GetLevelBounds();
+		if (!m_LevelBounds)
+		{
+			PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
+		}
+
 	}
 
 	m_RTS_CameraPawn->SetActorLocation(startingLocation);
@@ -146,11 +153,6 @@ void ARTS_PlayerController::BeginPlay()
 	if (m_RTSHUD)
 	{
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
-	}
-
-	if (!m_LevelBounds)
-	{
-		PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
 	}
 
 	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
@@ -272,7 +274,14 @@ return;
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
+	if (IsPaused())
+	{
+		m_ClickStartSS = FVector2D::ZeroVector;
+		m_ClickEndSS = FVector2D::ZeroVector;
+
+		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
+	}
+	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
 
@@ -307,6 +316,7 @@ return;
 	if (m_MovingToTarget)
 	{
 		MoveToTarget();
+		return;
 	}
 	else if (m_MovingToSelectionCenter)
 	{
