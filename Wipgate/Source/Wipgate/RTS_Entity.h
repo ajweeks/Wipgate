@@ -162,7 +162,10 @@ public:
 
 	//Sounds
 	UPROPERTY(EditAnywhere)
-		USoundCue* Sound;
+		USoundCue* DeathSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		USoundCue* AttackSound;
 
 	//Death
 	UPROPERTY(BlueprintReadOnly)
