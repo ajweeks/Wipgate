@@ -284,9 +284,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		return;
 	}
 
-	// Update selection box size if mouse is being dragged
 	if (IsPaused())
 	{
+		// Don't show selection box while paused
 		m_ClickStartSS = FVector2D::ZeroVector;
 		m_ClickEndSS = FVector2D::ZeroVector;
 
@@ -294,6 +294,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
+		// Update selection box size if mouse is being dragged
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
 
 		FVector2D selectionBoxPosition = m_ClickStartSS;
