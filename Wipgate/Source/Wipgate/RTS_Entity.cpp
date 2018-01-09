@@ -463,6 +463,19 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 	}
 }
 
+bool ARTS_Entity::IsSelectable() const
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+	if (aiController)
+	{
+		bool selectable = (Health > 0) && 
+			(aiController->GetCurrentTask() != EUNIT_TASK::OVERDOSED);
+		return selectable;
+	}
+
+	return false;
+}
+
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 {
 	if (effect->Elapsed > EFFECT_INTERVAL)
