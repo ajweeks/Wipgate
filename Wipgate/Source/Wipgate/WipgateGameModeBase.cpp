@@ -2,14 +2,17 @@
 
 #include "WipgateGameModeBase.h"
 #include "Engine/DataTable.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "RTS_Team.h"
 #include "RTS_GameState.h"
 #include "RTS_Entity.h"
 #include "RTS_PlayerController.h"
-#include "RTS_EntitySpawnerBase.h"
+#include "RTS_EntitySpawner.h"
+#include "RTS_PlayerSpawner.h"
 #include "RTS_GameInstance.h"
 #include "RTS_LevelEnd.h"
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "RTS_PlayerSpawner.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -83,7 +86,7 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	//Check if there are still nullpts
+	//Check if there are still null teams
 	for (ARTS_Entity* entity : gamestate->Entities)
 	{
 		if (entity->Team == nullptr)
@@ -103,18 +106,30 @@ void AWipgateGameModeBase::BeginPlay()
 		entity->PostInitialize();
 	}
 
-	//Spawn actors
-	TArray<AActor*> actors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawnerBase::StaticClass(), actors);
-	for (auto actor : actors)
-	{
-		ARTS_EntitySpawnerBase* entitySpawn = Cast<ARTS_EntitySpawnerBase>(actor);
-		entitySpawn->SpawnEntities();
-	}
-
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
-	{
+		{
+		//Spawn entities
+		TArray<AActor*> actors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
+		for (auto actor : actors)
+		{
+			ARTS_EntitySpawner* entitySpawn = Cast<ARTS_EntitySpawner>(actor);
+
+			//Percentual chance of spawning
+			float rand = FMath::FRandRange(0, 1);
+			if (rand < BaseSpawnChance + (gameinstance->CurrentRound * SpawnChanceRoundIncrease) + entitySpawn->SpawnModifier)
+			{
+				entitySpawn->SpawnEntities();
+			}
+		}
+		actors.Empty();
+
+		//Spawn player
+		auto playerspawner = GetPlayerSpawner();
+		if(playerspawner)
+			playerspawner->SpawnEntities();
+
 		for (auto team : gamestate->Teams)
 		{
 			//Empty all upgrades
@@ -158,28 +173,6 @@ void AWipgateGameModeBase::BeginPlay()
 	else
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
-	}
-
-	//Get all endzones
-	TArray<AActor*> levelends;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelends);
-
-	if (levelends.Num() > 0)
-	{
-		//Get potential end zone
-		int index = FMath::RandRange(0, levelends.Num() - 1);
-
-		//Destroy any endzone that wasn't selected
-		for (int i = levelends.Num() - 1; i >= 0; --i)
-		{
-			if (i == index)
-				continue;
-			levelends[i]->Destroy();
-		}
-	}
-	else
-	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No level end found!"));
 	}
 }
 
@@ -236,4 +229,62 @@ void AWipgateGameModeBase::NextLevel()
 
 	//Open same level
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
+}
+
+ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
+{
+	if (m_PlayerSpawner)
+	{
+		return m_PlayerSpawner;
+	}
+
+	TArray<AActor*> playerSpawners;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), playerSpawners);
+
+	if (playerSpawners.Num() >= 1)
+	{
+		m_PlayerSpawner = Cast<ARTS_PlayerSpawner>(playerSpawners[0]);
+		return m_PlayerSpawner;
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("No player spawner found in map!"));
+		return nullptr;
+	}
+}
+
+ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
+{
+	if (m_LevelEnd)
+	{
+		return m_LevelEnd;
+	}
+
+	TArray<AActor*> levelEnds;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelEnds);
+
+	if (levelEnds.Num() > 0)
+	{
+		//Get potential end zone
+		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
+
+		//Destroy any endzone that wasn't selected
+		for (int i = levelEnds.Num() - 1; i >= 0; --i)
+		{
+			if (i == chosenEndZoneIndex)
+			{
+				m_LevelEnd = Cast<ARTS_LevelEnd>(levelEnds[i]);
+			}
+			else
+			{
+				levelEnds[i]->Destroy();
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("No level end found in map!"));
+	}
+
+	return m_LevelEnd;
 }

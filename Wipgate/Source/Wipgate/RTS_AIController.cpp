@@ -463,7 +463,7 @@ void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const 
 	command->Target = location;
 	command->IsForced = isForced;
 
-	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING && m_CurrentTask != EUNIT_TASK::CASTING)
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);

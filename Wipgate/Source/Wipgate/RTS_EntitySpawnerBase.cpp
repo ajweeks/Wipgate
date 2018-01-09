@@ -43,5 +43,8 @@ void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignme
 void ARTS_EntitySpawnerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	DrawDebugCircle(GetWorld(), GetActorLocation(), Radius, 36, FColor::Red, false, 0.f, (uint8)'\000', 3.f, FVector(1.f, 0.f, 0.f), FVector(0.f, 1.f, 0.f), false);
+	FColor color = FColor::Red;
+	if (m_IsActive)
+		color = FColor::Green;
+	DrawDebugCircle(GetWorld(), GetActorLocation(), Radius, 36, color, false, 0.f, (uint8)'\000', 3.f, FVector(1.f, 0.f, 0.f), FVector(0.f, 1.f, 0.f), false);
 }

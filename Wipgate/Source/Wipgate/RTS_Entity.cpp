@@ -60,47 +60,6 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->SetCastShadow(false);
 		MinimapIcon->CastShadow = 1;
 	}
-
-	// Vision debugging meshes
-	{
-		RangeInnerVisionColor = FLinearColor(0.0f, 0.9f, 0.0f, 1.0f);
-		RangeAttackColor = FLinearColor(0.9f, 0.0f, 0.0f, 1.0f);
-		RangeOuterVisionColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
-
-		UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
-		innerVision->SetupAttachment(RootComponent);
-		innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		innerVision->SetReceivesDecals(false);
-		innerVision->SetVisibility(false);
-		DebugMeshes.Push(innerVision);
-
-		UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
-		attackRange->SetupAttachment(RootComponent);
-		attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		attackRange->SetReceivesDecals(false);
-		attackRange->SetVisibility(false);
-		DebugMeshes.Push(attackRange);
-
-		UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
-		outerVision->SetupAttachment(RootComponent);
-		outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		outerVision->SetReceivesDecals(false);
-		outerVision->SetVisibility(false);
-		DebugMeshes.Push(outerVision);
-
-		ConstructorHelpers::FObjectFinder<UStaticMesh> cylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
-		if (cylinderMesh.Succeeded())
-		{
-			innerVision->SetStaticMesh(cylinderMesh.Object);
-			attackRange->SetStaticMesh(cylinderMesh.Object);
-			outerVision->SetStaticMesh(cylinderMesh.Object);
-		}
-		else
-		{
-			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Failed to find mesh at \"/Engine/BasicShapes/Cylinder.Cylinder\""));
-		}
-	}
-
 }
 
 // Called when the game starts
@@ -123,17 +82,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 	if (TimerRateOfFire > 0)
 	{
 		TimerRateOfFire -= DeltaTime;
-		UE_LOG(LogTemp, Log, TEXT("Cooldown: %f"), TimerRateOfFire);
 		if (TimerRateOfFire <= 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Cooldown over"));
 			m_IsAttackOnCooldown = false;
 		}
-	}
-
-	if (TimerRateOfFire <= 0 && TimerAttack > 0)
-	{
-		TimerAttack -= DeltaTime;
 	}
 
 	/* Update movement stats */
@@ -184,6 +136,11 @@ void ARTS_Entity::Tick(float DeltaTime)
 bool ARTS_Entity::IsSelected() const
 {
 	return Selected;
+}
+
+FVector ARTS_Entity::GetGroundLocation()
+{
+	return GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
 void ARTS_Entity::SetTeamMaterial()
@@ -250,20 +207,9 @@ void ARTS_Entity::PostInitialize()
 	Health = BaseDefenceStats.MaxHealth;
 	CurrentVisionStats = BaseVisionStats;
 
-	//TODO: Remove hardcoding
 	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
 
 	SetSelected(false);
-
-	for (auto debugMesh : DebugMeshes)
-	{
-		debugMesh->SetVisibility(ShowRange);
-	}
-
-	if (ShowRange)
-	{
-		SetRangeDebug();
-	}
 
 	// Bars
 	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
@@ -364,6 +310,18 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentMovementStats.Speed -= effect->Magnitude;
 		break;
 
+	case EUnitEffectStat::ATTACK_RATE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			break;
+		else
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown += FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			GetMesh()->GlobalAnimRateScale -= percentage;
+		}
+		break;
+
 	default:
 		break;
 	}
@@ -379,69 +337,6 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	if (effect->ConstantParticles)
 	{
 		effect->StopParticleConstant();
-	}
-}
-
-void ARTS_Entity::DisableDebug()
-{
-	for (UStaticMeshComponent* debugMesh : DebugMeshes)
-	{
-		UActorComponent* actor = Cast<UActorComponent>(debugMesh);
-		actor->DestroyComponent();
-	}
-	DebugMeshes.Empty();
-}
-
-void ARTS_Entity::SetRangeDebug()
-{
-	if (DebugMeshes.Num() < 3)
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > Not all debug meshes were properly initialized!"));
-		return;
-	}
-
-	UStaticMeshComponent* innerVision = DebugMeshes[0];
-	UStaticMeshComponent* attackRange = DebugMeshes[1];
-	UStaticMeshComponent* outerVision = DebugMeshes[2];
-
-	if (RangeMesh)
-	{
-		innerVision->SetStaticMesh(RangeMesh);
-		attackRange->SetStaticMesh(RangeMesh);
-		outerVision->SetStaticMesh(RangeMesh);
-
-		FVector size;
-
-		size.X = CurrentVisionStats.InnerRange / 50.f;
-		size.Y = size.X;
-		size.Z = RangeHeight;
-		innerVision->SetWorldScale3D(size);
-
-		size.X = CurrentAttackStats.Range / 50.f;
-		size.Y = size.X;
-		attackRange->SetWorldScale3D(size);
-
-		size.X = CurrentVisionStats.OuterRange / 50.f;
-		size.Y = size.X;
-		outerVision->SetWorldScale3D(size);
-	}
-	else
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid mesh found!"));
-	}
-
-	if (RangeMaterial)
-	{
-		UMaterialInstanceDynamic* iMaterial = innerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		iMaterial->SetVectorParameterValue(RangeColorParameterName, RangeInnerVisionColor);
-		UMaterialInstanceDynamic* aMaterial = attackRange->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		aMaterial->SetVectorParameterValue(RangeColorParameterName, RangeAttackColor);
-		UMaterialInstanceDynamic* oMaterial = outerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		oMaterial->SetVectorParameterValue(RangeColorParameterName, RangeOuterVisionColor);
-	}
-	else
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid material found!"));
 	}
 }
 
@@ -589,6 +484,8 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
+
+			break;
 		default:
 			break;
 		}
@@ -629,6 +526,15 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude;
 			break;
+
+		case EUnitEffectStat::ATTACK_RATE:
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown -= FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			GetMesh()->GlobalAnimRateScale += percentage;
+			break;
+		}
 
 		default:
 			break;

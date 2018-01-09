@@ -69,7 +69,7 @@ FLinearColor UUI_Bar::GetHealthBarColor()
 	}
 
 	FLinearColor result = FLinearColor::White;
-	if (EntityRef)
+	if (EntityRef && EntityRef->Team)
 	{
 		result = EntityRef->Team->Color;
 	}

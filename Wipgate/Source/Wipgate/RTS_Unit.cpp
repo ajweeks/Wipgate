@@ -6,8 +6,10 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "AI/Navigation/NavigationPath.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "AIController.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "RTS_PlayerController.h"
 #include "RTS_Team.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
@@ -55,6 +57,23 @@ void ARTS_Unit::SetTeamMaterial()
 
 void ARTS_Unit::Kill()
 {
+	//Spawn currency particle
+	auto transform = GetActorTransform();
+	if (CurrencyEffectClass)
+		GetWorld()->SpawnActor(CurrencyEffectClass, &transform);
+
+	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (playercontroller)
+	{
+		//Add currency
+		int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);
+		playercontroller->AddLuma(amount);
+	}
+	else
+	{
+		UE_LOG(RTS_UNIT_LOG, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
+	}
+
 	ARTS_Entity::Kill();
 
 	USkeletalMeshComponent* skeletalMesh = GetMesh();
