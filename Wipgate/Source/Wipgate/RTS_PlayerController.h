@@ -43,7 +43,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities);
 
-	void UpdateSelectedEntities();
+	UFUNCTION(BlueprintCallable)
+		void UpdateSelectedEntitiesBase();
 
 	// Abillity icon button press callbacks
 	// Specialst ability callbacks

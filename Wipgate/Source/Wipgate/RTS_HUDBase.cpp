@@ -181,5 +181,11 @@ void URTS_HUDBase::DeselectEntity(ARTS_Entity* Entity)
 	ARTS_GameState* RTS_GameState = Cast<ARTS_GameState>(baseGameState);
 
 	RTS_GameState->SelectedEntities.Remove(Entity);
-	UpdateSelectedEntities(RTS_GameState->SelectedEntities, true);
+
+	APlayerController* pc = GetWorld()->GetFirstPlayerController();
+	ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(pc);
+	if (rtsPlayerController)
+	{
+		rtsPlayerController->UpdateSelectedEntitiesBase();
+	}
 }

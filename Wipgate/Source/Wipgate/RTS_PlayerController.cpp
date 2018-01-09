@@ -215,7 +215,7 @@ void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 	m_EdgeMovementEnabled = enabled;
 }
 
-void ARTS_PlayerController::UpdateSelectedEntities()
+void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); /* */)
 	{
@@ -480,7 +480,7 @@ return;
 				if (m_RTS_GameState->SelectedEntities.Contains(entity))
 				{
 					m_RTS_GameState->SelectedEntities.Remove(entity);
-					UpdateSelectedEntities();
+					UpdateSelectedEntitiesBase();
 				}
 			}
 			else // Entity is alive
@@ -537,8 +537,7 @@ return;
 			//selectedEntity->Kill();
 			selectedEntity = nullptr;
 			m_RTS_GameState->SelectedEntities.Empty();
-			UpdateSelectedEntities();
-			m_RTSHUD->HideSelectedEntityStats();
+			UpdateSelectedEntitiesBase();
 		}
 		else
 		{
@@ -817,7 +816,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
-	UpdateSelectedEntities();
+	UpdateSelectedEntitiesBase();
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -892,7 +891,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 
 	m_RTSHUD->OnSelectionGroupSelected(Index - 1);
 
-	UpdateSelectedEntities();
+	UpdateSelectedEntitiesBase();
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
@@ -1051,7 +1050,7 @@ void ARTS_PlayerController::InvertSelection()
 
 		m_RTS_GameState->SelectedEntities = newSelectedEntities;
 
-		UpdateSelectedEntities();
+		UpdateSelectedEntitiesBase();
 	}
 }
 
