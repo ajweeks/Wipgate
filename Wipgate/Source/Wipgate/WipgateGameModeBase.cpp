@@ -13,6 +13,7 @@
 #include "RTS_GameInstance.h"
 #include "RTS_LevelEnd.h"
 #include "RTS_PlayerSpawner.h"
+#include "RTS_LevelBounds.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -287,4 +288,26 @@ ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 	}
 
 	return m_LevelEnd;
+}
+
+ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
+{
+	if (m_LevelBounds)
+	{
+		return m_LevelBounds;
+	}
+
+	TArray<AActor*> levelBoundsObjects;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelBounds::StaticClass(), levelBoundsObjects);
+
+	if (levelBoundsObjects.Num() >=	1)
+	{
+		m_LevelBounds = Cast<ARTS_LevelBounds>(levelBoundsObjects[0]);
+	}
+	else
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("No level bounds found in map!"));
+	}
+
+	return m_LevelBounds;
 }

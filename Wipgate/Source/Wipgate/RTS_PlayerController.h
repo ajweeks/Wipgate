@@ -43,7 +43,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateSelectedEntities(const TArray<ARTS_Entity*>& SelectedEntities);
 
-	void UpdateSelectedEntities();
+	UFUNCTION(BlueprintCallable)
+		void UpdateSelectedEntitiesBase();
 
 	// Abillity icon button press callbacks
 	// Specialst ability callbacks
@@ -269,6 +270,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
+	bool m_ReturnedToStartAfterViewingEnd = false;
+
+	FVector m_LevelStartLocation;
+	FVector m_LevelEndLocation;
+
 	bool m_MovingToSelectionCenter = false;
 	float m_MovingToSelectionCenterThreshold = 5.0f;
 	bool m_MovingToTarget = false;
@@ -281,8 +287,7 @@ private:
 	bool m_ZoomingToTarget = false; // True when we are zooming in but haven't yet reached our target zoom
 	float m_TargetZoomArmLength;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
-		TLazyObjectPtr<ARTS_LevelBounds> m_LevelBounds;
+	ARTS_LevelBounds* m_LevelBounds;
 
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
 	int32 m_CurrentLuma = 0;

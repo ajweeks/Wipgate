@@ -18,4 +18,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FEntitySpawn> EntitySpawns;
+
+
+	//Modifies the spawn rate on top of the spawn rate defined in the gamemode
+	UPROPERTY(EditAnywhere, meta = (ClampMin = "-1.0", ClampMax = "1.0", UIMin = "-1.0", UIMax = "1.0"))
+		float SpawnModifier = 0.f;
 };

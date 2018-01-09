@@ -54,17 +54,29 @@ void ARTS_PlayerController::BeginPlay()
 	
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
 	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
-	FVector startingLocation = FVector::ZeroVector;
+	m_LevelStartLocation = FVector::ZeroVector;
 	if (castedGameMode)
 	{
 		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
 		if (playerSpawner)
 		{
-			startingLocation = playerSpawner->GetActorLocation();
+			m_LevelStartLocation = playerSpawner->GetActorLocation();
+		}
+
+		m_LevelBounds = castedGameMode->GetLevelBounds();
+		if (!m_LevelBounds)
+		{
+			PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
+		}
+
+		ARTS_LevelEnd* levelEnd = castedGameMode->GetLevelEnd();
+		if (levelEnd)
+		{
+			m_LevelEndLocation = levelEnd->GetActorLocation();
 		}
 	}
 
-	m_RTS_CameraPawn->SetActorLocation(startingLocation);
+	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
 	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
 
 	// Move to level end after delay (to let world load in)
@@ -148,11 +160,6 @@ void ARTS_PlayerController::BeginPlay()
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
 	}
 
-	if (!m_LevelBounds)
-	{
-		PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
-	}
-
 	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (!gameinstance)
 	{
@@ -213,7 +220,7 @@ void ARTS_PlayerController::SetEdgeMovementEnabled(bool enabled)
 	m_EdgeMovementEnabled = enabled;
 }
 
-void ARTS_PlayerController::UpdateSelectedEntities()
+void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 {
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); /* */)
 	{
@@ -268,11 +275,18 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	if (!m_RTS_GameState ||!m_RTSHUD)
 	{
-return;
+		return;
 	}
 
 	// Update selection box size if mouse is being dragged
-	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
+	if (IsPaused())
+	{
+		m_ClickStartSS = FVector2D::ZeroVector;
+		m_ClickEndSS = FVector2D::ZeroVector;
+
+		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
+	}
+	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
 
@@ -298,14 +312,18 @@ return;
 		}
 	}
 
-	// TODO: Find out how to use input mapped key
-	if (IsInputKeyDown(EKeys::SpaceBar))
+	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 	{
-		ActionCenterOnSelection();
+		if (IsInputKeyDown(EKeys::SpaceBar))
+		{
+			ActionCenterOnSelection();
+		}
 	}
-	else if (m_MovingToTarget)
+	
+	if (m_MovingToTarget)
 	{
 		MoveToTarget();
+		return;
 	}
 	else if (m_MovingToSelectionCenter)
 	{
@@ -319,56 +337,51 @@ return;
 	*/
 	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 	{
-		FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
-		FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
-		forwardVec.Z = 0; // Only move along XY plane
-		forwardVec.Normalize();
-
-		float camDistSpeedMultiplier = 0.0f;
-		UWorld* world = GetWorld();
-		if (!world)
+		if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 		{
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
-		}
-		else
-		{
-			camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
-		}
+			FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
+			FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
+			forwardVec.Z = 0; // Only move along XY plane
+			forwardVec.Normalize();
 
-		FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
-		FVector targetDCamLocation;
+			float camDistSpeedMultiplier = 0.0f;
+			UWorld* world = GetWorld();
+			if (!world)
+			{
+				UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
+			}
+			else
+			{
+				camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
+			}
 
-		FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
-		if (normMousePos.X > 1.0f - m_EdgeSize)
-		{
-			targetDCamLocation = rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
-		}
-		else if (normMousePos.X < m_EdgeSize)
-		{
-			targetDCamLocation = -rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
-		}
+			FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
+			FVector targetDCamLocation;
 
-		if (normMousePos.Y > 1.0f - m_EdgeSize)
-		{
-			targetDCamLocation = -forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
-		}
-		else if (normMousePos.Y < m_EdgeSize)
-		{
-			targetDCamLocation = forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
-		}
+			FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+			if (normMousePos.X > 1.0f - m_EdgeSize)
+			{
+				targetDCamLocation = rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+			}
+			else if (normMousePos.X < m_EdgeSize)
+			{
+				targetDCamLocation = -rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+			}
 
-		targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
+			if (normMousePos.Y > 1.0f - m_EdgeSize)
+			{
+				targetDCamLocation = -forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+			}
+			else if (normMousePos.Y < m_EdgeSize)
+			{
+				targetDCamLocation = forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+			}
 
-		m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
+			targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
+
+			m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
+		}
 	}
-
-
-	bool showViewportOnMinimap = true;
-	if (showViewportOnMinimap)
-	{
-		// TODO: Implement
-	}
-
 
 	static const auto mainClickKeys = PlayerInput->GetKeysForAction("Primary Click");
 	static const FKey mainClickButton = mainClickKeys[0].Key;
@@ -462,14 +475,14 @@ return;
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
+		if (!SelectedAbility && entity->Team && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 		{
 			if (entityIsDead)
 			{
 				if (m_RTS_GameState->SelectedEntities.Contains(entity))
 				{
 					m_RTS_GameState->SelectedEntities.Remove(entity);
-					UpdateSelectedEntities();
+					UpdateSelectedEntitiesBase();
 				}
 			}
 			else // Entity is alive
@@ -526,8 +539,7 @@ return;
 			//selectedEntity->Kill();
 			selectedEntity = nullptr;
 			m_RTS_GameState->SelectedEntities.Empty();
-			UpdateSelectedEntities();
-			m_RTSHUD->HideSelectedEntityStats();
+			UpdateSelectedEntitiesBase();
 		}
 		else
 		{
@@ -806,7 +818,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
-	UpdateSelectedEntities();
+	UpdateSelectedEntitiesBase();
 }
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
@@ -844,8 +856,7 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 		return; // No selected entities to center on
 	}
 
-	m_MovingToTarget = true;
-	MoveToTarget();
+	m_MovingToSelectionCenter = true;
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
@@ -882,7 +893,7 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 
 	m_RTSHUD->OnSelectionGroupSelected(Index - 1);
 
-	UpdateSelectedEntities();
+	UpdateSelectedEntitiesBase();
 }
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
@@ -1041,7 +1052,7 @@ void ARTS_PlayerController::InvertSelection()
 
 		m_RTS_GameState->SelectedEntities = newSelectedEntities;
 
-		UpdateSelectedEntities();
+		UpdateSelectedEntitiesBase();
 	}
 }
 
@@ -1234,41 +1245,26 @@ void ARTS_PlayerController::MoveToTarget()
 	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
 	{
 		m_MovingToTarget = false;
+
+		if (m_MoveToLevelEndAtStartup && m_TargetLocation.Equals(m_LevelStartLocation, 0.1f))
+		{
+			m_ReturnedToStartAfterViewingEnd = true;
+		}
 	}
 }
 
 void ARTS_PlayerController::StartMovingToLevelEnd()
 {
-	auto baseGameMode = GetWorld()->GetAuthGameMode();
-	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
-	FVector startingLocation = FVector::ZeroVector;
-	if (castedGameMode)
-	{
-		ARTS_LevelEnd* levelEnd = castedGameMode->GetLevelEnd();
-		if (levelEnd)
-		{
-			m_TargetLocation = levelEnd->GetActorLocation();
-			m_MovingToTarget = true;
-			FTimerHandle UnusedHandle;
-			GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARTS_PlayerController::StartMovingToLevelStart, m_DelayBeforeMovingBackToLevelStart, false);
-		}
-	}
+	m_TargetLocation = m_LevelEndLocation;
+	m_MovingToTarget = true;
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ARTS_PlayerController::StartMovingToLevelStart, m_DelayBeforeMovingBackToLevelStart, false);
 }
 
 void ARTS_PlayerController::StartMovingToLevelStart()
 {
-	auto baseGameMode = GetWorld()->GetAuthGameMode();
-	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
-	FVector startingLocation = FVector::ZeroVector;
-	if (castedGameMode)
-	{
-		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
-		if (playerSpawner)
-		{
-			m_TargetLocation = playerSpawner->GetActorLocation();
-			m_MovingToTarget = true;
-		}
-	}
+	m_TargetLocation = m_LevelStartLocation;
+	m_MovingToTarget = true;
 }
 
 FVector ARTS_PlayerController::ClampCamPosWithBounds(FVector camPos)
