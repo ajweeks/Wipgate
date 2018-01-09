@@ -50,7 +50,7 @@ void ARTS_Unit::SetTeamMaterial()
 	if (mesh && mesh->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
-		bodyMatInst->SetVectorParameterValue("BodyColor", Team->Color);
+		bodyMatInst->SetVectorParameterValue("TeamColor", Team->Color);
 		mesh->SetReceivesDecals(false);
 	}
 }
