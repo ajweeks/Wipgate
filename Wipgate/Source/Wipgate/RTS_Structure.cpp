@@ -29,6 +29,6 @@ void ARTS_Structure::SetTeamMaterial()
 	if (StaticMeshComponent && StaticMeshComponent->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* matInst = StaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, StaticMeshComponent->GetMaterial(0));
-		matInst->SetVectorParameterValue("BodyColor", Team->Color);
+		matInst->SetVectorParameterValue("TeamColor", Team->Color);
 	}
 }

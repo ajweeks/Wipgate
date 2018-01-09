@@ -11,6 +11,7 @@
 class URTS_Team;
 class ARTS_PlayerSpawner;
 class ARTS_LevelEnd;
+class ARTS_LevelBounds;
 
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
@@ -31,8 +32,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void NextLevel();
 
-	ARTS_PlayerSpawner* GetPlayerSpawner();
-	ARTS_LevelEnd* GetLevelEnd();
+	UFUNCTION(BlueprintCallable)
+		ARTS_PlayerSpawner* GetPlayerSpawner();
+
+	UFUNCTION(BlueprintCallable)
+		ARTS_LevelEnd* GetLevelEnd();
+
+	UFUNCTION(BlueprintCallable)
+		ARTS_LevelBounds* GetLevelBounds();
 
 private:
 	//Make sure the datatable is inheriting from FTeamRow
@@ -52,6 +59,7 @@ private:
 		float SpawnChanceRoundIncrease = 0.05f;
 
 	ARTS_LevelEnd* m_LevelEnd;
-
 	ARTS_PlayerSpawner* m_PlayerSpawner;
+	ARTS_LevelBounds* m_LevelBounds;
+
 };
