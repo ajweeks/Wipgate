@@ -303,7 +303,8 @@ return;
 	{
 		ActionCenterOnSelection();
 	}
-	else if (m_MovingToTarget)
+	
+	if (m_MovingToTarget)
 	{
 		MoveToTarget();
 	}
@@ -844,8 +845,7 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 		return; // No selected entities to center on
 	}
 
-	m_MovingToTarget = true;
-	MoveToTarget();
+	m_MovingToSelectionCenter = true;
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
@@ -992,10 +992,7 @@ void ARTS_PlayerController::CreateSpecialistAbilityButtons()
 
 		for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 		{
-			FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));
-			FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
-
-			m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
+			m_RTSHUD->UpdateSpecialistAbilityIconProperties(i);
 		}
 	}
 }
@@ -1013,10 +1010,7 @@ void ARTS_PlayerController::UpdateSpecialistAbilityButtons(ARTS_Specialist* Spec
 		{
 			for (int32 i = 0; i < m_SpecialistShowingAbilities->NUM_ABILITIES; ++i)
 			{
-				FLinearColor progressBarBGCol = (i == 0 ? FLinearColor::Red : (i == 1 ? FLinearColor::Blue : FLinearColor::Green));;
-				FLinearColor buttonBGCol = progressBarBGCol.Desaturate(0.5f);
-
-				m_RTSHUD->UpdateSpecialistAbilityIconProperties(i, buttonBGCol, progressBarBGCol);
+				m_RTSHUD->UpdateSpecialistAbilityIconProperties(i);
 			}
 		}
 	}

@@ -66,7 +66,7 @@ public:
 		void ShowSpecialistAbilityIcons(ARTS_Specialist* Specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateSpecialistAbilityIconProperties(int32 Index, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor);
+		void UpdateSpecialistAbilityIconProperties(int32 Index);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ClearSpecialistAbilityIcons();
