@@ -392,7 +392,7 @@ void ARTS_Entity::Kill()
 	// Play sound
 	if (DeathSound)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), DeathSound);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
 	}
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();

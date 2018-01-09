@@ -15,6 +15,7 @@ class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
 class USoundCue;
+class USoundConcurrency;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -173,11 +174,17 @@ public:
 	bool ShowingAbilityIcons = false;
 
 	//Sounds
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Sound")
 		USoundCue* DeathSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundCue* AttackSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundAttenuation* SoundAttenuation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundConcurrency* SoundConcurrency;
 
 	//Death variables
 	UPROPERTY(BlueprintReadOnly)
