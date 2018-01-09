@@ -270,6 +270,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
+	bool m_ReturnedToStartAfterViewingEnd = false;
+
+	FVector m_LevelStartLocation;
+	FVector m_LevelEndLocation;
+
 	bool m_MovingToSelectionCenter = false;
 	float m_MovingToSelectionCenterThreshold = 5.0f;
 	bool m_MovingToTarget = false;
