@@ -44,10 +44,10 @@ public:
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AActor> DeathEffectClass;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Visual")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Visual")
 		UStaticMeshComponent* Headpiece = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Visual")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Visual")
 		UStaticMeshComponent* Weapon = nullptr;
 private:
 	
