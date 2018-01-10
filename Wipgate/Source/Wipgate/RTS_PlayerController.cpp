@@ -300,6 +300,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		m_ClickEndSS = FVector2D::ZeroVector;
 
 		m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
+
+		return;
 	}
 	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
@@ -570,12 +572,20 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 void ARTS_PlayerController::ActionPrimaryClickPressed()
 {
-	m_ClickStartSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
+	if (!IsPaused())
+	{
+		m_ClickStartSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
+	}
 }
 
 void ARTS_PlayerController::ActionPrimaryClickReleased()
 {
 	if (!m_RTS_GameState || !m_RTSHUD)
+	{
+		return;
+	}
+
+	if (IsPaused())
 	{
 		return;
 	}
@@ -894,6 +904,11 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity*>& selectionGroupArray)
 {
+	if (IsPaused())
+	{
+		return;
+	}
+
 	for (int32 i = 0; i < m_RTS_GameState->SelectedEntities.Num(); ++i)
 	{
 		m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
@@ -909,6 +924,11 @@ void ARTS_PlayerController::ActionSelectionGroup(int32 Index, TArray<ARTS_Entity
 
 void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_Entity*>* SelectionGroup)
 {
+	if (IsPaused())
+	{
+		return;
+	}
+
 	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
 	if (m_RTS_GameState->SelectedEntities.Num() == 0)
@@ -976,6 +996,11 @@ void ARTS_PlayerController::ActionCreateSelectionGroup5()
 
 void ARTS_PlayerController::AxisZoom(float AxisValue)
 {
+	if (IsPaused())
+	{
+		return;
+	}
+
 	if (m_RTS_CameraPawnSpringArmComponent && AxisValue != 0.0f)
 	{
 		float deltaArmLength = -AxisValue * m_FastMoveMultiplier * m_ZoomDistance;
@@ -1040,6 +1065,11 @@ void ARTS_PlayerController::UpdateSpecialistAbilityButtons(ARTS_Specialist* Spec
 
 void ARTS_PlayerController::InvertSelection()
 {
+	if (IsPaused())
+	{
+		return;
+	}
+
 	if (m_RTS_GameState)
 	{
 		ClearSpecialistAbilityButtons();
