@@ -170,6 +170,7 @@ void ARTS_PlayerController::BeginPlay()
 		AddCurrency(1000);
 		AddLuma(1000);
 	}
+	AddLuma(125);
 }
 
 void ARTS_PlayerController::SetupInputComponent()
