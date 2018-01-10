@@ -383,48 +383,47 @@ void ARTS_Entity::Kill()
 	Health = 0;
 	SetSelected(false);
 	LocationOfDeath = GetActorLocation();
-	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
-
-	UWorld* world = GetWorld();
-	if (world)
+	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
+	if (capsuleComponent)
 	{
-		//GameState notification
-		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
-		gameState->OnDeathDelegate.Broadcast(this);
+		ForwardOnDeath = capsuleComponent->GetForwardVector();
 
-		// Play sound
-	if (DeathSound && SoundAttenuation && SoundConcurrency)
+		UWorld* world = GetWorld();
+		if (world)
 		{
-			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
-		}
+			//GameState notification
+			ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
+			gameState->OnDeathDelegate.Broadcast(this);
 
-		AGameStateBase* baseGameState = world->GetGameState();
-		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
-		if (baseGameState && castedGameState)
-		{
-			castedGameState->SelectedEntities.Remove(this);
-			castedGameState->Entities.Remove(this);
-
-			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
-			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
-
-			if (playerController && rtsPlayerController)
+			// Play sound
+			if (DeathSound && SoundAttenuation && SoundConcurrency)
 			{
-				rtsPlayerController->UpdateSpecialistAbilityButtons();
-				URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
-				if (hud)
+				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
+			}
+
+			AGameStateBase* baseGameState = world->GetGameState();
+			ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
+			if (baseGameState && castedGameState)
+			{
+				castedGameState->SelectedEntities.Remove(this);
+				castedGameState->Entities.Remove(this);
+
+				APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+				if (playerController && rtsPlayerController)
 				{
-					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+					rtsPlayerController->UpdateSpecialistAbilityButtons();
+					URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
+					if (hud)
+					{
+						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+					}
 				}
 			}
 		}
-	}
 
-	UCapsuleComponent* capsule = GetCapsuleComponent();
-	if (capsule)
-	{
-		capsule->DestroyComponent();
-		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		capsuleComponent->DestroyComponent();
 		//SetActorTickEnabled(false);
 		//DisableDebug();
 	}
