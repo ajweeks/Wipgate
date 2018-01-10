@@ -23,6 +23,7 @@ void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignme
 		URTS_Team* team = gamemode->GetTeamWithAlignment(alignment);
 		entity->Team = team;
 		team->Entities.Add(entity);
+		entity->Alignment = alignment;
 		entity->PostInitialize();
 		auto gamestate = gamemode->GetGameState<ARTS_GameState>();
 		if (gamestate)
