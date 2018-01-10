@@ -347,6 +347,9 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 {
+	if (Health <= 0)
+		return true;
+
 	//Apply the damage
 	if (armor)
 	{
@@ -380,20 +383,23 @@ void ARTS_Entity::ApplyHealing(int healing)
 
 void ARTS_Entity::Kill()
 {
+	PrintStringToScreen("Kill");
+	UE_LOG(LogTemp, Log, TEXT("Kill"));
 	Health = 0;
 	SetSelected(false);
-	LocationOfDeath = GetActorLocation();
-	ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
 
 	UWorld* world = GetWorld();
 	if (world)
 	{
+		LocationOfDeath = GetActorLocation();
+		ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
+	
 		//GameState notification
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
 		gameState->OnDeathDelegate.Broadcast(this);
 
 		// Play sound
-	if (DeathSound && SoundAttenuation && SoundConcurrency)
+		if (DeathSound && SoundAttenuation && SoundConcurrency)
 		{
 			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
 		}
