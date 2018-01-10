@@ -839,17 +839,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
-	if (SelectedAbility)
-	{
-		SelectedAbility->Deselect();
-		SelectedAbility = nullptr;
-
-		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-	}
-	else
-	{
-		CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-	}
 }
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()
