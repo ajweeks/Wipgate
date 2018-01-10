@@ -337,7 +337,7 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
 	}
 
-	if (RootComponent && effect->ConstantParticles)
+	if (effect->ConstantParticles)
 	{
 		effect->StopParticleConstant();
 	}

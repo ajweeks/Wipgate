@@ -39,6 +39,9 @@ void ARTS_Unit::Tick(float DeltaTime)
 		m_PostKillTimer += DeltaTime;
 		if (m_PostKillTimer > POSTKILLDELAY)
 		{
+			Weapon->SetComponentTickEnabled(false);
+			Headpiece->SetComponentTickEnabled(false);
+
 			USkeletalMeshComponent* skeletalMesh = GetMesh();
 			//skeletalMesh->SetCollisionProfileName("None");
 			skeletalMesh->SetComponentTickEnabled(false);
