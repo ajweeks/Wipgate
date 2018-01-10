@@ -22,13 +22,13 @@ ARTS_Structure::ARTS_Structure()
 
 }
 
-void ARTS_Structure::SetTeamMaterial()
+void ARTS_Structure::SetTeamMaterial(URTS_Team* t)
 {
-	ARTS_Entity::SetTeamMaterial();
+	ARTS_Entity::SetTeamMaterial(t);
 
 	if (StaticMeshComponent && StaticMeshComponent->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* matInst = StaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, StaticMeshComponent->GetMaterial(0));
-		matInst->SetVectorParameterValue("TeamColor", Team->Color);
+		matInst->SetVectorParameterValue("TeamColor", t->Color);
 	}
 }

@@ -14,12 +14,13 @@ void UUI_Bar::InitializeFromOwner(AActor* Owner)
 	if (castedOwner)
 	{
 		EntityRef = castedOwner;
-		if(EntityRef->Team)
-			m_FrozenHealthBarColor = EntityRef->Team->Color.Desaturate(m_FrozenColorDesaturationAmount);
+		if (EntityRef->Team)
+			SetColor(EntityRef->Team->Color);
 	}
 	else
 	{
 		m_FrozenHealthBarColor = FLinearColor::White;
+		m_HealthBarColor = FLinearColor::White;
 		UE_LOG(UI_BAR_LOG, Error, TEXT("UI_Bar's owner is not of type RTS_Entity! Team color will not be set"));
 	}
 
@@ -68,13 +69,7 @@ FLinearColor UUI_Bar::GetHealthBarColor()
 		return m_FrozenHealthBarColor;
 	}
 
-	FLinearColor result = FLinearColor::White;
-	if (EntityRef && EntityRef->Team)
-	{
-		result = EntityRef->Team->Color;
-	}
-
-	return result;
+	return m_HealthBarColor;
 }
 
 FLinearColor UUI_Bar::GetLumaBarColor()
@@ -85,4 +80,10 @@ FLinearColor UUI_Bar::GetLumaBarColor()
 	}
 
 	return m_LumaBarColor;
+}
+
+void UUI_Bar::SetColor(FLinearColor color)
+{
+	m_HealthBarColor = color;
+	m_FrozenHealthBarColor = color.Desaturate(m_FrozenColorDesaturationAmount);
 }
