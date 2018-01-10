@@ -265,7 +265,7 @@ void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-			RemoveUnitEffect(e);
+			e->IsFinished = true;
 	}
 }
 
@@ -331,18 +331,18 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 		break;
 	}
 
-	UnitEffects.Remove(effect);
-
 	// stop particle systems
-	if (effect->EndParticles)
+	if (RootComponent && effect->EndParticles)
 	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
 	}
 
-	if (effect->ConstantParticles)
+	if (RootComponent && effect->ConstantParticles)
 	{
 		effect->StopParticleConstant();
 	}
+	
+	UnitEffects.Remove(effect);
 }
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
@@ -383,8 +383,6 @@ void ARTS_Entity::ApplyHealing(int healing)
 
 void ARTS_Entity::Kill()
 {
-	PrintStringToScreen("Kill");
-	UE_LOG(LogTemp, Log, TEXT("Kill"));
 	Health = 0;
 	SetSelected(false);
 
@@ -527,7 +525,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		}
 
 		// spawn particles and reset time
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
@@ -540,7 +538,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	if (effect->Ticks == 0)
 	{
 		effect->Ticks++;
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
