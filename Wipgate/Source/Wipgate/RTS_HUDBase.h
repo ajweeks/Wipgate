@@ -61,14 +61,29 @@ public:
 
 
 	// Ability icon functions
+	// Specialist ability icons
 	UFUNCTION(BlueprintImplementableEvent)
-		void AddAbilityIconToCommandCardGrid(ARTS_Specialist* Specialist);
+		void ShowSpecialistAbilityIcons(ARTS_Specialist* Specialist);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateAbilityIconProperties(int32 Index, int32 Column, int32 Row, FLinearColor ButtonBackgroundColor, FLinearColor ProgressBarBackgroundColor);
+		void UpdateSpecialistAbilityIconProperties(int32 Index);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ClearAbilityIconsFromCommandCardGrid();
+		void ClearSpecialistAbilityIcons();
+
+	// Luma ability icons
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowLumaAbilityIcons();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideLumaAbilityIcons();
+
+	// Movement ability icons
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowMovementAbilityIcons();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideMovementAbilityIcons();
 
 
 	// Entity stats functions

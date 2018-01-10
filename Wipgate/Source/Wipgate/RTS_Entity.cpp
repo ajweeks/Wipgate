@@ -10,22 +10,23 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/DataTable.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/CollisionProfile.h"
-#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 #include "UnitEffect.h"
-#include "AbilityIcon.h"
 #include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "RTS_AIController.h"
+#include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -50,6 +51,7 @@ ARTS_Entity::ARTS_Entity()
 		BarWidget->SetupAttachment(RootComponent);
 		BarWidget->SetReceivesDecals(false);
 		BarWidget->SetCanEverAffectNavigation(false);
+		BarWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		MinimapIcon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Minimap Icon"));
 		MinimapIcon->SetupAttachment(RootComponent);
@@ -58,47 +60,6 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->SetCastShadow(false);
 		MinimapIcon->CastShadow = 1;
 	}
-
-	// Vision debugging meshes
-	{
-		RangeInnerVisionColor = FLinearColor(0.0f, 0.9f, 0.0f, 1.0f);
-		RangeAttackColor = FLinearColor(0.9f, 0.0f, 0.0f, 1.0f);
-		RangeOuterVisionColor = FLinearColor(0.75f, 0.75f, 0.75f, 1.0f);
-
-		UStaticMeshComponent* innerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InnerVisionRange"));
-		innerVision->SetupAttachment(RootComponent);
-		innerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		innerVision->SetReceivesDecals(false);
-		innerVision->SetVisibility(false);
-		DebugMeshes.Push(innerVision);
-
-		UStaticMeshComponent* attackRange = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AttackRange"));
-		attackRange->SetupAttachment(RootComponent);
-		attackRange->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		attackRange->SetReceivesDecals(false);
-		attackRange->SetVisibility(false);
-		DebugMeshes.Push(attackRange);
-
-		UStaticMeshComponent* outerVision = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OuterVisionRange"));
-		outerVision->SetupAttachment(RootComponent);
-		outerVision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		outerVision->SetReceivesDecals(false);
-		outerVision->SetVisibility(false);
-		DebugMeshes.Push(outerVision);
-
-		ConstructorHelpers::FObjectFinder<UStaticMesh> cylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
-		if (cylinderMesh.Succeeded())
-		{
-			innerVision->SetStaticMesh(cylinderMesh.Object);
-			attackRange->SetStaticMesh(cylinderMesh.Object);
-			outerVision->SetStaticMesh(cylinderMesh.Object);
-		}
-		else
-		{
-			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Failed to find mesh at \"/Engine/BasicShapes/Cylinder.Cylinder\""));
-		}
-	}
-
 }
 
 // Called when the game starts
@@ -110,7 +71,11 @@ void ARTS_Entity::BeginPlay()
 void ARTS_Entity::SetSelected(bool selected)
 {
 	Selected = selected;
-	SelectionStaticMeshComponent->SetVisibility(selected, true);
+
+	if (SelectionStaticMeshComponent)
+	{
+		SelectionStaticMeshComponent->SetVisibility(selected, true);
+	}
 }
 
 void ARTS_Entity::Tick(float DeltaTime)
@@ -121,6 +86,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 	if (TimerRateOfFire > 0)
 	{
 		TimerRateOfFire -= DeltaTime;
+		if (TimerRateOfFire <= 0)
+		{
+			m_IsAttackOnCooldown = false;
+		}
 	}
 
 	/* Update movement stats */
@@ -173,12 +142,18 @@ bool ARTS_Entity::IsSelected() const
 	return Selected;
 }
 
+FVector ARTS_Entity::GetGroundLocation()
+{
+	return GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+}
+
 void ARTS_Entity::SetTeamMaterial()
 {
 	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
 	selectionColorHSV.B = SelectionBrightness;
 	FLinearColor selectionColorRGB = selectionColorHSV.HSVToLinearRGB();
-	if (SelectionStaticMeshComponent->GetMaterials().Num() > 0)
+
+	if (SelectionStaticMeshComponent && SelectionStaticMeshComponent->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* selectionMatInst = SelectionStaticMeshComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(0, SelectionStaticMeshComponent->GetMaterial(0));
 		selectionMatInst->SetVectorParameterValue("EmissiveColor", selectionColorRGB);
@@ -218,7 +193,7 @@ void ARTS_Entity::PostInitialize()
 			UUI_Bar* bar = Cast<UUI_Bar>(barUserWidget);
 			if (bar)
 			{
-				bar->Initialize(this);
+				bar->InitializeFromOwner(this);
 			}
 			else
 			{
@@ -234,22 +209,12 @@ void ARTS_Entity::PostInitialize()
 	CurrentMovementStats = BaseMovementStats;
 	CurrentAttackStats = BaseAttackStats;
 	CurrentDefenceStats = BaseDefenceStats;
+	Health = BaseDefenceStats.MaxHealth;
 	CurrentVisionStats = BaseVisionStats;
 
-	//TODO: Remove hardcoding
 	MinimapIcon->SetRelativeLocation(FVector(0, 0, 5000));
 
 	SetSelected(false);
-
-	for (auto debugMesh : DebugMeshes)
-	{
-		debugMesh->SetVisibility(ShowRange);
-	}
-
-	if (ShowRange)
-	{
-		SetRangeDebug();
-	}
 
 	// Bars
 	APawn* playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
@@ -280,14 +245,28 @@ void ARTS_Entity::PostInitialize()
 	SetTeamMaterial();
 }
 
-void ARTS_Entity::SetTeam(URTS_Team* team)
-{
-	Team = team;
-}
-
 TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const
 {
 	return UnitEffects;
+}
+
+bool ARTS_Entity::HasEffectWithTag(FName tag)
+{
+	for (auto e : UnitEffects)
+	{
+		if (e->Tag == tag)
+			return true;
+	}
+	return false;
+}
+
+void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
+{
+	for (auto e : UnitEffects)
+	{
+		if (e->Tag == tag)
+			e->IsFinished = true;
+	}
 }
 
 void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
@@ -336,14 +315,24 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentMovementStats.Speed -= effect->Magnitude;
 		break;
 
+	case EUnitEffectStat::ATTACK_RATE:
+		if (effect->Type == EUnitEffectType::OVER_TIME)
+			break;
+		else
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown += FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			GetMesh()->GlobalAnimRateScale -= percentage;
+		}
+		break;
+
 	default:
 		break;
 	}
 
-	UnitEffects.Remove(effect);
-
 	// stop particle systems
-	if (effect->EndParticles)
+	if (RootComponent && effect->EndParticles)
 	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
 	}
@@ -352,89 +341,31 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	{
 		effect->StopParticleConstant();
 	}
-}
-
-void ARTS_Entity::DisableDebug()
-{
-	for (UStaticMeshComponent* debugMesh : DebugMeshes)
-	{
-		UActorComponent* actor = Cast<UActorComponent>(debugMesh);
-		actor->DestroyComponent();
-	}
-	DebugMeshes.Empty();
-}
-
-void ARTS_Entity::SetRangeDebug()
-{
-	if (DebugMeshes.Num() < 3)
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > Not all debug meshes were properly initialized!"));
-		return;
-	}
-
-	UStaticMeshComponent* innerVision = DebugMeshes[0];
-	UStaticMeshComponent* attackRange = DebugMeshes[1];
-	UStaticMeshComponent* outerVision = DebugMeshes[2];
-
-	if (RangeMesh)
-	{
-		innerVision->SetStaticMesh(RangeMesh);
-		attackRange->SetStaticMesh(RangeMesh);
-		outerVision->SetStaticMesh(RangeMesh);
-
-		FVector size;
-
-		size.X = CurrentVisionStats.InnerRange / 50.f;
-		size.Y = size.X;
-		size.Z = RangeHeight;
-		innerVision->SetWorldScale3D(size);
-
-		size.X = CurrentAttackStats.Range / 50.f;
-		size.Y = size.X;
-		attackRange->SetWorldScale3D(size);
-
-		size.X = CurrentVisionStats.OuterRange / 50.f;
-		size.Y = size.X;
-		outerVision->SetWorldScale3D(size);
-	}
-	else
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid mesh found!"));
-	}
-
-	if (RangeMaterial)
-	{
-		UMaterialInstanceDynamic* iMaterial = innerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		iMaterial->SetVectorParameterValue(RangeColorParameterName, RangeInnerVisionColor);
-		UMaterialInstanceDynamic* aMaterial = attackRange->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		aMaterial->SetVectorParameterValue(RangeColorParameterName, RangeAttackColor);
-		UMaterialInstanceDynamic* oMaterial = outerVision->CreateAndSetMaterialInstanceDynamicFromMaterial(0, RangeMaterial);
-		oMaterial->SetVectorParameterValue(RangeColorParameterName, RangeOuterVisionColor);
-	}
-	else
-	{
-		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("ARTS_Entity::SetRangeDebug > No valid material found!"));
-	}
+	
+	UnitEffects.Remove(effect);
 }
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 {
+	if (Health <= 0)
+		return true;
+
 	//Apply the damage
 	if (armor)
 	{
 		int d = damage;
 		d -= CurrentDefenceStats.Armor;
-		CurrentDefenceStats.Health -= FMath::Clamp(d, 1, damage);
+		Health -= FMath::Clamp(d, 1, damage);
 	}
 	else
 	{
-		CurrentDefenceStats.Health -= FMath::Clamp(damage, 1, damage);
+		Health -= FMath::Clamp(damage, 1, damage);
 	}
 
 	//Check if character is dead
-	if (CurrentDefenceStats.Health <= 0)
+	if (Health <= 0)
 	{
-		CurrentDefenceStats.Health = 0;
+		Health = 0;
 		Kill();
 		return true;
 	}
@@ -443,16 +374,55 @@ bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 
 void ARTS_Entity::ApplyHealing(int healing)
 {
-	CurrentDefenceStats.Health += healing;
-	if (CurrentDefenceStats.Health > BaseDefenceStats.Health)
+	Health += healing;
+	if (Health > CurrentDefenceStats.MaxHealth)
 	{
-		CurrentDefenceStats.Health = BaseDefenceStats.Health;
+		Health = CurrentDefenceStats.MaxHealth;
 	}
 }
 
 void ARTS_Entity::Kill()
 {
+	Health = 0;
 	SetSelected(false);
+
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		LocationOfDeath = GetActorLocation();
+		ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
+	
+		//GameState notification
+		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
+		gameState->OnDeathDelegate.Broadcast(this);
+
+		// Play sound
+		if (DeathSound && SoundAttenuation && SoundConcurrency)
+		{
+			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
+		}
+
+		AGameStateBase* baseGameState = world->GetGameState();
+		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
+		if (baseGameState && castedGameState)
+		{
+			castedGameState->SelectedEntities.Remove(this);
+			castedGameState->Entities.Remove(this);
+
+			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
+			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+			if (playerController && rtsPlayerController)
+			{
+				rtsPlayerController->UpdateSpecialistAbilityButtons();
+				URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
+				if (hud)
+				{
+					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+				}
+			}
+		}
+	}
 
 	UCapsuleComponent* capsule = GetCapsuleComponent();
 	if (capsule)
@@ -473,30 +443,6 @@ void ARTS_Entity::Kill()
 		BarWidget->DestroyComponent();
 	}
 
-	UWorld* world = GetWorld();
-	if (world)
-	{
-		AGameStateBase* baseGameState = world->GetGameState();
-		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
-		if (baseGameState && castedGameState)
-		{
-			castedGameState->SelectedEntities.Remove(this);
-			castedGameState->Entities.Remove(this);
-
-			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
-			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
-
-			if (playerController && rtsPlayerController)
-			{
-				rtsPlayerController->UpdateAbilityButtons();
-				URTS_HUDBase* hud = rtsPlayerController->GetHUD();
-				if (hud)
-				{
-					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
-				}
-			}
-		}
-	}
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);
 	//GetMesh()->DetachFromParent();
@@ -505,9 +451,46 @@ void ARTS_Entity::Kill()
 
 bool ARTS_Entity::IsAlive()
 {
-	return (CurrentDefenceStats.Health > 0);
+	return (Health > 0);
 }
 
+void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
+{
+	CurrentLumaStats.LumaSaturation += LumaToAdd;
+	if (CurrentLumaStats.LumaSaturation >= CurrentLumaStats.MaxLumaSaturation)
+	{
+		CurrentLumaStats.LumaSaturation = CurrentLumaStats.MaxLumaSaturation;
+		ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+		if (aiController)
+		{
+			Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
+		}
+	}
+}
+
+void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+
+	CurrentLumaStats.LumaSaturation -= LumaToRemove;
+	if (CurrentLumaStats.LumaSaturation < 0)
+	{
+		CurrentLumaStats.LumaSaturation = 0;
+	}
+}
+
+bool ARTS_Entity::IsSelectableByPlayer() const
+{
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+	if (aiController)
+	{
+		bool selectable = (Health > 0) && 
+			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI);
+		return selectable;
+	}
+
+	return (Health > 0);
+}
 
 void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 {
@@ -535,12 +518,14 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
 			break;
+
+			break;
 		default:
 			break;
 		}
 
 		// spawn particles and reset time
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
@@ -553,7 +538,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	if (effect->Ticks == 0)
 	{
 		effect->Ticks++;
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
@@ -575,6 +560,15 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		case EUnitEffectStat::MOVEMENT_SPEED:
 			CurrentMovementStats.Speed += effect->Magnitude;
 			break;
+
+		case EUnitEffectStat::ATTACK_RATE:
+		{
+			float percentage = float(effect->Magnitude) / 100.0f;
+			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
+			CurrentAttackStats.AttackCooldown -= FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
+			AttackAdditionalAnimSpeed += percentage;
+			break;
+		}
 
 		default:
 			break;

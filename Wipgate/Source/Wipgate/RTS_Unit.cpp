@@ -6,15 +6,22 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "AI/Navigation/NavigationPath.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "AIController.h"
 #include "GeneralFunctionLibrary_CPP.h"
-#include "RTS_Squad.h"
+#include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "Components/StaticMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
 
 ARTS_Unit::ARTS_Unit()
 {
+	Headpiece = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Headpiece"));
+	Headpiece->SetupAttachment(RootComponent);
+	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(RootComponent);
+
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh)
 	{
@@ -27,11 +34,14 @@ void ARTS_Unit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_PostKillTimer < POSTKILLDELAY && CurrentDefenceStats.Health <= 0)
+	if (m_PostKillTimer < POSTKILLDELAY && Health <= 0)
 	{
 		m_PostKillTimer += DeltaTime;
 		if (m_PostKillTimer > POSTKILLDELAY)
 		{
+			Weapon->SetComponentTickEnabled(false);
+			Headpiece->SetComponentTickEnabled(false);
+
 			USkeletalMeshComponent* skeletalMesh = GetMesh();
 			//skeletalMesh->SetCollisionProfileName("None");
 			skeletalMesh->SetComponentTickEnabled(false);
@@ -45,17 +55,49 @@ void ARTS_Unit::SetTeamMaterial()
 {
 	ARTS_Entity::SetTeamMaterial();
 
+	//Set skeletal mesh color
 	USkeletalMeshComponent* mesh = GetMesh();
 	if (mesh && mesh->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
-		bodyMatInst->SetVectorParameterValue("BodyColor", Team->Color);
+		bodyMatInst->SetVectorParameterValue("TeamColor", Team->Color);
 		mesh->SetReceivesDecals(false);
+	}
+
+	//Set hat team color
+	if (Headpiece && Headpiece->GetMaterials().Num() > 0)
+	{
+		UMaterialInstanceDynamic* hatMatInst = Headpiece->CreateAndSetMaterialInstanceDynamicFromMaterial(0, Headpiece->GetMaterial(0));
+		hatMatInst->SetVectorParameterValue("TeamColor", Team->Color);
+		Headpiece->SetReceivesDecals(false);
+	}
+
+	//Disable decals on weapons
+	if (Weapon)
+	{
+		Weapon->SetReceivesDecals(false);
 	}
 }
 
 void ARTS_Unit::Kill()
 {
+	//Spawn currency particle
+	auto transform = GetActorTransform();
+	if (DeathEffectClass)
+		GetWorld()->SpawnActor(DeathEffectClass, &transform);
+
+	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (playercontroller && Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI)
+	{
+		//Add currency
+		int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);
+		playercontroller->AddLuma(amount);
+	}
+	else
+	{
+		UE_LOG(RTS_UNIT_LOG, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
+	}
+
 	ARTS_Entity::Kill();
 
 	USkeletalMeshComponent* skeletalMesh = GetMesh();
@@ -67,45 +109,3 @@ void ARTS_Unit::Kill()
 	}
 }
 
-void ARTS_Unit::SetCurrentSquad(URTS_Squad * squad)
-{
-	//Remove from previous squad
-	if (CurrentSquad)
-	{
-		auto index = CurrentSquad->Units.Find(this);
-		if(index != INDEX_NONE)
-			CurrentSquad->Units.RemoveAt(index);
-	}
-	CurrentSquad = squad;
-}
-
-void ARTS_Unit::SetDirectionLocation(FVector location)
-{
-	//UNavigationPath *tpath;
-	//UNavigationSystem* NavSys = UNavigationSystem::GetCurrent(GetWorld());
-
-	////Get path
-	//tpath = NavSys->FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), FinalTarget);
-	//UGeneralFunctionLibrary_CPP::DrawPointArray(GetWorld(), tpath->PathPoints, FColor(255, 0, 0), 10.f, 2.f);
-
-	////Check if there are multiple waypoints
-	//if (tpath->PathPoints.Num() >= 2)
-	//{
-	//	//Check distance
-	//	if ((tpath->PathPoints[1] - GetActorLocation()).Size() < WaypointMargin &&
-	//		tpath->PathPoints.Num() >= 3)
-	//	{
-	//		CurrentTarget = tpath->PathPoints[2];
-	//	}
-	//	else
-	//	{
-	//		CurrentTarget = tpath->PathPoints[1];
-	//	}
-
-	//	AAIController* aiControl = Cast<AAIController>(GetController());
-	//	if (aiControl)
-	//	{
-	//		aiControl->MoveToLocation(location, 0.1f, false, true, false, false);
-	//	}
-	//}
-}

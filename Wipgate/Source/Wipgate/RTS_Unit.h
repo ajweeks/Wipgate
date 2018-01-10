@@ -7,7 +7,7 @@
 #include "RTS_Unit.generated.h"
 
 class USkeletalMeshComponent;
-class URTS_Squad;
+class AAbility;
 
 UCLASS()
 class WIPGATE_API ARTS_Unit : public ARTS_Entity
@@ -25,52 +25,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Squads")
-		void SetCurrentSquad(URTS_Squad* squad);
-
-	void SetDirectionLocation(FVector location);
-
-	//Properties
-	UPROPERTY(BlueprintReadWrite)
-		FVector CurrentTarget;
-	UPROPERTY(BlueprintReadWrite)
-		FVector OriginalTarget;
-	UPROPERTY(BlueprintReadWrite)
-		FVector FinalTarget;
-	UPROPERTY(EditAnywhere, Category = "AI")
-		float WaypointMargin = 150.f;
-
-	URTS_Squad* CurrentSquad;
-
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float CohesionWeight = 0.25f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float CohesionDistanceClamp = 500.f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float CohesionWeightClamp = 1.f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float AvoidWeight = 0.5f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float AvoidDistanceClamp = 500.f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float AvoidWeightClamp = 1.f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float AlignWeight = 0.3f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float AlignWeightClamp = 1.f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float SeekWeight = 4.0f;
-	UPROPERTY(EditAnywhere, Category = "RuleWeights", BlueprintReadWrite)
-		float SeekWeightClamp = 1.f;
-
-	// When true, this unit's stats can not be changed, and it can not be targeted
-	UPROPERTY(BlueprintReadWrite)
-		bool Immaterial = false;
-
 	// True when this unit is inside the level goal collider (through the gate)
 	UPROPERTY(BlueprintReadWrite)
 		bool InLevelGoal = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+		TSubclassOf<AAbility> AbilityAttackClass;
+
+	//Minimum amount of currency this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MinimumCurrencyDrop = 0;
+
+	//Maximum amount of currency this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MaximumCurrencyDrop = 0;
+
+	//Class to spawn when unit dies
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AActor> DeathEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Visual")
+		UStaticMeshComponent* Headpiece = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Visual")
+		UStaticMeshComponent* Weapon = nullptr;
 private:
 	
 	float m_PostKillTimer = 0;

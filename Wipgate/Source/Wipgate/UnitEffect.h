@@ -40,9 +40,9 @@ public:
 	
 	void Initialize(const EUnitEffectStat stat, const EUnitEffectType type, const float delay, const int magnitude, const int duration);
 	UFUNCTION(BlueprintCallable)
-	void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant, FName socketName);
+		void SetParticles(UParticleSystem* tick, UParticleSystem* start, UParticleSystem* end, UParticleSystem* constant, FName socketName);
 	UFUNCTION(BlueprintCallable)
-	void StartParticleConstant(USceneComponent* comp);
+		void StartParticleConstant(USceneComponent* comp);
 	void StopParticleConstant();
 	void AttachParticleToSocket(USceneComponent * skeletalMesh);
 
@@ -56,17 +56,20 @@ public:
 	bool IsFinished = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	int Magnitude;
+		int Magnitude;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	float Delay;
+		float Delay;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	int Duration;
+		int Duration;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	EUnitEffectStat AffectedStat;
+		EUnitEffectStat AffectedStat;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	EUnitEffectType Type;
+		EUnitEffectType Type;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
-	FName SocketName;
+		FName SocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect parameters")
+		FName Tag;
 
 	UParticleSystem* StartParticles = nullptr;
 	UParticleSystem* TickParticles = nullptr;

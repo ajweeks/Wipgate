@@ -31,7 +31,9 @@ void AAbility::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CooldownPassiveElapsed >= CooldownPassive)
+	if (CooldownPassiveElapsed < CooldownPassive)
+		CooldownPassiveElapsed += DeltaTime;
+	else
 		Passive();
 }
 

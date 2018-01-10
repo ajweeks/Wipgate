@@ -10,6 +10,7 @@ class ARTS_Entity;
 class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Gamestate_log, Log, All);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityDelegate, ARTS_Entity*, entity);
 
 UCLASS()
 class WIPGATE_API ARTS_GameState : public AGameState
@@ -31,7 +32,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		float GetPercentOfFriendlyUnitsInLevelGoal();
-
+	UFUNCTION(BlueprintCallable)
+		bool AreEnemiesInEndZone();
 
 	// Selection groups
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
@@ -50,4 +52,8 @@ public:
 		TArray<ARTS_Entity*> SelectionGroup5;
 
 	TArray<URTS_Team*> Teams;
+
+	// Event Dispatchers
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+		FEntityDelegate OnDeathDelegate;
 };

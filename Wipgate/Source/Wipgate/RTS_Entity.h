@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 
-#include "AbilityIcon.h"
-#include "WipgateGameModeBase.h"
 #include "RTS_Team.h"
 
 #include "RTS_Entity.generated.h"
@@ -16,10 +14,12 @@ class UWidgetComponent;
 class UMaterial;
 class UUnitEffect;
 class UStaticMeshComponent;
-struct FAbilityIcon;
+class USoundCue;
+class USoundConcurrency;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
+//TODO: Logging warning when unit is structure (EntityType)
 UCLASS()
 class WIPGATE_API ARTS_Entity : public ACharacter
 {
@@ -35,25 +35,28 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
-		bool IsSelected() const;
+	bool IsSelected() const;
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetGroundLocation();
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	virtual void SetTeamMaterial();
 
+	UFUNCTION(BlueprintCallable)
 	void PostInitialize();
-	void SetTeam(URTS_Team* team);
 
+	/* --- Unit effect functions --- */
 	UFUNCTION(BlueprintGetter, Category = "Effects")
-	TArray<UUnitEffect*> GetUnitEffects() const;
+		TArray<UUnitEffect*> GetUnitEffects() const;
 	UFUNCTION(BlueprintCallable, Category = "Effects")
-	void AddUnitEffect(UUnitEffect* effect);
+		bool HasEffectWithTag(FName tag);
 	UFUNCTION(BlueprintCallable, Category = "Effects")
-	void RemoveUnitEffect(UUnitEffect* effect);
-
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void DisableDebug();
-	UFUNCTION(BlueprintCallable, Category = "Debug")
-	void SetRangeDebug();
+		void RemoveUnitEffectWithTag(FName tag);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+		void AddUnitEffect(UUnitEffect* effect);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	bool ApplyDamage(int damage, bool armor);
@@ -62,7 +65,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill();
 	UFUNCTION(BlueprintPure, Category = "Health")
-		bool IsAlive();
+	bool IsAlive();
+
+	UFUNCTION(BlueprintCallable)
+	void AddToLumaSaturation(int32 LumaToAdd);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveLumaSaturation(int32 LumaToRemove);
+
+	UPROPERTY(BlueprintReadOnly)
+	int LumaToRemoveOnEnemyDeath = 1;
+
+	// When true, this unit's stats can not be changed, and it can not be targeted
+	UPROPERTY(BlueprintReadWrite)
+	bool Immaterial = false;
+
+	bool IsSelectableByPlayer() const;
 
 public:
 	/* Public blueprint editable variables */
@@ -91,34 +109,14 @@ public:
 
 	//DEBUG
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool ShowRange = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	float RangeHeight = 10.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowUnitStats = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool RenderFlockingDebugInfo = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool ShowSelectionBox = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	UMaterial* RangeMaterial = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	UStaticMesh* RangeMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FName RangeColorParameterName = "None";
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeInnerVisionColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeAttackColor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	FLinearColor RangeOuterVisionColor;
 
 	//STATS
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
@@ -132,12 +130,22 @@ public:
 	FAttackStat CurrentAttackStats;
 
 	UPROPERTY(BlueprintReadWrite)
-	float TimerRateOfFire = 0.f;
+		float TimerRateOfFire = 0.f;
+	UPROPERTY(BlueprintReadWrite)
+		bool m_IsAttackOnCooldown = false;
+	UPROPERTY(BlueprintReadWrite)
+		float AttackAdditionalAnimSpeed = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FDefenceStat BaseDefenceStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
 	FDefenceStat CurrentDefenceStats;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	FLumaStat CurrentLumaStats;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Stats")
+	int Health = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FVisionStat BaseVisionStats;
@@ -148,11 +156,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
 	URTS_Team* Team;
 
-	UPROPERTY(BlueprintReadWrite)
-	TArray<UStaticMeshComponent*> DebugMeshes;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team")
+	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
-	UPROPERTY(EditAnywhere, Category = "Team")
-		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+	//TYPE
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEntityType EntityType = EEntityType::E_RANGED;
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<UUnitEffect*> UnitEffects;
@@ -165,6 +174,25 @@ public:
 
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
+
+	//SOUNDS
+	UPROPERTY(EditAnywhere, Category = "Sound")
+		USoundCue* DeathSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundCue* AttackSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundAttenuation* SoundAttenuation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundConcurrency* SoundConcurrency;
+
+	//DEATH
+	UPROPERTY(BlueprintReadOnly)
+		FVector LocationOfDeath;
+	UPROPERTY(BlueprintReadOnly)
+		FVector ForwardOnDeath;
 
 protected:
 	// Called when the game starts
