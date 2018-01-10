@@ -21,6 +21,7 @@ class URTS_Squad;
 class URTS_Team;
 class ARTS_LevelBounds;
 class ATriggerBox;
+class URTS_Cursor;
 
 UCLASS()
 class WIPGATE_API ARTS_PlayerController : public APlayerController
@@ -131,9 +132,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 		TSubclassOf<UUserWidget> MainHUD;
 
+
+	UPROPERTY(BlueprintReadWrite)
+		URTS_Cursor* CursorRef;
+
+
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* SelectedAbility = nullptr;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities|Movement")
 		TSubclassOf<AAbility> AbilityMovementMoveClass;
@@ -166,7 +171,6 @@ public:
 	// Set true to start the game with luma and currency
 	UPROPERTY(EditAnywhere, Category = "Debug")
 		bool DEBUG_StartWithCurrency;
-
 
 private:
 	void ActionPrimaryClickPressed();

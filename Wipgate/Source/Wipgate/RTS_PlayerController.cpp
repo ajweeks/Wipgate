@@ -2,8 +2,6 @@
 
 #include "RTS_PlayerController.h"
 
-#include "EngineGlobals.h"
-#include "Engine/Engine.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Blueprint/UserWidget.h"
@@ -14,34 +12,44 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
+#include "EngineGlobals.h"
+#include "Engine/Engine.h"
 #include "Engine/UserInterfaceSettings.h"
 #include "Engine/RendererSettings.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "UObject/ConstructorHelpers.h"
 #include "TimerManager.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "Ability.h"
-#include "RTS_GameState.h"
-#include "RTS_HUDBase.h"
-#include "RTS_Entity.h"
-#include "RTS_Unit.h"
-#include "RTS_Specialist.h"
-#include "RTS_Team.h"
 #include "AbilityIconBase.h"
-#include "RTS_GameInstance.h"
 #include "GeneralFunctionLibrary_CPP.h"
-#include "WipgateGameModeBase.h"
-#include "RTS_PlayerSpawner.h"
+#include "RTS_Cursor.h"
+#include "RTS_Entity.h"
+#include "RTS_GameState.h"
+#include "RTS_GameInstance.h"
+#include "RTS_HUDBase.h"
 #include "RTS_LevelEnd.h"
 #include "RTS_LevelBounds.h"
+#include "RTS_PlayerSpawner.h"
+#include "RTS_Specialist.h"
+#include "RTS_Team.h"
+#include "RTS_Unit.h"
+#include "WipgateGameModeBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
 ARTS_PlayerController::ARTS_PlayerController()
 {
+	AttemptToFindObjectByPath(&MainHUDInstance, TEXT("WidgetBlueprint'/Game/Code/User_Interface/RTS_HUD_BP.RTS_HUD_BP'"));
+
+	AttemptToFindObjectByPath(&AbilityMovementMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Move.Ab_Movement_Move_C'"));
+	AttemptToFindObjectByPath(&AbilityMovementAttackMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_AttackMove.Ab_Movement_AttackMove_C'"));
+	AttemptToFindObjectByPath(&AbilityMovementStop, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Stop.Ab_Movement_Stop_C'"));
+	AttemptToFindObjectByPath(&AbilityMovementHoldPosition, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_HoldPosition.Ab_Movement_HoldPosition_C'"));
+	AttemptToFindObjectByPath(&AbilityLumaApply, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Luma/Ab_Luma_Apply.Ab_Luma_Apply_C'"));
 }
 
 void ARTS_PlayerController::BeginPlay()
@@ -831,11 +839,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
-	if (SelectedAbility)
-	{
-		SelectedAbility->Deselect();
-		SelectedAbility = nullptr;
-	}
 }
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()

@@ -81,34 +81,40 @@ void ARTS_Unit::SetTeamMaterial(URTS_Team* t)
 
 void ARTS_Unit::Kill()
 {
-	//Spawn currency particle
-	auto transform = GetActorTransform();
-	if (DeathEffectClass)
-		GetWorld()->SpawnActor(DeathEffectClass, &transform);
+	UWorld* world = GetWorld();
+	if (world)
+	{
+		//Spawn currency particle
+		auto transform = GetActorTransform();
+		if (DeathEffectClass)
+		{
+			world->SpawnActor(DeathEffectClass, &transform);
+		}
 
-	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
+		ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
 	if (playercontroller)
 	{
-		if (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
+		if (Team && (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
 		{
 			//Add currency
 			int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);
 			playercontroller->AddLuma(amount);
 		}
 	}
-	else
-	{
+		else
+		{
 		UE_LOG(RTS_UNIT_LOG, Error, TEXT("Kill > No playercontroller. Returning..."));
-	}
+		}
 
-	ARTS_Entity::Kill();
+		ARTS_Entity::Kill();
 
-	USkeletalMeshComponent* skeletalMesh = GetMesh();
-	if (skeletalMesh)
-	{
-		skeletalMesh->SetCollisionProfileName("Ragdoll");
-		skeletalMesh->SetEnableGravity(true);
-		skeletalMesh->SetSimulatePhysics(true);
+		USkeletalMeshComponent* skeletalMesh = GetMesh();
+		if (skeletalMesh)
+		{
+			skeletalMesh->SetCollisionProfileName("Ragdoll");
+			skeletalMesh->SetEnableGravity(true);
+			skeletalMesh->SetSimulatePhysics(true);
+		}
 	}
 }
 
