@@ -168,7 +168,7 @@ void ARTS_PlayerController::BeginPlay()
 	else if (DEBUG_StartWithCurrency && gameinstance->CurrentRound == 0)
 	{
 		AddCurrency(1000);
-		AddLuma(1000);
+		AddLuma(125);
 	}
 }
 
