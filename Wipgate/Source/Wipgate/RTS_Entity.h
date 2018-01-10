@@ -133,6 +133,8 @@ public:
 		float TimerRateOfFire = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAttackOnCooldown = false;
+	UPROPERTY(BlueprintReadWrite)
+		float AttackAdditionalAnimSpeed = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	FDefenceStat BaseDefenceStats;

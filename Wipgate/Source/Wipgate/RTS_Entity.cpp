@@ -265,7 +265,7 @@ void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-			RemoveUnitEffect(e);
+			e->IsFinished = true;
 	}
 }
 
@@ -331,10 +331,8 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 		break;
 	}
 
-	UnitEffects.Remove(effect);
-
 	// stop particle systems
-	if (effect->EndParticles)
+	if (RootComponent && effect->EndParticles)
 	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
 	}
@@ -343,10 +341,15 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	{
 		effect->StopParticleConstant();
 	}
+	
+	UnitEffects.Remove(effect);
 }
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 {
+	if (Health <= 0)
+		return true;
+
 	//Apply the damage
 	if (armor)
 	{
@@ -382,8 +385,6 @@ void ARTS_Entity::Kill()
 {
 	Health = 0;
 	SetSelected(false);
-	LocationOfDeath = GetActorLocation();
-	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
 	if (capsuleComponent)
 	{
 		ForwardOnDeath = capsuleComponent->GetForwardVector();
@@ -391,12 +392,15 @@ void ARTS_Entity::Kill()
 		UWorld* world = GetWorld();
 		if (world)
 		{
+		LocationOfDeath = GetActorLocation();
+		ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
+	
 			//GameState notification
 			ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
 			gameState->OnDeathDelegate.Broadcast(this);
 
 			// Play sound
-			if (DeathSound && SoundAttenuation && SoundConcurrency)
+		if (DeathSound && SoundAttenuation && SoundConcurrency)
 			{
 				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
 			}
@@ -520,7 +524,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		}
 
 		// spawn particles and reset time
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
@@ -533,7 +537,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 	if (effect->Ticks == 0)
 	{
 		effect->Ticks++;
-		if (effect->TickParticles)
+		if (RootComponent && effect->TickParticles)
 		{
 			UGameplayStatics::SpawnEmitterAttached(effect->TickParticles, RootComponent);
 		}
@@ -561,7 +565,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			float percentage = float(effect->Magnitude) / 100.0f;
 			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
 			CurrentAttackStats.AttackCooldown -= FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
-			GetMesh()->GlobalAnimRateScale += percentage;
+			AttackAdditionalAnimSpeed += percentage;
 			break;
 		}
 

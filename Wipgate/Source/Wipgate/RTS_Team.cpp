@@ -242,7 +242,7 @@ void URTS_Team::CalculateUpgradeEffects()
 				//entity->CurrentAttackStats.AttackCooldown *= totalEffect;
 				entity->CurrentAttackStats.AttackCooldown -= FMath::Clamp(entity->CurrentAttackStats.AttackCooldown * totalEffect, 0.0f, 
 					entity->CurrentAttackStats.AttackCooldown);
-				entity->GetMesh()->GlobalAnimRateScale += totalEffect;
+				entity-> AttackAdditionalAnimSpeed += totalEffect;
 				break;
 			case EUpgradeStat::E_SPEED:
 				entity->CurrentMovementStats.Speed *= totalEffect;

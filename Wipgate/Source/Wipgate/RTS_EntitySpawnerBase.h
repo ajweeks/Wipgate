@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float Radius = 250.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int SpawnAttempts = 3;
+
 protected:
 	//Determines the color of the debug circle
 	UPROPERTY(BlueprintReadWrite)
