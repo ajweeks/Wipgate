@@ -385,22 +385,22 @@ void ARTS_Entity::Kill()
 {
 	Health = 0;
 	SetSelected(false);
+	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
 	if (capsuleComponent)
 	{
-		ForwardOnDeath = capsuleComponent->GetForwardVector();
 
 		UWorld* world = GetWorld();
 		if (world)
 		{
-		LocationOfDeath = GetActorLocation();
-		ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
+			LocationOfDeath = GetActorLocation();
+			ForwardOnDeath = capsuleComponent->GetForwardVector();
 	
 			//GameState notification
 			ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
 			gameState->OnDeathDelegate.Broadcast(this);
 
 			// Play sound
-		if (DeathSound && SoundAttenuation && SoundConcurrency)
+			if (DeathSound && SoundAttenuation && SoundConcurrency)
 			{
 				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
 			}
