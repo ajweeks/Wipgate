@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FLinearColor GetLumaBarColor();
 
+	UFUNCTION(BlueprintCallable)
+		void SetColor(FLinearColor color);
+
 	// When true, this bar will not update it's value
 	// (used to freeze commander's bar while leaping)
 	UPROPERTY(BlueprintReadWrite)
@@ -40,6 +43,7 @@ private:
 	float m_LastHealthBarPercent = 0.0f;
 	float m_LastLumaBarPercent = 0.0f;
 	FLinearColor m_FrozenHealthBarColor;
+	FLinearColor m_HealthBarColor;
 	FLinearColor m_LumaBarColor;
 	FLinearColor m_FrozenLumaBarColor;
 

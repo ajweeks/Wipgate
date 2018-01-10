@@ -16,6 +16,7 @@ class UUnitEffect;
 class UStaticMeshComponent;
 class USoundCue;
 class USoundConcurrency;
+class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -41,7 +42,7 @@ public:
 	FVector GetGroundLocation();
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial();
+	virtual void SetTeamMaterial(URTS_Team* t);
 
 	UFUNCTION(BlueprintCallable)
 	void PostInitialize();
