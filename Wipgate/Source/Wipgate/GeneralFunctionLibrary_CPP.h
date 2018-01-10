@@ -66,3 +66,14 @@ public:
 
 // Global C++ only functions
 void PrintStringToScreen(FString text, FColor Color = FColor::White, float TimeToDisplay = 1.5f);
+
+template<class T>
+void AttemptToFindObjectByPath(T** object, const TCHAR* path)
+{
+	ConstructorHelpers::FObjectFinder<T> findResults(path);
+
+	if (findResults.Succeeded())
+	{
+		*object = findResults.Object;
+	}
+}

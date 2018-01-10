@@ -7,6 +7,7 @@
 #include "Ability.generated.h"
 
 class UAbilityIconBase;
+class UTexture2D;
 
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
@@ -73,6 +74,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		UAbilityIconBase* Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* CursorIconTexture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* ButtonTexture;
 
 protected:
 	/* protected non virtuals */

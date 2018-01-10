@@ -20,7 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial() override;
+	virtual void SetTeamMaterial(URTS_Team* t) override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;

@@ -17,7 +17,7 @@ public:
 	ARTS_Structure();
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial() override;
+	virtual void SetTeamMaterial(URTS_Team* t) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Misc")
 	UStaticMeshComponent* StaticMeshComponent;

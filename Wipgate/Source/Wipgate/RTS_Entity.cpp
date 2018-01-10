@@ -23,6 +23,7 @@
 #include "UI_Bar.h"
 #include "RTS_Entity.h"
 #include "RTS_GameState.h"
+#include "WipgateGameModeBase.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
 #include "RTS_AIController.h"
@@ -147,9 +148,9 @@ FVector ARTS_Entity::GetGroundLocation()
 	return GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
-void ARTS_Entity::SetTeamMaterial()
+void ARTS_Entity::SetTeamMaterial(URTS_Team* t)
 {
-	FLinearColor selectionColorHSV = Team->Color.LinearRGBToHSV();
+	FLinearColor selectionColorHSV = t->Color.LinearRGBToHSV();
 	selectionColorHSV.B = SelectionBrightness;
 	FLinearColor selectionColorRGB = selectionColorHSV.HSVToLinearRGB();
 
@@ -170,7 +171,7 @@ void ARTS_Entity::SetTeamMaterial()
 		if (MinimapIcon->GetMaterials().Num() > 0)
 		{
 			UMaterialInstanceDynamic* mMaterial = MinimapIcon->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MinimapIcon->GetMaterial(0));
-			mMaterial->SetVectorParameterValue(MinimapColorParameterName, Team->Color);
+			mMaterial->SetVectorParameterValue(MinimapColorParameterName, t->Color);
 		}
 		else
 		{
@@ -180,6 +181,27 @@ void ARTS_Entity::SetTeamMaterial()
 	else
 	{
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("Entitiy's minimap mesh icon was not created!"));
+	}
+
+	if (BarWidget)
+	{
+		UUserWidget* barUserWidget = BarWidget->GetUserWidgetObject();
+		if (barUserWidget)
+		{
+			UUI_Bar* bar = Cast<UUI_Bar>(barUserWidget);
+			if (bar)
+			{
+				bar->SetColor(t->Color);
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's type is not derived from UI_Bar!"));
+			}
+		}
+		else
+		{
+			UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Entity's bar's user widget object was not set!"));
+		}
 	}
 }
 
@@ -242,7 +264,7 @@ void ARTS_Entity::PostInitialize()
 		BarWidget->SetWorldRotation(BarRotation);
 	}
 
-	SetTeamMaterial();
+	SetTeamMaterial(Team);
 }
 
 TArray<UUnitEffect*> ARTS_Entity::GetUnitEffects() const
@@ -385,50 +407,49 @@ void ARTS_Entity::Kill()
 {
 	Health = 0;
 	SetSelected(false);
-
-	UWorld* world = GetWorld();
-	if (world)
+	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
+	if (capsuleComponent)
 	{
-		LocationOfDeath = GetActorLocation();
-		ForwardOnDeath = GetCapsuleComponent()->GetForwardVector();
+
+		UWorld* world = GetWorld();
+		if (world)
+		{
+			LocationOfDeath = GetActorLocation();
+			ForwardOnDeath = capsuleComponent->GetForwardVector();
 	
-		//GameState notification
-		ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
-		gameState->OnDeathDelegate.Broadcast(this);
+			//GameState notification
+			ARTS_GameState* gameState = Cast<ARTS_GameState>(world->GetGameState());
+			gameState->OnDeathDelegate.Broadcast(this);
 
-		// Play sound
-		if (DeathSound && SoundAttenuation && SoundConcurrency)
-		{
-			UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.f, 1.f, 0.f, SoundAttenuation, SoundConcurrency);
-		}
-
-		AGameStateBase* baseGameState = world->GetGameState();
-		ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
-		if (baseGameState && castedGameState)
-		{
-			castedGameState->SelectedEntities.Remove(this);
-			castedGameState->Entities.Remove(this);
-
-			APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
-			ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
-
-			if (playerController && rtsPlayerController)
+			// Play sound
+			if (DeathSound && SoundAttenuation && SoundConcurrency)
 			{
-				rtsPlayerController->UpdateSpecialistAbilityButtons();
-				URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
-				if (hud)
+				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
+			}
+
+			AGameStateBase* baseGameState = world->GetGameState();
+			ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
+			if (baseGameState && castedGameState)
+			{
+				castedGameState->SelectedEntities.Remove(this);
+				castedGameState->Entities.Remove(this);
+
+				APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+				if (playerController && rtsPlayerController)
 				{
-					hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+					rtsPlayerController->UpdateSpecialistAbilityButtons();
+					URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
+					if (hud)
+					{
+						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+					}
 				}
 			}
 		}
-	}
 
-	UCapsuleComponent* capsule = GetCapsuleComponent();
-	if (capsule)
-	{
-		capsule->DestroyComponent();
-		//capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		capsuleComponent->DestroyComponent();
 		//SetActorTickEnabled(false);
 		//DisableDebug();
 	}
@@ -464,6 +485,21 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 		if (aiController)
 		{
 			Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
+
+			//Set team color
+			auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
+			if (gamemode)
+			{
+				URTS_Team* team = gamemode->GetTeamWithAlignment(ETeamAlignment::E_ATTACKEVERYTHING_AI);
+				if (team)
+				{
+					SetTeamMaterial(team);
+				}
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamemode found!"));
+			}
 		}
 	}
 }
