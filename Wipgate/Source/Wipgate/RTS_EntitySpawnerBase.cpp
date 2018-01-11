@@ -49,3 +49,8 @@ void ARTS_EntitySpawnerBase::Tick(float DeltaTime)
 		color = FColor::Green;
 	DrawDebugCircle(GetWorld(), GetActorLocation(), Radius, 36, color, false, 0.f, (uint8)'\000', 3.f, FVector(1.f, 0.f, 0.f), FVector(0.f, 1.f, 0.f), false);
 }
+
+bool ARTS_EntitySpawnerBase::ShouldTickIfViewportsOnly() const
+{
+	return true;
+}
