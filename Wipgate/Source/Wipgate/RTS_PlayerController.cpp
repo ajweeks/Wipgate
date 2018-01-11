@@ -50,6 +50,8 @@ ARTS_PlayerController::ARTS_PlayerController()
 	AttemptToFindObjectByPath(&AbilityMovementStop, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Stop.Ab_Movement_Stop_C'"));
 	AttemptToFindObjectByPath(&AbilityMovementHoldPosition, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_HoldPosition.Ab_Movement_HoldPosition_C'"));
 	AttemptToFindObjectByPath(&AbilityLumaApply, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Luma/Ab_Luma_Apply.Ab_Luma_Apply_C'"));
+
+	bShowMouseCursor = true;
 }
 
 void ARTS_PlayerController::BeginPlay()
@@ -145,8 +147,6 @@ void ARTS_PlayerController::BeginPlay()
 		{
 			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
 		}
-
-		bShowMouseCursor = true;
 	}
 	else
 	{
@@ -177,7 +177,7 @@ void ARTS_PlayerController::BeginPlay()
 	{
 		AddLuma(1000);
 	}
-	AddLuma(125);
+	AddLuma(m_StartingLumaAmount);
 }
 
 void ARTS_PlayerController::SetupInputComponent()

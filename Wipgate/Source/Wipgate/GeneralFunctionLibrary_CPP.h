@@ -72,7 +72,10 @@ void PrintStringToScreen(FString text, FColor Color = FColor::White, float TimeT
 template<class T>
 void AttemptToFindObjectByPath(T** object, const TCHAR* path)
 {
-	ConstructorHelpers::FObjectFinderOptional<T> findResults(path);
+	ConstructorHelpers::FObjectFinder<T> findResults(path);
 
-	*object = findResults.Get();
+	if (findResults.Succeeded())
+	{
+		*object = findResults.Object;
+	}
 }
