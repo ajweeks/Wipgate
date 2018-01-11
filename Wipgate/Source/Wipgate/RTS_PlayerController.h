@@ -265,6 +265,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
+	UPROPERTY(EditAnywhere)
+		int m_StartingLumaAmount = 125;
+
 	bool m_ReturnedToStartAfterViewingEnd = false;
 
 	FVector m_LevelStartLocation;
