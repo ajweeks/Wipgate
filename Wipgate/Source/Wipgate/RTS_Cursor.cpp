@@ -5,7 +5,6 @@
 #include "Image.h"
 #include "Engine/Texture2D.h"
 #include "RTS_PlayerController.h"
-#include "ConstructorHelpers.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_Cursor_Log, Log, All);
@@ -13,14 +12,13 @@ DEFINE_LOG_CATEGORY_STATIC(RTS_Cursor_Log, Log, All);
 URTS_Cursor::URTS_Cursor(const FObjectInitializer& ObjectInitializer) :
 	UUserWidget(ObjectInitializer)
 {
-	AttemptToFindObjectByPath(&DefaultTexture, TEXT("Texture2D'/Game/Art/Cursors/default-cursor.default-cursor'"));
-	AttemptToFindObjectByPath(&MoveTexture, TEXT("Texture2D'/Game/Art/Cursors/MoveCursor.MoveCursor'"));
+	AttemptToFindObjectByPath(&DefaultTexture, TEXT("Texture2D'/Game/Art/Cursors/pointyhand.pointyhand'"));
+	AttemptToFindObjectByPath(&GrabbedTexture, TEXT("Texture2D'/Game/Art/Cursors/closedhand.closedhand'"));
+	AttemptToFindObjectByPath(&MoveTexture, TEXT("Texture2D'/Game/Art/Cursors/AttackCursor2.AttackCursor2'"));
 	AttemptToFindObjectByPath(&AttackMoveTexture, TEXT("Texture2D'/Game/Art/Cursors/AttackCursor.AttackCursor'"));
 	AttemptToFindObjectByPath(&DrugTexture, TEXT("Texture2D'/Game/Art/Cursors/DrugCursor.DrugCursor'"));
-	AttemptToFindObjectByPath(&Commander1Texture, TEXT("Texture2D'/Game/Art/Cursors/CommanderCursor.CommanderCursor'"));
-	AttemptToFindObjectByPath(&Commander2Texture, TEXT("Texture2D'/Game/Art/Cursors/CommanderCursor2.CommanderCursor2'"));
+	AttemptToFindObjectByPath(&CommanderTexture, TEXT("Texture2D'/Game/Art/Cursors/CommanderCursor.CommanderCursor'"));
 	AttemptToFindObjectByPath(&PotionTexture, TEXT("Texture2D'/Game/Art/Cursors/potioncursor.potioncursor'"));
-	AttemptToFindObjectByPath(&SlashedCircleTexture, TEXT("Texture2D'/Game/Art/Cursors/slashed-circle-cursor.slashed-circle-cursor'"));
-	AttemptToFindObjectByPath(&StopCircleTexture, TEXT("Texture2D'/Game/Art/Cursors/stop-cursor.stop-cursor'"));
+	AttemptToFindObjectByPath(&InvalidTexture, TEXT("Texture2D'/Game/Art/Cursors/invalid_cursor.invalid_cursor'"));
+	AttemptToFindObjectByPath(&ShopTexture, TEXT("Texture2D'/Game/Art/Cursors/shop_cursor.shop_cursor'"));
 }
-

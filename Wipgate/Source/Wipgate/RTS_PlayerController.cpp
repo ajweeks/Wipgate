@@ -50,6 +50,8 @@ ARTS_PlayerController::ARTS_PlayerController()
 	AttemptToFindObjectByPath(&AbilityMovementStop, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Stop.Ab_Movement_Stop_C'"));
 	AttemptToFindObjectByPath(&AbilityMovementHoldPosition, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_HoldPosition.Ab_Movement_HoldPosition_C'"));
 	AttemptToFindObjectByPath(&AbilityLumaApply, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Luma/Ab_Luma_Apply.Ab_Luma_Apply_C'"));
+
+	bShowMouseCursor = true;
 }
 
 void ARTS_PlayerController::BeginPlay()
@@ -145,8 +147,6 @@ void ARTS_PlayerController::BeginPlay()
 		{
 			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
 		}
-
-		bShowMouseCursor = true;
 	}
 	else
 	{
@@ -175,10 +175,9 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else if (DEBUG_StartWithCurrency && gameinstance->CurrentRound == 0)
 	{
-		AddCurrency(1000);
 		AddLuma(1000);
 	}
-	AddLuma(125);
+	AddLuma(m_StartingLumaAmount);
 }
 
 void ARTS_PlayerController::SetupInputComponent()
@@ -374,7 +373,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			}
 
 			FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
-			FVector targetDCamLocation;
+			FVector targetDCamLocation = FVector::ZeroVector;
 
 			FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
 			if (normMousePos.X > 1.0f - m_EdgeSize)
@@ -430,7 +429,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	FHitResult hitResult;
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
 	AActor* actorUnderCursor = hitResult.Actor.Get();
-	ARTS_Entity* entityUnderCursor = nullptr;
+	static ARTS_Entity* entityUnderCursor = nullptr;
+	ARTS_Entity* prevEntityUnderCursor = entityUnderCursor;
 
 	FVector2D selectionBoxMin = m_ClickStartSS;
 	FVector2D selectionBoxMax = m_ClickEndSS;
@@ -534,18 +534,23 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
+	if (SelectedAbility && entityUnderCursor)
+	{
+		CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+	}
+
 	if (m_SpecialistShowingAbilities)
 	{
-		if (m_SpecialistShowingAbilities->Health <= 0)
+		if (m_SpecialistShowingAbilities->IsSelectableByPlayer())
+		{
+			UpdateSpecialistAbilityButtons();
+		}
+		else
 		{
 			ClearSpecialistAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
 			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
 			m_SpecialistShowingAbilities = nullptr;
-		}
-		else
-		{
-			UpdateSpecialistAbilityButtons();
 		}
 	}
 
@@ -1129,35 +1134,6 @@ void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 int32 ARTS_PlayerController::GetCurrentLumaAmount()
 {
 	return m_CurrentLuma;
-}
-
-void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
-{
-	if (CurrencyAmount > 0)
-	{
-		m_CurrentCurrency += CurrencyAmount;
-		if (m_RTSHUD)
-		{
-			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
-		}
-	}
-}
-
-void ARTS_PlayerController::SpendCurrency(int32 CurrencyAmount)
-{
-	if (CurrencyAmount > 0 && m_CurrentCurrency >= CurrencyAmount)
-	{
-		m_CurrentCurrency -= CurrencyAmount;
-		if (m_RTSHUD)
-		{
-			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
-		}
-	}
-}
-
-int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
-{
-	return m_CurrentCurrency;
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)

@@ -115,9 +115,6 @@ struct FEntitySpawn
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Amount = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETeamAlignment Alignment;
 };
 
 USTRUCT(BlueprintType)

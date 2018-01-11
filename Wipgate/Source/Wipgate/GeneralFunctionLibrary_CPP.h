@@ -5,7 +5,9 @@
 #include "UnitEffect.h"
 #include "Command.h"
 #include "RTS_Entity.h"
+#include "ConstructorHelpers.h"
 #include "GeneralFunctionLibrary_CPP.generated.h"
+
 class APlayerController;
 
 UCLASS()

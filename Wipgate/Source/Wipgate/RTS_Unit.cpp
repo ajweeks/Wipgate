@@ -84,7 +84,7 @@ void ARTS_Unit::Kill()
 	UWorld* world = GetWorld();
 	if (world)
 	{
-		//Spawn currency particle
+		//Spawn luma particle
 		auto transform = GetActorTransform();
 		if (DeathEffectClass)
 		{
@@ -96,8 +96,8 @@ void ARTS_Unit::Kill()
 	{
 		if (Team && (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
 		{
-			//Add currency
-			int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);
+			//Add luma
+			int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
 			playercontroller->AddLuma(amount);
 		}
 	}

@@ -93,6 +93,17 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 	}
 
+	/* Luma overdose timer */
+	if (m_SecondsLeftOfOverdose > 0.0f)
+	{
+		m_SecondsLeftOfOverdose -= DeltaTime;
+		if (m_SecondsLeftOfOverdose <= 0.0f)
+		{
+			m_SecondsLeftOfOverdose = 0.0f;
+			Kill();
+		}
+	}
+
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
@@ -100,7 +111,10 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Apply effects */
 	for (auto e : UnitEffects)
 	{
-		if (!e) continue;
+		if (!e)
+		{
+			continue;
+		}
 
 		e->Elapsed += DeltaTime;
 
@@ -165,7 +179,7 @@ void ARTS_Entity::SetTeamMaterial(URTS_Team* t)
 		UE_LOG(RTS_ENTITY_LOG, Warning, TEXT("No selection mesh material found!"));
 	}
 
-	//Set minimap icon color
+	// Set minimap icon color
 	if (MinimapIcon)
 	{
 		if (MinimapIcon->GetMaterials().Num() > 0)
@@ -277,7 +291,9 @@ bool ARTS_Entity::HasEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
+		{
 			return true;
+		}
 	}
 	return false;
 }
@@ -287,7 +303,9 @@ void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
+		{
 			e->IsFinished = true;
+		}
 	}
 }
 
@@ -295,7 +313,7 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 {
 	UnitEffects.Add(effect);
 
-	// start particle systems
+	// Start particle systems
 	if (effect->StartParticles)
 	{
 		UGameplayStatics::SpawnEmitterAttached(effect->StartParticles, RootComponent);
@@ -312,34 +330,51 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 {
 	if (!UnitEffects.Contains(effect))
+	{
 		return;
+	}
 
 	switch (effect->AffectedStat)
 	{
 	case EUnitEffectStat::ARMOR:
+	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			CurrentDefenceStats.Armor -= (effect->Magnitude / effect->Duration) * effect->Ticks;
+		}
 		else if (effect->Ticks > 0)
+		{
 			CurrentDefenceStats.Armor -= effect->Magnitude;
-		break;
-
+		}
+	} break;
 	case EUnitEffectStat::DAMAGE:
+	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			CurrentAttackStats.Damage -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else if(effect->Ticks > 0)
+		}
+		else if (effect->Ticks > 0)
+		{
 			CurrentAttackStats.Damage -= effect->Magnitude;
-		break;
-
+		}
+	} break;
 	case EUnitEffectStat::MOVEMENT_SPEED:
+	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			CurrentMovementStats.Speed -= (effect->Magnitude / effect->Duration) * effect->Ticks;
-		else if(effect->Ticks > 0)
+		}
+		else if (effect->Ticks > 0)
+		{
 			CurrentMovementStats.Speed -= effect->Magnitude;
-		break;
-
+		}
+	} break;
 	case EUnitEffectStat::ATTACK_RATE:
+	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
+		{
 			break;
+		}
 		else
 		{
 			float percentage = float(effect->Magnitude) / 100.0f;
@@ -347,13 +382,14 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentAttackStats.AttackCooldown += FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
 			GetMesh()->GlobalAnimRateScale -= percentage;
 		}
-		break;
-
+	} break;
 	default:
-		break;
+	{
+		// Empty
+	} break;
 	}
 
-	// stop particle systems
+	// Stop particle systems
 	if (RootComponent && effect->EndParticles)
 	{
 		UGameplayStatics::SpawnEmitterAttached(effect->EndParticles, RootComponent);
@@ -370,7 +406,9 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 {
 	if (Health <= 0)
+	{
 		return true;
+	}
 
 	//Apply the damage
 	if (armor)
@@ -407,10 +445,10 @@ void ARTS_Entity::Kill()
 {
 	Health = 0;
 	SetSelected(false);
+
 	UCapsuleComponent* capsuleComponent = GetCapsuleComponent();
 	if (capsuleComponent)
 	{
-
 		UWorld* world = GetWorld();
 		if (world)
 		{
@@ -485,6 +523,7 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 		if (aiController)
 		{
 			Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
+			m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
 
 			//Set team color
 			auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();

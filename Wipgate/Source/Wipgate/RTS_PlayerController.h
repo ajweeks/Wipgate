@@ -120,15 +120,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentLumaAmount();
 
-	UFUNCTION(BlueprintCallable)
-		void AddCurrency(int32 CurrencyAmount);
-
-	UFUNCTION(BlueprintCallable)
-		void SpendCurrency(int32 CurrencyAmount);
-
-	UFUNCTION(BlueprintCallable)
-		int32 GetCurrentCurrencyAmount();
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 		TSubclassOf<UUserWidget> MainHUD;
 
@@ -274,6 +265,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
+	UPROPERTY(EditAnywhere)
+		int m_StartingLumaAmount = 125;
+
 	bool m_ReturnedToStartAfterViewingEnd = false;
 
 	FVector m_LevelStartLocation;
@@ -295,7 +289,6 @@ private:
 
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
 	int32 m_CurrentLuma = 0;
-	int32 m_CurrentCurrency = 0;
 
 
 	FVector2D m_ClickStartSS;
