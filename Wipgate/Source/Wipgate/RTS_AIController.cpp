@@ -153,29 +153,6 @@ FVector ARTS_AIController::GetSeekVector(const FVector target, FVector& nextPath
 
 FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 {
-	//TArray<FVector> obstaclePositions = GetEntityPositions(GetObstacles()); // TODO: take entity size into account
-
-	//if (obstaclePositions.Num() <= 0)
-	//	return FVector(0, 0, 0);
-
-	//FVector fromObstacle = m_FlockCenter - UKismetMathLibrary::GetVectorArrayAverage(obstaclePositions);
-	//fromObstacle = FlattenVector(fromObstacle);
-	//FVector toPathPoint = nextPathPoint - m_FlockCenter;
-	//toPathPoint = FlattenVector(toPathPoint);
-	//// extra avoid priority based on distance to obstacle and next path point
-	//float avoidPriority = fromObstacle.Size() / toPathPoint.Size();
-
-	//float dotProduct = FVector::DotProduct(FlattenVector(fromObstacle), FlattenVector(m_Entity->GetActorForwardVector()));
-	//dotProduct = FMath::Abs(dotProduct / 360);
-	////UE_LOG(LogTemp, Log, TEXT("Forward - avoidance dot product: %f"), dotProduct);
-
-	//fromObstacle.Normalize();
-	//toPathPoint.Normalize();
-
-	//FVector avoidance = toPathPoint + fromObstacle * (1 + avoidPriority);
-	////FVector avoidance = 0.75 * toPathPoint + fromObstacle * (0.5f + 0.5f * dotProduct);
-	//avoidance.Normalize();
-
 	FVector avoidance = FVector(0, 0, 0);
 
 	// linetrace
@@ -186,7 +163,7 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 	FVector moveDir = nextPathPoint - start;
 	float distanceToTarget = moveDir.Size();
 	moveDir.Normalize();
-	moveDir = moveDir * FMath::Clamp(300.0f, 0.0f, distanceToTarget - 100);
+	moveDir = moveDir * FMath::Clamp(300.0f, 0.0f, distanceToTarget - 75); // offset to avoid actual target
 
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(m_Entity);
@@ -194,9 +171,6 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 	float radius = m_Entity->GetCapsuleComponent()->GetScaledCapsuleRadius();
 	FVector right = start + m_Entity->GetActorRightVector() * (radius / 2) ;
 	FVector left = start - m_Entity->GetActorRightVector() * (radius / 2);
-	//DrawDebugLine(GetWorld(), right, right + moveDir, FColor::White, false, 0, (uint8)'\000', 2);
-	//DrawDebugLine(GetWorld(), left, left + moveDir, FColor::White, false, 0, (uint8)'\000', 2);
-	//GetWorld()->LineTraceSingleByObjectType(hitOut, start, end, params)
 
 	bool isRightHit = GetWorld()->LineTraceSingleByChannel(hitRight, right, right + moveDir, collisionChannel, params);
 	bool isLeftHit = GetWorld()->LineTraceSingleByChannel(hitLeft, left, left + moveDir, collisionChannel, params);
@@ -213,18 +187,11 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 		fromObstacle = FlattenVector(fromObstacle);
 		FVector toPathPoint = nextPathPoint - m_FlockCenter;
 		toPathPoint = FlattenVector(toPathPoint);
-		// extra avoid priority based on distance to obstacle and next path point
-		float avoidPriority = fromObstacle.Size() / toPathPoint.Size();
-
-		float dotProduct = FVector::DotProduct(FlattenVector(fromObstacle), FlattenVector(m_Entity->GetActorForwardVector()));
-		dotProduct = FMath::Abs(dotProduct / 360);
-		//UE_LOG(LogTemp, Log, TEXT("Forward - avoidance dot product: %f"), dotProduct);
 
 		fromObstacle.Normalize();
 		toPathPoint.Normalize();
 
-		FVector avoidanceAverage = toPathPoint + fromObstacle * (1 + avoidPriority);
-		//FVector avoidance = 0.75 * toPathPoint + fromObstacle * (0.5f + 0.5f * dotProduct);
+		FVector avoidanceAverage = toPathPoint + fromObstacle;
 		avoidanceAverage.Normalize();
 
 		FHitResult hitOut;
@@ -232,40 +199,41 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 			hitOut = hitRight;
 		if (isLeftHit)
 			hitOut = hitLeft;
-		
-		FVector hitLoc = hitOut.GetActor()->GetActorLocation();
-		//DrawDebugSphere(GetWorld(), hitLoc, 50, 32, FColor::White, false, 0, (uint8)'\000', 2);
 
-		// is obstacle left or right?
-		FVector toObstacle = hitOut.GetActor()->GetActorLocation() - start;
-		toObstacle.Normalize();
-		FVector toHit = hitLoc - start;
-		toHit.Normalize();
-		FVector toTargetLoc = moveDir;
-		//DrawDebugLine(GetWorld(), start, hitOut.GetActor()->GetActorLocation(), FColor::Black, false, 0, (uint8)'\000', 2);
-
-		if (isRightHit)
+		// if obstacle is an enemy, make that the target
+		ARTS_Entity* hitEntity = Cast<ARTS_Entity>(hitOut.GetActor());
+		if (hitEntity)
 		{
-			//PrintStringToScreen("RIGHT");
-			avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle, 
-						m_Entity->GetActorUpVector());
-			avoidance.Normalize();
-			avoidance *= 100;
+			if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY)
+				SetTargetEntity(hitEntity);
 		}
-		else
-		{
-			//PrintStringToScreen("LEFT");
-			avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle,
-						m_Entity->GetActorUpVector());
-			avoidance.Normalize();
-			avoidance *= -100;
-		}
-		avoidance.Normalize();
-		avoidance = avoidance + avoidanceAverage;
-		avoidance.Normalize();
 
-		//DrawDebugLine(GetWorld(), m_Entity->GetActorLocation(),
-		//	m_Entity->GetActorLocation() + avoidance, FColor::Red, false, 0, (uint8)'\000', 2);
+		//if (m_CurrentTask == EUNIT_TASK::CHASING)
+		//{
+		//	// is obstacle left or right?
+		//	FVector hitLoc = hitOut.GetActor()->GetActorLocation();
+		//	FVector toObstacle = hitOut.GetActor()->GetActorLocation() - start;
+		//	toObstacle.Normalize();
+		//	FVector toHit = hitLoc - start;
+		//	toHit.Normalize();
+		//	//DrawDebugLine(GetWorld(), start, hitOut.GetActor()->GetActorLocation(), FColor::Black, false, 0, (uint8)'\000', 2);
+
+		//	if (isRightHit)
+		//	{
+		//		avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle, m_Entity->GetActorUpVector());
+		//		avoidance.Normalize();
+		//		avoidance *= 1;
+		//	}
+		//	else
+		//	{
+		//		avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle, m_Entity->GetActorUpVector());
+		//		avoidance.Normalize();
+		//		avoidance *= -1;
+		//	}
+		//	avoidance.Normalize();
+		//}
+		avoidance += avoidanceAverage;
+		avoidance.Normalize();
 	}
 
 	return avoidance;
@@ -322,7 +290,7 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 {
 	FVector offset = FVector(0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 15);
 	FVector start = m_FlockCenter - offset;
-	float step = stepLength;
+	float step = stepLength * 2;
 
 	// separation
 	FVector end = start + separation * step - offset;
@@ -345,6 +313,9 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 
 bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
+	//m_FlockTick++;
+	//if (m_FlockTick % 3 != 0) return false;
+
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingMoveRadius);
 
@@ -357,7 +328,6 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 		FVector nextPathPoint;
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint) * avoidanceWeight;
-		//UE_LOG(LogTemp, Log, TEXT("%f"), avoidance.Size());
 
 
 		if (m_Entity->RenderFlockingDebugInfo)
@@ -375,19 +345,17 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 	FVector target2D = FlattenVector(target);
 	float distanceToTarget = (pos2D - target2D).Size();
 
-	// standard acceptance radius
 	if (distanceToTarget < acceptanceRadius) 
 		return true;
-	// acceptance radius relative to velocity and nearby entity count
-	//else if (distanceToTarget <= m_NearbyEntities.Num() * 30
-	//	&& m_Entity->GetVelocity().Size() <= 30)
-	//	return true;
 
 	return false;
 }
 
-bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
+bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
+	//m_FlockTick++;
+	//if (m_FlockTick % 2 != 0) return false;
+
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
 
@@ -395,11 +363,13 @@ bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float s
 		MoveToLocation(target);
 	else
 	{
-		FVector separation = GetSeparationVector(m_FlockingChaseRadius) * separationWeight;
-		FVector cohesion = GetCohesionVector() * cohesionweight;
 		FVector nextPathPoint;
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint) * avoidanceWeight;
+
+		separationWeight *= 1 + m_ObstructedTimer * 30;
+		FVector separation = GetSeparationVector(m_FlockingChaseRadius) * separationWeight;
+		FVector cohesion = GetCohesionVector() * cohesionweight;
 		//UE_LOG(LogTemp, Log, TEXT("Avoidance length: %f, Avoidance weight: %f"), avoidance.Size(), avoidanceWeight);
 
 		if (m_Entity->RenderFlockingDebugInfo)
@@ -488,6 +458,13 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 bool ARTS_AIController::IsTargetAttacking()
 {
 	return (GetController(TargetEntity)->GetCurrentTask() == EUNIT_TASK::ATTACKING);
+}
+
+bool ARTS_AIController::IsTargetAgressive()
+{
+	EUNIT_TASK targetTask = GetController(TargetEntity)->GetCurrentTask();
+	return (targetTask  == EUNIT_TASK::ATTACKING
+		|| targetTask == EUNIT_TASK::CHASING);
 }
 
 TArray<ARTS_Entity*> ARTS_AIController::GetFriendlyEntities(const TArray<ARTS_Entity*> entities)
@@ -617,6 +594,15 @@ ARTS_AIController* ARTS_AIController::GetController(ARTS_Entity* entity)
 {
 	AAIController* controller = Cast<AAIController>(entity->GetController());
 	return Cast<ARTS_AIController>(controller);
+}
+
+void ARTS_AIController::UpdateObstructedTimer(const float deltaTime)
+{
+	if (m_CurrentTask == EUNIT_TASK::CHASING && m_Entity->GetVelocity().Size() <= 60)
+		m_ObstructedTimer += deltaTime;
+	else if (m_CurrentTask == EUNIT_TASK::CHASING && m_Entity->GetVelocity().Size() >= 60)
+		m_ObstructedTimer = 0;
+	return;
 }
 
 FVector ARTS_AIController::FlattenVector(FVector vec)
