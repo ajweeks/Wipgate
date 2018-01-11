@@ -25,6 +25,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void InitializeEntity(ARTS_Entity* entity, ETeamAlignment alignment);
 	virtual void Tick(float DeltaTime) override;
+	virtual bool ShouldTickIfViewportsOnly() const override;
 
 	/* PROPERTIES */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
