@@ -116,10 +116,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void DeselectEntity(ARTS_Entity* Entity);
 
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateCurrencyAmount(int32 CurrencyAmount);
-
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateLumaAmount(int32 LumaAmount);
 

@@ -175,7 +175,6 @@ void ARTS_PlayerController::BeginPlay()
 	}
 	else if (DEBUG_StartWithCurrency && gameinstance->CurrentRound == 0)
 	{
-		AddCurrency(1000);
 		AddLuma(1000);
 	}
 	AddLuma(125);
@@ -1129,35 +1128,6 @@ void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 int32 ARTS_PlayerController::GetCurrentLumaAmount()
 {
 	return m_CurrentLuma;
-}
-
-void ARTS_PlayerController::AddCurrency(int32 CurrencyAmount)
-{
-	if (CurrencyAmount > 0)
-	{
-		m_CurrentCurrency += CurrencyAmount;
-		if (m_RTSHUD)
-		{
-			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
-		}
-	}
-}
-
-void ARTS_PlayerController::SpendCurrency(int32 CurrencyAmount)
-{
-	if (CurrencyAmount > 0 && m_CurrentCurrency >= CurrencyAmount)
-	{
-		m_CurrentCurrency -= CurrencyAmount;
-		if (m_RTSHUD)
-		{
-			m_RTSHUD->UpdateCurrencyAmount(m_CurrentCurrency);
-		}
-	}
-}
-
-int32 ARTS_PlayerController::GetCurrentCurrencyAmount()
-{
-	return m_CurrentCurrency;
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)

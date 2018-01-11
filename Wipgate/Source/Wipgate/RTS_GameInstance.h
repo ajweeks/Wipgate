@@ -23,8 +23,6 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FUpgrade> ActiveUpgrades;
 	UPROPERTY(BlueprintReadWrite)
-	int CurrentCurrency = 0;
-	UPROPERTY(BlueprintReadWrite)
 	int CurrentLuma = 0;
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
@@ -32,10 +30,6 @@ public:
 
 
 	/* FUNCTION */
-	UFUNCTION(BlueprintCallable)
-		void AddCurrency(int amount);
-	UFUNCTION(BlueprintCallable)
-		void SpendCurrency(int amount);
 	UFUNCTION(BlueprintCallable)
 		void AddLuma(int amount);
 	UFUNCTION(BlueprintCallable)

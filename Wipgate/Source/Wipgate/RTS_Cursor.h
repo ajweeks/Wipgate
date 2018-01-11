@@ -23,20 +23,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* DefaultTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* GrabbedTexture;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* MoveTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* AttackMoveTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* DrugTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTexture2D* Commander1Texture;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTexture2D* Commander2Texture;
+		UTexture2D* CommanderTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* PotionTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTexture2D* SlashedCircleTexture;
+		UTexture2D* InvalidTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTexture2D* StopCircleTexture;
+		UTexture2D* ShopTexture;
 
 };

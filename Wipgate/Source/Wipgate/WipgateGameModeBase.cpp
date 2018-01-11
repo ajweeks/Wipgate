@@ -167,8 +167,7 @@ void AWipgateGameModeBase::BeginPlay()
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy team. Returning..."));
 		}
 
-		//Update currency & luma
-		playercontroller->AddCurrency(gameinstance->CurrentCurrency);
+		//Update luma
 		playercontroller->AddLuma(gameinstance->CurrentLuma);
 	}
 	else
@@ -208,7 +207,6 @@ void AWipgateGameModeBase::SaveResources()
 		return;
 	}
 
-	gameinstance->CurrentCurrency = playercontroller->GetCurrentCurrencyAmount();
 	gameinstance->CurrentLuma = playercontroller->GetCurrentLumaAmount();
 }
 
