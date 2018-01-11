@@ -5,7 +5,9 @@
 #include "UnitEffect.h"
 #include "Command.h"
 #include "RTS_Entity.h"
+#include "ConstructorHelpers.h"
 #include "GeneralFunctionLibrary_CPP.generated.h"
+
 class APlayerController;
 
 UCLASS()
@@ -70,10 +72,7 @@ void PrintStringToScreen(FString text, FColor Color = FColor::White, float TimeT
 template<class T>
 void AttemptToFindObjectByPath(T** object, const TCHAR* path)
 {
-	ConstructorHelpers::FObjectFinder<T> findResults(path);
+	ConstructorHelpers::FObjectFinderOptional<T> findResults(path);
 
-	if (findResults.Succeeded())
-	{
-		*object = findResults.Object;
-	}
+	*object = findResults.Get();
 }
