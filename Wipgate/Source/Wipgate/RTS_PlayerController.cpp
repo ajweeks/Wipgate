@@ -373,7 +373,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			}
 
 			FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
-			FVector targetDCamLocation;
+			FVector targetDCamLocation = FVector::ZeroVector;
 
 			FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
 			if (normMousePos.X > 1.0f - m_EdgeSize)
@@ -429,7 +429,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	FHitResult hitResult;
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
 	AActor* actorUnderCursor = hitResult.Actor.Get();
-	ARTS_Entity* entityUnderCursor = nullptr;
+	static ARTS_Entity* entityUnderCursor = nullptr;
+	ARTS_Entity* prevEntityUnderCursor = entityUnderCursor;
 
 	FVector2D selectionBoxMin = m_ClickStartSS;
 	FVector2D selectionBoxMax = m_ClickEndSS;
@@ -531,6 +532,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 				}
 			}
 		}
+	}
+
+	if (SelectedAbility && entityUnderCursor && !prevEntityUnderCursor)
+	{
+		CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
 	}
 
 	if (m_SpecialistShowingAbilities)
