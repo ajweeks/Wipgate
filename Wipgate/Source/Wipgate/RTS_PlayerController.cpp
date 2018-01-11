@@ -534,23 +534,23 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	if (SelectedAbility && entityUnderCursor && !prevEntityUnderCursor)
+	if (SelectedAbility && entityUnderCursor)
 	{
 		CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
 	}
 
 	if (m_SpecialistShowingAbilities)
 	{
-		if (m_SpecialistShowingAbilities->Health <= 0)
+		if (m_SpecialistShowingAbilities->IsSelectableByPlayer())
+		{
+			UpdateSpecialistAbilityButtons();
+		}
+		else
 		{
 			ClearSpecialistAbilityButtons();
 			m_RTS_GameState->SelectedEntities.Empty();
 			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
 			m_SpecialistShowingAbilities = nullptr;
-		}
-		else
-		{
-			UpdateSpecialistAbilityButtons();
 		}
 	}
 
