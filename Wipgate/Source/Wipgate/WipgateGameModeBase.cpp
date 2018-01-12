@@ -32,6 +32,11 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
+	if (!m_FriendlyAddedTroops)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No friendly added troops table was linked. Returning..."));
+		return;
+	}
 
 	//Get table rows
 	TArray<FTeamRow*> rows;
@@ -125,6 +130,31 @@ void AWipgateGameModeBase::BeginPlay()
 			}
 		}
 		actors.Empty();
+
+		//Add entities to player's team
+		TArray<FEntityRow*> playerRows;
+		m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
+		
+		for (auto pr : playerRows)
+		{
+			if (pr->Round == gameinstance->CurrentRound)
+			{
+				for (int i = 0; i < pr->Spawns.Num(); i++)
+				{
+					FEntitySpawn es = pr->Spawns[i];
+					ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+					for (int i = 0; i < es.Amount; i++)
+					{
+						FEntitySave save;
+						save.Entity = es.Entity;
+						save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+						save.LumaStats = defaultObject->CurrentLumaStats;
+						gameinstance->SavedEntities.Add(save);
+					}
+				}
+			}
+		}
+
 
 		//Spawn player
 		auto playerspawner = GetPlayerSpawner();

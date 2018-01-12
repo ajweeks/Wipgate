@@ -50,6 +50,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_EnemyUpgradeTable;
 
+	//Make sure the datatable is inheriting from FEntityRow
+	UPROPERTY(EditAnywhere)
+		UDataTable* m_FriendlyAddedTroops;
+
 	//Base spawn chance of an entity spawner
 	UPROPERTY(EditAnywhere)
 		float BaseSpawnChance = 0.5f;
