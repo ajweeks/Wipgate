@@ -521,6 +521,8 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 		SetTargetEntity(Cast<UCommand_Attack>(command)->Target);
 		break;
 	case ECOMMAND_TYPE::CAST:
+		m_CurrentTask = EUNIT_TASK::CHASING;
+		//SetTargetEntity(Cast<UCommand_CastTarget>(command)->TargetUnit);
 		break;
 	default:
 		break;
@@ -590,11 +592,11 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 	m_CommandQueue.Add(command);
 }
 
-void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
+void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Unit * target, const bool isForced, const bool isQueued)
 {
 	UCommand_CastTarget* command = NewObject<UCommand_CastTarget>(this);
 	command->Ability = ability;
-	command->TargetEntity = target;
+	command->TargetUnit = target;
 	command->IsForced = isForced;
 
 	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)

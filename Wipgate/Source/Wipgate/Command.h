@@ -5,6 +5,7 @@
 
 class AAbility;
 class ARTS_Entity;
+class ARTS_Unit;
 
 UENUM(BlueprintType)
 enum class ECOMMAND_TYPE : uint8

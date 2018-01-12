@@ -735,9 +735,12 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Icon->OnAbilityActivate();
 						}
 						SelectedAbility->SetTarget(unitUnderCursor);
-						//IsInputKeyDown(EKeys())
 						//ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
-						//controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, );
+						//if (IsInputKeyDown(FKey("LeftShift")))
+						//	controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, true, true);
+						//else
+						//	controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, true, false);
+
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
