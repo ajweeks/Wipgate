@@ -999,7 +999,8 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 
 	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
-	if (m_RTS_GameState->SelectedEntities.Num() == 0)
+	int32 currentSelectionEntityCount = SelectionGroup->Num();
+	if (currentSelectionEntityCount == 0)
 	{
 		if (previousSelectionEntityCount != 0)
 		{
@@ -1008,7 +1009,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 	}
 	else
 	{
-		m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
+		m_RTSHUD->ShowSelectionGroupIcon(Index - 1, currentSelectionEntityCount);
 	}
 }
 
