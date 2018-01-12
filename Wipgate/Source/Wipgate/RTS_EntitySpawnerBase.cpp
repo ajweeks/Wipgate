@@ -15,15 +15,15 @@ ARTS_EntitySpawnerBase::ARTS_EntitySpawnerBase()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignment alignment)
+void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignment teamAlignment)
 {
 	auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
 	if (gamemode)
 	{
-		URTS_Team* team = gamemode->GetTeamWithAlignment(alignment);
+		URTS_Team* team = gamemode->GetTeamWithAlignment(teamAlignment);
 		entity->Team = team;
 		team->Entities.Add(entity);
-		entity->Alignment = alignment;
+		entity->Alignment = teamAlignment;
 		entity->PostInitialize();
 		auto gamestate = gamemode->GetGameState<ARTS_GameState>();
 		if (gamestate)
@@ -39,6 +39,13 @@ void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignme
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("InitializeEntity > No gamemode found!"));
 	}
+	m_SpawnedEntities.Add(entity);
+	entity->Spawner = this;
+}
+
+void ARTS_EntitySpawnerBase::RemoveEntity(ARTS_Entity * entity)
+{
+	m_SpawnedEntities.Remove(entity);
 }
 
 void ARTS_EntitySpawnerBase::Tick(float DeltaTime)

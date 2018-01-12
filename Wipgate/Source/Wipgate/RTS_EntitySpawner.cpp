@@ -10,3 +10,4 @@ ARTS_EntitySpawner::ARTS_EntitySpawner()
 	PrimaryActorTick.bCanEverTick = true;
 
 }
+

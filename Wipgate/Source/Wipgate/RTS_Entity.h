@@ -17,6 +17,7 @@ class UStaticMeshComponent;
 class USoundCue;
 class USoundConcurrency;
 class URTS_Team;
+class ARTS_EntitySpawnerBase;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -209,6 +210,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		float m_SecondsLeftOfOverdose = 0.0f;
 
+	//SPAWNER
+	ARTS_EntitySpawnerBase* Spawner;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
