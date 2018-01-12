@@ -170,15 +170,6 @@ void ARTS_PlayerController::BeginPlay()
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
 	}
 
-	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
-	if (!gameinstance)
-	{
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("BeginPlay > No game instance found!"));
-	}
-	else if (DEBUG_StartWithCurrency && gameinstance->CurrentRound == 0)
-	{
-		AddLuma(1000);
-	}
 	AddLuma(m_StartingLumaAmount);
 }
 
