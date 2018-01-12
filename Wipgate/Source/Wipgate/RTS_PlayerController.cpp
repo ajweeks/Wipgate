@@ -681,6 +681,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else // No valid specialist - don't perform range check
@@ -693,6 +694,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					SelectedAbility->Activate();
 					SelectedAbility->Deselect();
 					SelectedAbility = nullptr;
+					unitUnderCursor->SetHighlighted();
 				}
 			}
 			else
@@ -720,6 +722,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
+							unitUnderCursor->SetHighlighted();
 						}
 					}
 					else // No valid specialist - don't perform range check
@@ -732,6 +735,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else
@@ -764,6 +768,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
+							unitUnderCursor->SetHighlighted();
 						}
 					}
 					else // No valid specialist - don't perform range check
@@ -776,6 +781,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else

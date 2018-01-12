@@ -74,6 +74,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void RemoveLumaSaturation(int32 LumaToRemove);
 
+	// Calling this function will make the selection ring flash for a short period
+	UFUNCTION(BlueprintCallable)
+		void SetHighlighted();
+
+
 	UPROPERTY(BlueprintReadOnly)
 		int LumaToRemoveOnEnemyDeath = 1;
 
@@ -216,6 +221,20 @@ private:
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
 		bool Selected;
+
+	/* HIGHLIGHTED */
+	UPROPERTY(EditAnywhere)
+		int m_HighlightFlashCount = 4;
+
+	UPROPERTY(EditAnywhere)
+		float m_SecondsToHighlight = 0.8f;
+
+	// True when being targetted by the player (flashes selection mesh)
+	bool m_Highlighted;
+
+	// Timer used to determine how long to flash selection mesh for
+	float m_SecondsLeftOfHighlighting = 0.0f;
+
 
 	const int EFFECT_INTERVAL = 1;
 	
