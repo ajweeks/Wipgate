@@ -159,10 +159,6 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		URTS_Team* Team;
 
-	// Set true to start the game with luma and currency
-	UPROPERTY(EditAnywhere, Category = "Debug")
-		bool DEBUG_StartWithCurrency;
-
 private:
 	void ActionPrimaryClickPressed();
 	void ActionPrimaryClickReleased();
