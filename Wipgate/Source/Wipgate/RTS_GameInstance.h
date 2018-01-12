@@ -11,6 +11,9 @@
 /**
  * 
  */
+
+DECLARE_LOG_CATEGORY_EXTERN(RTS_GameInstance, Log, All);
+
 UCLASS()
 class WIPGATE_API URTS_GameInstance : public UGameInstance
 {
@@ -34,4 +37,6 @@ public:
 		void AddLuma(int amount);
 	UFUNCTION(BlueprintCallable)
 		void SpendLuma(int amount);
+	UFUNCTION(BlueprintCallable)
+		void EndRound();
 };
