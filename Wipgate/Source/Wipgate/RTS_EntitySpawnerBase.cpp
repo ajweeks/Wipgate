@@ -40,7 +40,11 @@ void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignme
 		UE_LOG(WipgateGameModeBase, Error, TEXT("InitializeEntity > No gamemode found!"));
 	}
 	m_SpawnedEntities.Add(entity);
-	entity->Spawner = this;
+}
+
+void ARTS_EntitySpawnerBase::AddEntity(ARTS_Entity * entity)
+{
+	m_SpawnedEntities.Add(entity);
 }
 
 void ARTS_EntitySpawnerBase::RemoveEntity(ARTS_Entity * entity)

@@ -28,6 +28,7 @@
 #include "RTS_Team.h"
 #include "RTS_AIController.h"
 #include "RTS_EntitySpawnerBase.h"
+#include "RTS_EntitySpawner.h"
 #include "GeneralFunctionLibrary_CPP.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);

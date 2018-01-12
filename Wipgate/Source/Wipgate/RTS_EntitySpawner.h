@@ -8,6 +8,7 @@
 #include "RTS_EntitySpawner.generated.h"
 
 class ARTS_Entity;
+class ARTS_SetPiece;
 
 UCLASS()
 class WIPGATE_API ARTS_EntitySpawner : public ARTS_EntitySpawnerBase
@@ -28,10 +29,13 @@ public:
 	//Alignment of the team that the spawned entities will belong to
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ETeamAlignment Alignment = ETeamAlignment::E_AGGRESSIVE_AI;
+	//Set piece
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ARTS_SetPiece> SetPiece;
 
-	/* FUNCTIONS*/
+	/* FUNCTIONS */
 	UFUNCTION(BlueprintCallable)
-		TArray<ARTS_Entity*> GetSpawnedEntities() { return m_SpawnedEntities; }
+		virtual void InitializeEntity(ARTS_Entity* entity, ETeamAlignment teamAlignment) override;
 private:
 
 };

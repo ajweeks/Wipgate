@@ -22,8 +22,9 @@ public:
 	/* FUNCTIONS */
 	UFUNCTION(BlueprintImplementableEvent)
 		void SpawnEntities();
-	UFUNCTION(BlueprintCallable)
 		virtual void InitializeEntity(ARTS_Entity* entity, ETeamAlignment teamAlignment);
+	UFUNCTION(BlueprintCallable)
+		void AddEntity(ARTS_Entity* entity);
 	UFUNCTION(BlueprintCallable)
 		void RemoveEntity(ARTS_Entity* entity);
 	virtual void Tick(float DeltaTime) override;
