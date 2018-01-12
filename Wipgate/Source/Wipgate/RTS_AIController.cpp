@@ -520,9 +520,12 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 		m_CurrentTask = EUNIT_TASK::ATTACKING;
 		SetTargetEntity(Cast<UCommand_Attack>(command)->Target);
 		break;
-	case ECOMMAND_TYPE::CAST:
+	case ECOMMAND_TYPE::CAST_ON_TARGET:
 		m_CurrentTask = EUNIT_TASK::CHASING;
 		//SetTargetEntity(Cast<UCommand_CastTarget>(command)->TargetUnit);
+	case ECOMMAND_TYPE::CAST_ON_GROUND:
+		m_CurrentTask = EUNIT_TASK::CHASING;
+		SetTargetLocation(Cast<UCommand_CastGround>(command)->Target);
 		break;
 	default:
 		break;
@@ -592,11 +595,11 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 	m_CommandQueue.Add(command);
 }
 
-void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Unit * target, const bool isForced, const bool isQueued)
+void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
 {
 	UCommand_CastTarget* command = NewObject<UCommand_CastTarget>(this);
 	command->Ability = ability;
-	command->TargetUnit = target;
+	command->Target = target;
 	command->IsForced = isForced;
 
 	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)

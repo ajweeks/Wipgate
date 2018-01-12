@@ -17,7 +17,8 @@ enum class ECOMMAND_TYPE : uint8
 	ATTACK_MOVE 			UMETA(DisplayName = "Attack Move"),
 	PATROL 					UMETA(DisplayName = "Patrol"),
 	ATTACK 					UMETA(DisplayName = "Attack"),
-	CAST 					UMETA(DisplayName = "Cast Ability"),
+	CAST_ON_TARGET			UMETA(DisplayName = "Cast Ability On Target"),
+	CAST_ON_GROUND			UMETA(DisplayName = "Cast Ability On Ground"),
 };
 
 
@@ -137,18 +138,18 @@ class WIPGATE_API UCommand_CastTarget : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_CastTarget(AAbility* ability, ARTS_Unit* target)
-		: Ability(ability), TargetUnit(target)
-	{ Type = ECOMMAND_TYPE::CAST; }
+	UCommand_CastTarget(AAbility* ability, ARTS_Entity* target)
+		: Ability(ability), Target(target)
+	{ Type = ECOMMAND_TYPE::CAST_ON_TARGET; }
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* Ability;
 	UPROPERTY(BlueprintReadWrite)
-		ARTS_Unit* TargetUnit;
+		ARTS_Entity* Target;
 
 private:
 	UCommand_CastTarget() : UCommand(true)
-	{ Type = ECOMMAND_TYPE::CAST; }
+	{ Type = ECOMMAND_TYPE::CAST_ON_TARGET; }
 };
 
 UCLASS(Blueprintable)
@@ -157,17 +158,17 @@ class WIPGATE_API UCommand_CastGround : public UCommand
 	GENERATED_BODY()
 public:
 	UCommand_CastGround(AAbility* ability, const FVector target) 
-		: Ability(ability), TargetLocation(target)
-	{ Type = ECOMMAND_TYPE::CAST; }
+		: Ability(ability), Target(target)
+	{ Type = ECOMMAND_TYPE::CAST_ON_GROUND; }
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* Ability;
 	UPROPERTY(BlueprintReadWrite)
-		FVector TargetLocation;
+		FVector Target;
 
 private:
 	UCommand_CastGround() : UCommand(true)
 	{
-		Type = ECOMMAND_TYPE::CAST;
+		Type = ECOMMAND_TYPE::CAST_ON_GROUND;
 	}
 };

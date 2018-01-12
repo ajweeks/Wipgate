@@ -92,6 +92,8 @@ protected:
 		AActor* m_Caster;
 	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
 		AActor* m_Target;
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		FVector m_TargetLocation;
 
 	virtual void BeginPlay() override;
 
