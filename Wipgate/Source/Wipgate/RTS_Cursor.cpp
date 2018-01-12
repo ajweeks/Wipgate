@@ -14,8 +14,8 @@ URTS_Cursor::URTS_Cursor(const FObjectInitializer& ObjectInitializer) :
 {
 	AttemptToFindObjectByPath(&DefaultTexture, TEXT("Texture2D'/Game/Art/Cursors/pointyhand.pointyhand'"));
 	AttemptToFindObjectByPath(&GrabbedTexture, TEXT("Texture2D'/Game/Art/Cursors/closedhand.closedhand'"));
-	AttemptToFindObjectByPath(&MoveTexture, TEXT("Texture2D'/Game/Art/Cursors/AttackCursor2.AttackCursor2'"));
-	AttemptToFindObjectByPath(&AttackMoveTexture, TEXT("Texture2D'/Game/Art/Cursors/AttackCursor.AttackCursor'"));
+	AttemptToFindObjectByPath(&MoveTexture, TEXT("Texture2D'/Game/Art/Cursors/MoveCursor.MoveCursor'"));
+	AttemptToFindObjectByPath(&AttackMoveTexture, TEXT("Texture2D'/Game/Art/Cursors/AttackCursor2.AttackCursor2'"));
 	AttemptToFindObjectByPath(&DrugTexture, TEXT("Texture2D'/Game/Art/Cursors/DrugCursor.DrugCursor'"));
 	AttemptToFindObjectByPath(&CommanderTexture, TEXT("Texture2D'/Game/Art/Cursors/CommanderCursor.CommanderCursor'"));
 	AttemptToFindObjectByPath(&PotionTexture, TEXT("Texture2D'/Game/Art/Cursors/potioncursor.potioncursor'"));

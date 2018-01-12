@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void SetCursorTexture(UTexture2D* NewCursorTexture);
 
+	UPROPERTY(BlueprintReadWrite)
+		UTexture2D* CurrentTexture;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* DefaultTexture;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
