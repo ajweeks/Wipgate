@@ -490,7 +490,8 @@ TArray<FVector> ARTS_AIController::GetEntityPositions(const TArray<ARTS_Entity*>
 
 void ARTS_AIController::ExecuteCommand(UCommand * command)
 {
-	if (!IsValid(command))
+	if (!IsValid(command) && m_CurrentTask != EUNIT_TASK::CASTING 
+		&& m_CurrentTask != EUNIT_TASK::EXECUTING)
 	{
 		m_CurrentTask = EUNIT_TASK::IDLE;
 		return;
@@ -522,7 +523,8 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 		break;
 	case ECOMMAND_TYPE::CAST_ON_TARGET:
 		m_CurrentTask = EUNIT_TASK::CHASING;
-		//SetTargetEntity(Cast<UCommand_CastTarget>(command)->TargetUnit);
+		SetTargetEntity(Cast<UCommand_CastTarget>(command)->Target);
+		break;
 	case ECOMMAND_TYPE::CAST_ON_GROUND:
 		m_CurrentTask = EUNIT_TASK::CHASING;
 		SetTargetLocation(Cast<UCommand_CastGround>(command)->Target);
@@ -538,6 +540,7 @@ void ARTS_AIController::PopCommand()
 {
 	if (m_CommandQueue.Num() > 0)
 		m_CommandQueue.RemoveAt(0);
+	m_CurrentCommand = nullptr;
 }
 
 void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued)
