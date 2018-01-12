@@ -57,6 +57,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		bool IsTargetAttacking();
 	UFUNCTION(BlueprintCallable, Category = "AI")
+		bool IsTargetAgressive();
+	UFUNCTION(BlueprintCallable, Category = "AI")
 		TArray<ARTS_Entity*> GetFriendlyEntities(const TArray<ARTS_Entity*> entities);
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		TArray<FVector> GetEntityPositions(const TArray<ARTS_Entity*> entities);
@@ -84,7 +86,7 @@ public:
 		bool FlockMoveToLocation(const FVector target, const float separationWeight = 1.0f, const float cohesionweight = 0.5f,
 			const float seekWeight = 2.0f, const float avoidanceWeight = 2.0f, const float stepLength = 300, const float acceptanceRadius = 50);
 	UFUNCTION(BlueprintCallable, Category = "Flocking")
-		bool FlockChaseToLocation(const FVector target, const float separationWeight = 0.8f, const float cohesionweight = 0.5f,
+		bool FlockChaseToLocation(const FVector target, float separationWeight = 0.8f, const float cohesionweight = 0.5f,
 			const float seekWeight = 2.0f, const float avoidanceWeight = 2.0f, const float stepLength = 300, const float acceptanceRadius = 50);
 
 	/* --- Command functions --- */
@@ -137,9 +139,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_FlockingChaseRadius = 500;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_ObstructedTimer = 0;
+
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Obstruction")
+		void UpdateObstructedTimer(const float deltaTime);
+
 private:
 
 	FVector m_FlockCenter;
+	int m_FlockTick = 0;
 
 	FVector FlattenVector(FVector vec);
+
 };
