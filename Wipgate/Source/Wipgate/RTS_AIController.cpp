@@ -590,6 +590,19 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 	m_CommandQueue.Add(command);
 }
 
+void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
+{
+	UCommand_CastTarget* command = NewObject<UCommand_CastTarget>(this);
+	command->Ability = ability;
+	command->TargetEntity = target;
+	command->IsForced = isForced;
+
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+		m_CommandQueue.Empty();
+
+	m_CommandQueue.Add(command);
+}
+
 ARTS_AIController* ARTS_AIController::GetController(ARTS_Entity* entity)
 {
 	AAIController* controller = Cast<AAIController>(entity->GetController());

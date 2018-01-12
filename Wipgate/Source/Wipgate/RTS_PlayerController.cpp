@@ -37,6 +37,7 @@
 #include "RTS_Specialist.h"
 #include "RTS_Team.h"
 #include "RTS_Unit.h"
+#include "RTS_AIController.h"
 #include "WipgateGameModeBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -678,6 +679,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Icon->OnAbilityActivate();
 						}
 						SelectedAbility->SetTarget(unitUnderCursor);
+						//IsInputKeyDown(EKeys())
+						//ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
+						//controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, );
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
