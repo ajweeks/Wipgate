@@ -66,7 +66,12 @@ ARTS_Entity* ARTS_AIController::GetClosestEntity(const TArray<ARTS_Entity*> enti
 void ARTS_AIController::RotateTowardsTarget()
 {
 	FVector start = m_FlockCenter;
-	FVector end = TargetEntity->GetActorLocation();
+	FVector end;
+	if (TargetEntity)
+		end = TargetEntity->GetActorLocation();
+	else
+		end = m_TargetLocation;
+
 	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
 	newRotation.Roll = 0;
 	newRotation.Pitch = 0;
@@ -603,6 +608,19 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
 {
 	UCommand_CastTarget* command = NewObject<UCommand_CastTarget>(this);
+	command->Ability = ability;
+	command->Target = target;
+	command->IsForced = isForced;
+
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+		m_CommandQueue.Empty();
+
+	m_CommandQueue.Add(command);
+}
+
+void ARTS_AIController::AddCommand_CastGround(AAbility * ability, FVector target, const bool isForced, const bool isQueued)
+{
+	UCommand_CastGround* command = NewObject<UCommand_CastGround>(this);
 	command->Ability = ability;
 	command->Target = target;
 	command->IsForced = isForced;

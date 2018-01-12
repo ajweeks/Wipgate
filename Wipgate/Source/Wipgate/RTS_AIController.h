@@ -107,6 +107,9 @@ public:
 		void AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued);
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_CastTarget(AAbility* ability, ARTS_Entity* target, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_CastGround(AAbility* ability, FVector target, const bool isForced, const bool isQueued);
+
 
 public:
 	UPROPERTY(BlueprintReadWrite)
@@ -129,6 +132,8 @@ protected:
 		TArray<UCommand*> m_CommandQueue;
 	UPROPERTY(BlueprintReadWrite)
 		UCommand* m_CurrentCommand;
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* CurrentAbility;
 
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAlert;

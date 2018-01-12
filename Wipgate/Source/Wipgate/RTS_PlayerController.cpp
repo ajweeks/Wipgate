@@ -693,17 +693,18 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (m_SpecialistShowingAbilities)
 				{
-					float entityDist = FVector::DistXY(hitResult.ImpactPoint, m_SpecialistShowingAbilities->GetActorLocation());
-					if (entityDist < abilityRange)
+					if (SelectedAbility->Icon)
 					{
-						if (SelectedAbility->Icon)
-						{
-							SelectedAbility->Icon->OnAbilityActivate();
-						}
-						SelectedAbility->Activate();
-						SelectedAbility->Deselect();
-						SelectedAbility = nullptr;
+						SelectedAbility->Icon->OnAbilityActivate();
 					}
+					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
+					if (IsInputKeyDown(FKey("LeftShift")))
+						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, true);
+					else
+						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, false);
+
+					SelectedAbility->Deselect();
+					SelectedAbility = nullptr;
 				}
 				else // No valid specialist - don't perform range check
 				{

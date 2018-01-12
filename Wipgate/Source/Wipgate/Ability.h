@@ -70,7 +70,7 @@ public:
 
 	// True once this ability has finished executing
 	UPROPERTY(BlueprintReadWrite)
-		bool IsCompleted;
+		bool IsCasting;
 
 	UPROPERTY(BlueprintReadWrite)
 		UAbilityIconBase* Icon;
