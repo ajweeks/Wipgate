@@ -462,6 +462,8 @@ bool ARTS_AIController::IsTargetAttacking()
 
 bool ARTS_AIController::IsTargetAgressive()
 {
+	if (!TargetEntity) return false;
+
 	EUNIT_TASK targetTask = GetController(TargetEntity)->GetCurrentTask();
 	return (targetTask  == EUNIT_TASK::ATTACKING
 		|| targetTask == EUNIT_TASK::CHASING);
