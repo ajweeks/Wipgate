@@ -104,6 +104,27 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 	}
 
+	/* Highlighted */
+	if (m_SecondsLeftOfHighlighting > 0.0f)
+	{
+		m_SecondsLeftOfHighlighting -= DeltaTime;
+
+		if (m_SecondsLeftOfHighlighting <= 0.0f)
+		{
+			m_SecondsLeftOfHighlighting = 0.0f;
+		}
+		else
+		{
+			if (SelectionStaticMeshComponent)
+			{
+				float flashInterval = m_SecondsToHighlight / m_HighlightFlashCount;
+				bool showSelectionMesh = (FMath::Fmod(m_SecondsLeftOfHighlighting, flashInterval) > flashInterval / 2.0f);
+
+				SelectionStaticMeshComponent->SetVisibility(showSelectionMesh, true);
+			}
+		}
+	}
+
 	/* Update movement stats */
 	UCharacterMovementComponent* movement = GetCharacterMovement(); 
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
@@ -552,6 +573,11 @@ void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
 	{
 		CurrentLumaStats.LumaSaturation = 0;
 	}
+}
+
+void ARTS_Entity::SetHighlighted()
+{
+	m_SecondsLeftOfHighlighting = m_SecondsToHighlight;
 }
 
 bool ARTS_Entity::IsSelectableByPlayer() const

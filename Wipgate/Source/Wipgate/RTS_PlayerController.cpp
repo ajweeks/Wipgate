@@ -22,6 +22,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
+#include "AI/Navigation/NavigationSystem.h"
 
 #include "Ability.h"
 #include "AbilityIconBase.h"
@@ -432,6 +433,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	AActor* actorUnderCursor = hitResult.Actor.Get();
 	static ARTS_Entity* entityUnderCursor = nullptr;
 	ARTS_Entity* prevEntityUnderCursor = entityUnderCursor;
+	entityUnderCursor = nullptr;
 
 	FVector2D selectionBoxMin = m_ClickStartSS;
 	FVector2D selectionBoxMax = m_ClickEndSS;
@@ -535,9 +537,63 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	if (SelectedAbility && entityUnderCursor)
+	/* Cursor */
+	if (SelectedAbility)
 	{
-		CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+		switch (SelectedAbility->Type)
+		{
+		case EAbilityType::E_TARGET_ALLY:
+		{
+			if (entityUnderCursor)
+			{
+				CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+
+			}
+		} break;
+		case EAbilityType::E_TARGET_ENEMY:
+		{
+			if (entityUnderCursor)
+			{
+
+				CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+			}
+		} break;
+		case EAbilityType::E_TARGET_UNIT:
+		{
+			if (entityUnderCursor)
+			{
+
+				CursorRef->SetCursorTexture(CursorRef->GrabbedTexture);
+			}
+		} break;
+		case EAbilityType::E_SELF:
+		{
+			// Ensure this state never occurs
+			checkNoEntry();
+		} break;
+		case EAbilityType::E_TARGET_GROUND:
+		{
+			if (!entityUnderCursor)
+			{
+				UWorld* world = GetWorld();
+				FNavLocation navPoint;
+				if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
+				{
+					if (CursorRef->CurrentTexture == CursorRef->InvalidTexture)
+					{
+						CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+					}
+				}
+				else
+				{
+					if (CursorRef->CurrentTexture == SelectedAbility->CursorIconTexture)
+					{
+						CursorRef->SetCursorTexture(CursorRef->InvalidTexture);
+					}
+				}
+			}
+		} break;
+		}
 	}
 
 	if (m_SpecialistShowingAbilities)
@@ -685,6 +741,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else // No valid specialist - don't perform range check
@@ -697,6 +754,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					SelectedAbility->Activate();
 					SelectedAbility->Deselect();
 					SelectedAbility = nullptr;
+					unitUnderCursor->SetHighlighted();
 				}
 			}
 			else
@@ -724,6 +782,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
+							unitUnderCursor->SetHighlighted();
 						}
 					}
 					else // No valid specialist - don't perform range check
@@ -736,6 +795,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else
@@ -768,6 +828,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Activate();
 							SelectedAbility->Deselect();
 							SelectedAbility = nullptr;
+							unitUnderCursor->SetHighlighted();
 						}
 					}
 					else // No valid specialist - don't perform range check
@@ -780,6 +841,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
+						unitUnderCursor->SetHighlighted();
 					}
 				}
 				else
@@ -862,6 +924,7 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()
 {
+	CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
@@ -940,7 +1003,8 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 
 	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
-	if (m_RTS_GameState->SelectedEntities.Num() == 0)
+	int32 currentSelectionEntityCount = SelectionGroup->Num();
+	if (currentSelectionEntityCount == 0)
 	{
 		if (previousSelectionEntityCount != 0)
 		{
@@ -949,7 +1013,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 	}
 	else
 	{
-		m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
+		m_RTSHUD->ShowSelectionGroupIcon(Index - 1, currentSelectionEntityCount);
 	}
 }
 
