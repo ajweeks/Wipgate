@@ -104,7 +104,7 @@ public:
 		void AddSelectionGroupIconsToGrid(int32 Count);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ShowSelectionGroupIcon(int32 Index);
+		void ShowSelectionGroupIcon(int32 Index, int32 EntityCount);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void HideSelectionGroupIcon(int32 Index);

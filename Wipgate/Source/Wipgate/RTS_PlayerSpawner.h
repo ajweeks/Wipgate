@@ -18,4 +18,7 @@ class WIPGATE_API ARTS_PlayerSpawner : public ARTS_EntitySpawnerBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
+
+	UFUNCTION(BlueprintCallable)
+		virtual void InitializeEntity(ARTS_Entity* entity, ETeamAlignment teamAlignment) override;
 };

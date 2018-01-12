@@ -2,6 +2,7 @@
 
 #include "RTS_PlayerSpawner.h"
 
-
-
-
+void ARTS_PlayerSpawner::InitializeEntity(ARTS_Entity * entity, ETeamAlignment teamAlignment)
+{
+	ARTS_EntitySpawnerBase::InitializeEntity(entity, teamAlignment);
+}

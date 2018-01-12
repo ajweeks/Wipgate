@@ -5,6 +5,7 @@
 
 class AAbility;
 class ARTS_Entity;
+class ARTS_Unit;
 
 UENUM(BlueprintType)
 enum class ECOMMAND_TYPE : uint8
@@ -132,17 +133,41 @@ private:
 
 
 UCLASS(Blueprintable)
-class WIPGATE_API UCommand_Cast : public UCommand
+class WIPGATE_API UCommand_CastTarget : public UCommand
 {
 	GENERATED_BODY()
 public:
-	UCommand_Cast(AAbility* ability) : Ability(ability) 
+	UCommand_CastTarget(AAbility* ability, ARTS_Unit* target)
+		: Ability(ability), TargetUnit(target)
 	{ Type = ECOMMAND_TYPE::CAST; }
 
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* Ability;
+	UPROPERTY(BlueprintReadWrite)
+		ARTS_Unit* TargetUnit;
 
 private:
-	UCommand_Cast() : UCommand(true)
+	UCommand_CastTarget() : UCommand(true)
 	{ Type = ECOMMAND_TYPE::CAST; }
+};
+
+UCLASS(Blueprintable)
+class WIPGATE_API UCommand_CastGround : public UCommand
+{
+	GENERATED_BODY()
+public:
+	UCommand_CastGround(AAbility* ability, const FVector target) 
+		: Ability(ability), TargetLocation(target)
+	{ Type = ECOMMAND_TYPE::CAST; }
+
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* Ability;
+	UPROPERTY(BlueprintReadWrite)
+		FVector TargetLocation;
+
+private:
+	UCommand_CastGround() : UCommand(true)
+	{
+		Type = ECOMMAND_TYPE::CAST;
+	}
 };

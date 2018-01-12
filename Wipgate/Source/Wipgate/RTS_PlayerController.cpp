@@ -38,6 +38,7 @@
 #include "RTS_Specialist.h"
 #include "RTS_Team.h"
 #include "RTS_Unit.h"
+#include "RTS_AIController.h"
 #include "WipgateGameModeBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
@@ -734,6 +735,12 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							SelectedAbility->Icon->OnAbilityActivate();
 						}
 						SelectedAbility->SetTarget(unitUnderCursor);
+						//ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
+						//if (IsInputKeyDown(FKey("LeftShift")))
+						//	controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, true, true);
+						//else
+						//	controller->AddCommand_CastTarget(SelectedAbility, unitUnderCursor, true, false);
+
 						SelectedAbility->Activate();
 						SelectedAbility->Deselect();
 						SelectedAbility = nullptr;
@@ -999,7 +1006,8 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 
 	int32 previousSelectionEntityCount = SelectionGroup->Num();
 	*SelectionGroup = m_RTS_GameState->SelectedEntities;
-	if (m_RTS_GameState->SelectedEntities.Num() == 0)
+	int32 currentSelectionEntityCount = SelectionGroup->Num();
+	if (currentSelectionEntityCount == 0)
 	{
 		if (previousSelectionEntityCount != 0)
 		{
@@ -1008,7 +1016,7 @@ void ARTS_PlayerController::ActionCreateSelectionGroup(int32 Index, TArray<ARTS_
 	}
 	else
 	{
-		m_RTSHUD->ShowSelectionGroupIcon(Index - 1);
+		m_RTSHUD->ShowSelectionGroupIcon(Index - 1, currentSelectionEntityCount);
 	}
 }
 
