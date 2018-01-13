@@ -45,13 +45,13 @@ DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
 ARTS_PlayerController::ARTS_PlayerController()
 {
-	AttemptToFindObjectByPath(&MainHUDInstance, TEXT("WidgetBlueprint'/Game/Code/User_Interface/RTS_HUD_BP.RTS_HUD_BP'"));
+	//AttemptToFindObjectByPath(&MainHUDInstance, TEXT("WidgetBlueprint'/Game/Code/User_Interface/RTS_HUD_BP.RTS_HUD_BP'"));
 
-	AttemptToFindObjectByPath(&AbilityMovementMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Move.Ab_Movement_Move_C'"));
-	AttemptToFindObjectByPath(&AbilityMovementAttackMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_AttackMove.Ab_Movement_AttackMove_C'"));
-	AttemptToFindObjectByPath(&AbilityMovementStop, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Stop.Ab_Movement_Stop_C'"));
-	AttemptToFindObjectByPath(&AbilityMovementHoldPosition, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_HoldPosition.Ab_Movement_HoldPosition_C'"));
-	AttemptToFindObjectByPath(&AbilityLumaApply, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Luma/Ab_Luma_Apply.Ab_Luma_Apply_C'"));
+	//AttemptToFindObjectByPath(&AbilityMovementMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Move.Ab_Movement_Move_C'"));
+	//AttemptToFindObjectByPath(&AbilityMovementAttackMove, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_AttackMove.Ab_Movement_AttackMove_C'"));
+	//AttemptToFindObjectByPath(&AbilityMovementStop, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_Stop.Ab_Movement_Stop_C'"));
+	//AttemptToFindObjectByPath(&AbilityMovementHoldPosition, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Movement/Ab_Movement_HoldPosition.Ab_Movement_HoldPosition_C'"));
+	//AttemptToFindObjectByPath(&AbilityLumaApply, TEXT("BlueprintGeneratedClass'/Game/Code/Ablities/Luma/Ab_Luma_Apply.Ab_Luma_Apply_C'"));
 
 	bShowMouseCursor = true;
 }
