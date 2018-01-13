@@ -480,6 +480,8 @@ void ARTS_Entity::Kill()
 		UWorld* world = GetWorld();
 		if (world)
 		{
+			Kill_NotifyBP();
+
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
 	

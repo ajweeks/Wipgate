@@ -66,6 +66,8 @@ public:
 		void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		virtual void Kill();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
+		void Kill_NotifyBP();
 	UFUNCTION(BlueprintPure, Category = "Health")
 		bool IsAlive();
 

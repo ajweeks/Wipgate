@@ -262,7 +262,7 @@ private:
 		bool m_MoveToLevelEndAtStartup = true;
 
 	UPROPERTY(EditAnywhere)
-		int m_StartingLumaAmount = 125;
+		int m_StartingLumaAmount = 1000;
 
 	bool m_ReturnedToStartAfterViewingEnd = false;
 
