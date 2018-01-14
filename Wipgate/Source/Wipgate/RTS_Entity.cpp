@@ -613,22 +613,28 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 			return;
 		}
 
+		float magnitudeTick = effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+
 		// only apply effect if it was not finished yet
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			CurrentDefenceStats.Armor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			CurrentDefenceStats.Armor += magnitudeTick;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+			ApplyDamage(magnitudeTick, false);
 			break;
 		case EUnitEffectStat::HEALING:
-			ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+			ApplyHealing(magnitudeTick);
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
-			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			CurrentMovementStats.Speed += magnitudeTick;
 			break;
-
+		case EUnitEffectStat::LUMA:
+			if (effect->Magnitude > 0)
+				AddToLumaSaturation(magnitudeTick);
+			else
+				RemoveLumaSaturation(magnitudeTick);
 			break;
 		default:
 			break;
@@ -679,6 +685,10 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			AttackAdditionalAnimSpeed += percentage;
 			break;
 		}
+
+		case EUnitEffectStat::LUMA:
+			CurrentLumaStats += effect->Magnitude;
+			break;
 
 		default:
 			break;
