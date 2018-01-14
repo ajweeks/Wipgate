@@ -136,7 +136,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 		UCommand* m_CurrentCommand;
 	UPROPERTY(BlueprintReadWrite)
-		bool m_ShowQueueIndicator;
+		bool m_ShowQueueIndicator = false;
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* CurrentAbility;
 
