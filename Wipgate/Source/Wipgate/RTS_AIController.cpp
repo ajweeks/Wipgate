@@ -638,6 +638,11 @@ void ARTS_AIController::AddCommand_CastGround(AAbility * ability, FVector target
 	UpdateCommandQueueIndicator();
 }
 
+void ARTS_AIController::EnableCommandQueueIndicator(const bool enabled)
+{
+	m_ShowQueueIndicator = enabled;
+}
+
 ARTS_AIController* ARTS_AIController::GetController(ARTS_Entity* entity)
 {
 	AAIController* controller = Cast<AAIController>(entity->GetController());

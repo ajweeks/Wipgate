@@ -75,6 +75,9 @@ void ARTS_Entity::SetSelected(bool selected)
 {
 	Selected = selected;
 
+	ARTS_AIController* aiController = Cast<ARTS_AIController>(GetController());
+	aiController->EnableCommandQueueIndicator(selected);
+
 	if (SelectionStaticMeshComponent)
 	{
 		SelectionStaticMeshComponent->SetVisibility(selected, true);
