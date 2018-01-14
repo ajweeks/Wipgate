@@ -687,7 +687,10 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		}
 
 		case EUnitEffectStat::LUMA:
-			CurrentLumaStats += effect->Magnitude;
+			if (effect->Magnitude > 0)
+				AddToLumaSaturation(effect->Magnitude);
+			else
+				AddToLumaSaturation(effect->Magnitude);
 			break;
 
 		default:

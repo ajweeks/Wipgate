@@ -17,7 +17,7 @@ enum class EUnitEffectStat : uint8
 	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
 	ATTACK_RATE		UMETA(DisplayName = "Attack rate"),
 	ATTACK_DAMAGE	UMETA(DisplayName = "Attack damage"),
-	LUMA,			UMETA(DisplayName = "Luma"),
+	LUMA			UMETA(DisplayName = "Luma")
 };
 
 //TODO: E_ naming convention
