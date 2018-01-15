@@ -1173,7 +1173,7 @@ URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 	return m_RTSHUD;
 }
 
-void ARTS_PlayerController::AddLuma(int32 LumaAmount)
+void ARTS_PlayerController::AddLuma(int32 LumaAmount, bool applyToEndScore)
 {
 	if (LumaAmount > 0)
 	{
@@ -1185,14 +1185,17 @@ void ARTS_PlayerController::AddLuma(int32 LumaAmount)
 	}
 
 	//Get gamestate & add luma to gamestate
-	auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
-	if (gamestate)
+	if (applyToEndScore)
 	{
-		gamestate->LumaGained += LumaAmount;
-	}
-	else
-	{
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddLuma > No gamestate present!"))
+		auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+		if (gamestate)
+		{
+			gamestate->LumaGained += LumaAmount;
+		}
+		else
+		{
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddLuma > No gamestate present!"))
+		}
 	}
 }
 

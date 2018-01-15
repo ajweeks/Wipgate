@@ -99,7 +99,7 @@ void ARTS_Unit::Kill()
 			{
 				//Add luma
 				int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
-				playercontroller->AddLuma(amount);
+				playercontroller->AddLuma(amount, true);
 			}
 		}
 		else
