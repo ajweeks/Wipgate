@@ -409,7 +409,7 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			float percentage = float(effect->Magnitude) / 100.0f;
 			FAttackStat upgradedAttackStats = Team->GetUpgradedAttackStats(this);
 			CurrentAttackStats.AttackCooldown += FMath::Clamp(upgradedAttackStats.AttackCooldown * percentage, 0.0f, upgradedAttackStats.AttackCooldown);
-			GetMesh()->GlobalAnimRateScale -= percentage;
+			AttackAdditionalAnimSpeed -= percentage;
 		}
 	} break;
 	default:
