@@ -1176,6 +1176,17 @@ void ARTS_PlayerController::AddLuma(int32 LumaAmount)
 			m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
 		}
 	}
+
+	//Get gamestate & add luma to gamestate
+	auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+	if (gamestate)
+	{
+		gamestate->LumaGained += LumaAmount;
+	}
+	else
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddLuma > No gamestate present!"))
+	}
 }
 
 void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
@@ -1187,6 +1198,17 @@ void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 		{
 			m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
 		}
+	}
+
+	//Get gamestate & add luma to gamestate
+	auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+	if (gamestate)
+	{
+		gamestate->LumaSpent += LumaAmount;
+	}
+	else
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("SpendLuma > No gamestate present!"))
 	}
 }
 
