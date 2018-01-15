@@ -548,6 +548,7 @@ void ARTS_AIController::PopCommand()
 	if (m_CommandQueue.Num() > 0)
 		m_CommandQueue.RemoveAt(0);
 	m_CurrentCommand = nullptr;
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued)
@@ -560,6 +561,7 @@ void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const 
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool isForced, const bool isQueued)
@@ -572,6 +574,7 @@ void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_Stop()
@@ -591,6 +594,7 @@ void ARTS_AIController::AddCommand_Attack(ARTS_Entity * target, const bool isFor
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued)
@@ -603,6 +607,7 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
@@ -616,6 +621,7 @@ void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * 
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_CastGround(AAbility * ability, FVector target, const bool isForced, const bool isQueued)
@@ -629,6 +635,12 @@ void ARTS_AIController::AddCommand_CastGround(AAbility * ability, FVector target
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
+}
+
+void ARTS_AIController::EnableCommandQueueIndicator(const bool enabled)
+{
+	m_ShowQueueIndicator = enabled;
 }
 
 ARTS_AIController* ARTS_AIController::GetController(ARTS_Entity* entity)
