@@ -8,16 +8,6 @@
 
 DEFINE_LOG_CATEGORY(RTS_GameInstance);
 
-void URTS_GameInstance::AddLuma(int amount)
-{
-	CurrentLuma += amount;
-}
-
-void URTS_GameInstance::SpendLuma(int amount)
-{
-	CurrentLuma -= amount;
-}
-
 void URTS_GameInstance::EndRound()
 {
 	SavedEntities.Empty();
