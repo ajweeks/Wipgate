@@ -65,6 +65,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		void RotateTowardsTarget();
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		void RotateTowardsTargetLocation();
 
 	/* --- Flocking functions --- */
 	UFUNCTION(BlueprintCallable, Category = "Flocking")

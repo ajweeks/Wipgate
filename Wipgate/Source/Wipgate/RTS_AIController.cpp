@@ -78,6 +78,17 @@ void ARTS_AIController::RotateTowardsTarget()
 	m_Entity->SetActorRotation(newRotation);
 }
 
+void ARTS_AIController::RotateTowardsTargetLocation()
+{
+	FVector start = m_FlockCenter;
+	FVector end = m_TargetLocation;
+
+	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
+	newRotation.Roll = 0;
+	newRotation.Pitch = 0;
+	m_Entity->SetActorRotation(newRotation);
+}
+
 void ARTS_AIController::StoreNearbyEntities(const float radius)
 {
 	m_NearbyEntities.Empty();
