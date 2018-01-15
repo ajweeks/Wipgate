@@ -536,83 +536,102 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 
 	/* Cursor */
-	if (SelectedAbility)
+	if (CursorRef)
 	{
-		switch (SelectedAbility->Type)
+		if (SelectedAbility)
 		{
-		case EAbilityType::E_TARGET_ALLY:
-		{
-			if (entityUnderCursor && 
-				(entityUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER ||
-					entityUnderCursor->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI))
+			switch (SelectedAbility->Type)
 			{
-				CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-				entityUnderCursor->SetSelected(true);
-			}
-			else
+			case EAbilityType::E_TARGET_ALLY:
 			{
-				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
-			}
-		} break;
-		case EAbilityType::E_TARGET_ENEMY:
-		{
-			if (entityUnderCursor &&
-				(entityUnderCursor->Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI ||
-					entityUnderCursor->Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
-			{
-				CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
-				entityUnderCursor->SetSelected(true);
-			}
-			else
-			{
-				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
-			}
-		} break;
-		case EAbilityType::E_TARGET_UNIT:
-		{
-			if (entityUnderCursor)
-			{
-				CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-				entityUnderCursor->SetSelected(true);
-			}
-			else
-			{
-				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
-			}
-		} break;
-		case EAbilityType::E_SELF:
-		{
-			// Ensure this state never occurs
-			checkNoEntry();
-		} break;
-		case EAbilityType::E_TARGET_GROUND:
-		{
-			if (!entityUnderCursor)
-			{
-				UWorld* world = GetWorld();
-				FNavLocation navPoint;
-				if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
+				if (entityUnderCursor &&
+					(entityUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER ||
+						entityUnderCursor->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 				{
-					if (CursorRef->CurrentTexture == CursorRef->InvalidTexture)
+					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+					entityUnderCursor->SetSelected(true);
+				}
+				else
+				{
+					CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+				}
+			} break;
+			case EAbilityType::E_TARGET_ENEMY:
+			{
+				if (entityUnderCursor &&
+					(entityUnderCursor->Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI ||
+						entityUnderCursor->Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
+				{
+					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+					entityUnderCursor->SetSelected(true);
+				}
+				else
+				{
+					CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+				}
+			} break;
+			case EAbilityType::E_TARGET_UNIT:
+			{
+				if (entityUnderCursor)
+				{
+					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+					entityUnderCursor->SetSelected(true);
+				}
+				else
+				{
+					CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+				}
+			} break;
+			case EAbilityType::E_SELF:
+			{
+				// Ensure this state never occurs
+				checkNoEntry();
+			} break;
+			case EAbilityType::E_TARGET_GROUND:
+			{
+				if (!entityUnderCursor)
+				{
+					UWorld* world = GetWorld();
+					FNavLocation navPoint;
+					if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
 					{
-						CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+						if (CursorRef->CurrentTexture == CursorRef->InvalidTexture)
+						{
+							CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+						}
+					}
+					else
+					{
+						if (CursorRef->CurrentTexture == SelectedAbility->CursorIconTexture)
+						{
+							CursorRef->SetCursorTexture(CursorRef->InvalidTexture);
+						}
 					}
 				}
 				else
 				{
-					if (CursorRef->CurrentTexture == SelectedAbility->CursorIconTexture)
-					{
-						CursorRef->SetCursorTexture(CursorRef->InvalidTexture);
-					}
+					CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
 				}
+			} break;
+			}
+		}
+		else
+		{
+			bool cursorInShop = false; // actorUnderCursor
+			if (cursorInShop)
+			{
+				CursorRef->SetCursorTexture(CursorRef->ShopTexture);
 			}
 			else
 			{
-				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
+				if (CursorRef->CurrentTexture == CursorRef->ShopTexture)
+				{
+					// Cursor just left shop area, set back to default cursor
+					CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+				}
 			}
-		} break;
 		}
-	}
+	} // CursorRef not nullptr
 
 	if (m_SpecialistShowingAbilities)
 	{
