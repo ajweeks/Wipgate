@@ -170,7 +170,14 @@ void ARTS_PlayerController::BeginPlay()
 		m_RTSHUD->AddSelectionGroupIconsToGrid(SELECTION_GROUP_COUNT);
 	}
 
-	AddLuma(m_StartingLumaAmount);
+	auto gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	if (gameinstance)
+	{
+		if (gameinstance->CurrentRound == 0)
+		{
+			AddLuma(m_StartingLumaAmount);
+		}
+	}
 }
 
 void ARTS_PlayerController::SetupInputComponent()
