@@ -15,7 +15,7 @@ void ARTS_GameState::RemoveEntity(ARTS_Entity* Entity)
 		Entities.Remove(Entity);
 		SelectedEntities.Remove(Entity);
 
-		UE_LOG(LogTemp, Display, TEXT("ARTS_GameState::RemoveUnit > Removed unit from Units array. %i remaining."), Entities.Num());
+		UE_LOG(LogTemp, Display, TEXT("RemoveEntity > Removed unit from Units array. %i remaining."), Entities.Num());
 	}
 }
 
