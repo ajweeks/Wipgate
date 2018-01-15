@@ -535,26 +535,42 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		{
 		case EAbilityType::E_TARGET_ALLY:
 		{
-			if (entityUnderCursor)
+			if (entityUnderCursor && 
+				(entityUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER ||
+					entityUnderCursor->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 			{
-				CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
-
+				CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+				entityUnderCursor->SetSelected(true);
+			}
+			else
+			{
+				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
 			}
 		} break;
 		case EAbilityType::E_TARGET_ENEMY:
 		{
-			if (entityUnderCursor)
+			if (entityUnderCursor &&
+				(entityUnderCursor->Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI ||
+					entityUnderCursor->Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
 			{
-
 				CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+				entityUnderCursor->SetSelected(true);
+			}
+			else
+			{
+				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
 			}
 		} break;
 		case EAbilityType::E_TARGET_UNIT:
 		{
 			if (entityUnderCursor)
 			{
-
-				CursorRef->SetCursorTexture(CursorRef->GrabbedTexture);
+				CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+				entityUnderCursor->SetSelected(true);
+			}
+			else
+			{
+				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
 			}
 		} break;
 		case EAbilityType::E_SELF:
@@ -582,6 +598,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 						CursorRef->SetCursorTexture(CursorRef->InvalidTexture);
 					}
 				}
+			}
+			else
+			{
+				CursorRef->SetCursorTexture(SelectedAbility->CursorIconTexture);
 			}
 		} break;
 		}
@@ -889,7 +909,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
 
-			if (entity->IsSelected())
+			if (entity->IsSelected() && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
 			{
 				m_RTS_GameState->SelectedEntities.AddUnique(entity);
 			}
