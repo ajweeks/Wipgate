@@ -633,6 +633,8 @@ void ARTS_PlayerController::ActionPrimaryClickPressed()
 
 void ARTS_PlayerController::ActionPrimaryClickReleased()
 {
+	if (IsInputKeyDown(FKey("Q"))) { return; }
+
 	if (!m_RTS_GameState || !m_RTSHUD)
 	{
 		return;
