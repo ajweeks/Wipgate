@@ -42,7 +42,7 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEntitiesWithTask(const TArray<ARTS_En
 	TArray<ARTS_Entity*> entitiesWithTask;
 	for (int i = 0; i < entities.Num(); i++)
 	{
-		if (GetController(entities[i])->GetCurrentTask() == task)
+		if (entities[i] && GetController(entities[i])->GetCurrentTask() == task)
 			entitiesWithTask.Add(entities[i]);
 	}
 	return entitiesWithTask;
