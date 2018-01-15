@@ -58,7 +58,7 @@ void ARTS_Unit::SetTeamMaterial(URTS_Team* t)
 
 	//Set skeletal mesh color
 	USkeletalMeshComponent* mesh = GetMesh();
-	if (mesh && mesh->GetMaterials().Num() > 0)
+	if (mesh && mesh->GetMaterials().Num() > 0 && mesh->GetMaterial(0))
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
 		bodyMatInst->SetVectorParameterValue("TeamColor", t->Color);
