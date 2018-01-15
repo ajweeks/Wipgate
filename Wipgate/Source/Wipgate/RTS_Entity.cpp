@@ -604,6 +604,18 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 			{
 				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamemode found!"));
 			}
+
+			//Add end screen score
+			auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+			if (gamestate)
+			{
+				gamestate->UnitsOverdosed++;
+				gamestate->UnitsLost++;
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamestate found!"));
+			}
 		}
 	}
 }
