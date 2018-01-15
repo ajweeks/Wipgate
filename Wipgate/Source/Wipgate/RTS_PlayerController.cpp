@@ -332,7 +332,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 	{
-		if (!m_AlwaysCenterOnUnits && IsInputKeyDown(EKeys::SpaceBar))
+		if (!AlwaysCenterOnUnits && IsInputKeyDown(EKeys::SpaceBar))
 		{
 			ActionCenterOnSelection();
 		}
@@ -343,9 +343,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		MoveToTarget();
 		return;
 	}
-	else if (m_MovingToSelectionCenter || m_AlwaysCenterOnUnits)
+	else if (m_MovingToSelectionCenter || AlwaysCenterOnUnits)
 	{
-		MoveToCenterOfUnits(!m_AlwaysCenterOnUnits);
+		MoveToCenterOfUnits(!AlwaysCenterOnUnits);
 	}
 	// If mouse is at edge of screen, update camera pos
 	/*
