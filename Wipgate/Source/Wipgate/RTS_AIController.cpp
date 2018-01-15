@@ -42,7 +42,8 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEntitiesWithTask(const TArray<ARTS_En
 	TArray<ARTS_Entity*> entitiesWithTask;
 	for (int i = 0; i < entities.Num(); i++)
 	{
-		if (entities[i] && GetController(entities[i])->GetCurrentTask() == task)
+		ARTS_AIController* controller = GetController(entities[i]);
+		if (entities[i] && controller && controller->GetCurrentTask() == task)
 			entitiesWithTask.Add(entities[i]);
 	}
 	return entitiesWithTask;
@@ -71,6 +72,17 @@ void ARTS_AIController::RotateTowardsTarget()
 		end = TargetEntity->GetActorLocation();
 	else
 		end = m_TargetLocation;
+
+	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
+	newRotation.Roll = 0;
+	newRotation.Pitch = 0;
+	m_Entity->SetActorRotation(newRotation);
+}
+
+void ARTS_AIController::RotateTowardsTargetLocation()
+{
+	FVector start = m_FlockCenter;
+	FVector end = m_TargetLocation;
 
 	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
 	newRotation.Roll = 0;
@@ -469,9 +481,12 @@ bool ARTS_AIController::IsTargetAgressive()
 {
 	if (!TargetEntity) return false;
 
-	EUNIT_TASK targetTask = GetController(TargetEntity)->GetCurrentTask();
-	return (targetTask  == EUNIT_TASK::ATTACKING
-		|| targetTask == EUNIT_TASK::CHASING);
+	ARTS_AIController* controller = GetController(TargetEntity);
+	if (!controller) return false;
+
+	EUNIT_TASK targetTask = controller->GetCurrentTask();
+
+	return (targetTask  == EUNIT_TASK::ATTACKING || targetTask == EUNIT_TASK::CHASING);
 }
 
 TArray<ARTS_Entity*> ARTS_AIController::GetFriendlyEntities(const TArray<ARTS_Entity*> entities)
