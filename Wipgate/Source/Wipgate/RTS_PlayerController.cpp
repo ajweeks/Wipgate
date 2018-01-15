@@ -184,29 +184,29 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 
-	InputComponent->BindAction("Ability Specialist Active Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistActiveSelect);
-	InputComponent->BindAction("Ability Specialist Construct Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistConstructSelect);
-	InputComponent->BindAction("Ability Specialist Passive Select", IE_Released, this, &ARTS_PlayerController::OnAbilitySpecialistPassiveSelect);
+	InputComponent->BindAction("Ability Specialist Active Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilitySpecialistActiveSelect);
+	InputComponent->BindAction("Ability Specialist Construct Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilitySpecialistConstructSelect);
+	InputComponent->BindAction("Ability Specialist Passive Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilitySpecialistPassiveSelect);
 
-	InputComponent->BindAction("Ability Movement Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
-	InputComponent->BindAction("Ability Movement Attack Move Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
-	InputComponent->BindAction("Ability Movement Stop Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
-	InputComponent->BindAction("Ability Movement Hold Position Select", IE_Released, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
+	InputComponent->BindAction("Ability Movement Move Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilityMovementMoveSelect);
+	InputComponent->BindAction("Ability Movement Attack Move Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilityMovementAttackMoveSelect);
+	InputComponent->BindAction("Ability Movement Stop Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilityMovementStopSelect);
+	InputComponent->BindAction("Ability Movement Hold Position Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilityMovementHoldPositionSelect);
 
-	InputComponent->BindAction("Ability Luma Apply Select", IE_Released, this, &ARTS_PlayerController::OnAbilityLumaApplySelect);
+	InputComponent->BindAction("Ability Luma Apply Select", IE_Pressed, this, &ARTS_PlayerController::OnAbilityLumaApplySelect);
 
-	InputComponent->BindAction("Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup1);
-	InputComponent->BindAction("Create Selection Group 1", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
-	InputComponent->BindAction("Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup2);
-	InputComponent->BindAction("Create Selection Group 2", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup2);
-	InputComponent->BindAction("Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup3);
-	InputComponent->BindAction("Create Selection Group 3", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup3);
-	InputComponent->BindAction("Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup4);
-	InputComponent->BindAction("Create Selection Group 4", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
-	InputComponent->BindAction("Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionSelectionGroup5);
-	InputComponent->BindAction("Create Selection Group 5", IE_Released, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
+	InputComponent->BindAction("Selection Group 1", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup1);
+	InputComponent->BindAction("Create Selection Group 1", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup1);
+	InputComponent->BindAction("Selection Group 2", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup2);
+	InputComponent->BindAction("Create Selection Group 2", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup2);
+	InputComponent->BindAction("Selection Group 3", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup3);
+	InputComponent->BindAction("Create Selection Group 3", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup3);
+	InputComponent->BindAction("Selection Group 4", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup4);
+	InputComponent->BindAction("Create Selection Group 4", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
+	InputComponent->BindAction("Selection Group 5", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup5);
+	InputComponent->BindAction("Create Selection Group 5", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
 
-	InputComponent->BindAction("Invert Selection", IE_Released, this, &ARTS_PlayerController::InvertSelection);
+	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
 }
@@ -633,7 +633,7 @@ void ARTS_PlayerController::ActionPrimaryClickPressed()
 
 void ARTS_PlayerController::ActionPrimaryClickReleased()
 {
-	if (IsInputKeyDown(FKey("Q"))) { return; }
+	//if (IsInputKeyDown(FKey("Q"))) { return; }
 
 	if (!m_RTS_GameState || !m_RTSHUD)
 	{
