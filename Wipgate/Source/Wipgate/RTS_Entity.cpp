@@ -376,7 +376,7 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentDefenceStats.Armor -= effect->Magnitude;
 		}
 	} break;
-	case EUnitEffectStat::DAMAGE:
+	case EUnitEffectStat::ATTACK_DAMAGE:
 	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
 		{
@@ -672,6 +672,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		case EUnitEffectStat::ARMOR:
 			CurrentDefenceStats.Armor += magnitudeTick;
 			break;
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			CurrentAttackStats.Damage += magnitudeTick;
+			break;
 		case EUnitEffectStat::DAMAGE:
 			ApplyDamage(magnitudeTick, false);
 			break;
@@ -715,7 +718,9 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		case EUnitEffectStat::ARMOR:
 			CurrentDefenceStats.Armor += effect->Magnitude;
 			break;
-
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			CurrentAttackStats.Damage += effect->Magnitude;
+			break;
 		case EUnitEffectStat::DAMAGE:
 			ApplyDamage(effect->Magnitude, false);
 			break;
