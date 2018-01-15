@@ -498,6 +498,38 @@ void ARTS_Entity::Kill()
 				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
 			}
 
+			//Add kill to game
+			ARTS_GameState* gamestate = world->GetGameState<ARTS_GameState>();
+			if (gamestate)
+			{
+				if (Alignment != ETeamAlignment::E_NEUTRAL_AI && Alignment != ETeamAlignment::E_PLAYER)
+				{
+					if (EntityType == EEntityType::E_SPECIALIST)
+					{
+						gamestate->SpecialistsKilled++;
+					}
+					else if (EntityType != EEntityType::E_STRUCTURE)
+					{
+						gamestate->UnitsKilled++;
+					}
+				}
+				else if (Alignment == ETeamAlignment::E_PLAYER)
+				{
+					if (EntityType == EEntityType::E_SPECIALIST)
+					{
+						gamestate->SpecialistsLost++;
+					}
+					else if (EntityType != EEntityType::E_STRUCTURE)
+					{
+						gamestate->UnitsLost++;
+					}
+				}
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Kill > No gamestate present!"));
+			}
+
 			AGameStateBase* baseGameState = world->GetGameState();
 			ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 			if (baseGameState && castedGameState)
