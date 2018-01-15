@@ -221,9 +221,9 @@ private:
 
 	ARTS_Specialist* m_SpecialistShowingAbilities = nullptr;
 
-		bool m_EdgeMovementEnabled = true;
+	bool m_EdgeMovementEnabled = true;
 
-		FQuat m_StartingRotation;
+	FQuat m_StartingRotation;
 
 	// When true, camera stays centered on friendly units, regardless of selection
 	UPROPERTY(EditAnywhere, Category = "Movement")

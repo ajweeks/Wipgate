@@ -7,6 +7,7 @@
 #include "UpgradeShopBase.generated.h"
 
 class ARTS_PlayerController;
+class UBoxComponent;
 
 UCLASS()
 class WIPGATE_API AUpgradeShopBase : public AActor
@@ -16,14 +17,12 @@ class WIPGATE_API AUpgradeShopBase : public AActor
 public:	
 	AUpgradeShopBase();
 
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* OverlapCube;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UBoxComponent* BoxCollider;
+
 private:
-	void OnOverlapCubeBeginCursorOver(UPrimitiveComponent* Component);
-	void OnOverlapCubeEndCursorOver(UPrimitiveComponent* Component);
-	
 	ARTS_PlayerController* m_PlayerControllerRef;
 };

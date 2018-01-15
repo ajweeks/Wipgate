@@ -3,6 +3,7 @@
 #include "UpgradeShopBase.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 #include "Engine/World.h"
 
 #include "RTS_PlayerController.h"
@@ -14,34 +15,19 @@ AUpgradeShopBase::AUpgradeShopBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene Component"));
+
+	BoxCollider = CreateDefaultSubobject<UBoxComponent>(FName(TEXT("Box Collider")));
+	BoxCollider->RelativeLocation = FVector(-150.0f, 0.0f, -80.0f);
+	BoxCollider->RelativeScale3D = FVector(10.0f, 10.0f, 5.0f);
+	BoxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BoxCollider->SetBoxExtent(FVector(100));
 
 	OverlapCube = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Overlap Cube")));
 	OverlapCube->CastShadow = false;
 	OverlapCube->SetCanEverAffectNavigation(false);
-	OverlapCube->RelativeLocation = FVector(180.0f, 0.0f, -80.0f);
-	OverlapCube->RelativeScale3D = FVector(6.0f, 8.0f, 3.0f);
-}
-
-void AUpgradeShopBase::BeginPlay()
-{
-	m_PlayerControllerRef = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
-
-	OverlapCube->OnBeginCursorOver.AddDynamic(this, &AUpgradeShopBase::OnOverlapCubeBeginCursorOver);
-	OverlapCube->OnEndCursorOver.AddDynamic(this, &AUpgradeShopBase::OnOverlapCubeEndCursorOver);
-}
-
-void AUpgradeShopBase::OnOverlapCubeBeginCursorOver(UPrimitiveComponent* Component)
-{
-	UE_LOG(UpgradeShopBaseLog, Error, TEXT("begin!"));
-	m_PlayerControllerRef->CursorRef->SetCursorTexture(m_PlayerControllerRef->CursorRef->ShopTexture);
-}
-
-void AUpgradeShopBase::OnOverlapCubeEndCursorOver(UPrimitiveComponent* Component)
-{
-	UE_LOG(UpgradeShopBaseLog, Error, TEXT("end!"));
-	if (m_PlayerControllerRef->CursorRef->CurrentTexture == m_PlayerControllerRef->CursorRef->ShopTexture)
-	{
-		m_PlayerControllerRef->CursorRef->SetCursorTexture(m_PlayerControllerRef->CursorRef->DefaultTexture);
-	}
+	OverlapCube->DetachFromParent(true);
+	OverlapCube->AttachToComponent(BoxCollider, FAttachmentTransformRules::KeepRelativeTransform);
+	OverlapCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OverlapCube->RelativeScale3D = FVector(0.65f, 0.65f, 0.65f);
 }
