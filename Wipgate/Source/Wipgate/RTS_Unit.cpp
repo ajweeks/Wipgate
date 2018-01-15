@@ -11,6 +11,7 @@
 #include "GeneralFunctionLibrary_CPP.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "RTS_Gamestate.h"
 #include "Components/StaticMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
@@ -57,7 +58,7 @@ void ARTS_Unit::SetTeamMaterial(URTS_Team* t)
 
 	//Set skeletal mesh color
 	USkeletalMeshComponent* mesh = GetMesh();
-	if (mesh && mesh->GetMaterials().Num() > 0)
+	if (mesh && mesh->GetMaterials().Num() > 0 && mesh->GetMaterial(0))
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
 		bodyMatInst->SetVectorParameterValue("TeamColor", t->Color);
@@ -92,18 +93,18 @@ void ARTS_Unit::Kill()
 		}
 
 		ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
-	if (playercontroller)
-	{
-		if (Team && (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
+		if (playercontroller)
 		{
-			//Add luma
-			int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
-			playercontroller->AddLuma(amount);
+			if (Team && (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
+			{
+				//Add luma
+				int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
+				playercontroller->AddLuma(amount, true);
+			}
 		}
-	}
 		else
 		{
-		UE_LOG(RTS_UNIT_LOG, Error, TEXT("Kill > No playercontroller. Returning..."));
+		UE_LOG(RTS_UNIT_LOG, Error, TEXT("Kill > No playercontroller present!"));
 		}
 
 		ARTS_Entity::Kill();

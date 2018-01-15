@@ -30,13 +30,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
 
-
-
 	/* FUNCTION */
-	UFUNCTION(BlueprintCallable)
-		void AddLuma(int amount);
-	UFUNCTION(BlueprintCallable)
-		void SpendLuma(int amount);
 	UFUNCTION(BlueprintCallable)
 		void EndRound();
 };

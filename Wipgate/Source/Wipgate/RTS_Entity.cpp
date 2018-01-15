@@ -75,6 +75,12 @@ void ARTS_Entity::SetSelected(bool selected)
 {
 	Selected = selected;
 
+	if (EntityType != EEntityType::E_STRUCTURE)
+	{
+		ARTS_AIController* aiController = Cast<ARTS_AIController>(GetController());
+		aiController->EnableCommandQueueIndicator(selected);
+	}
+
 	if (SelectionStaticMeshComponent)
 	{
 		SelectionStaticMeshComponent->SetVisibility(selected, true);
@@ -495,6 +501,38 @@ void ARTS_Entity::Kill()
 				UGameplayStatics::PlaySoundAtLocation(world, DeathSound, GetActorLocation(), 1.0f, 1.0f, 0.0f, SoundAttenuation, SoundConcurrency);
 			}
 
+			//Add kill to game
+			ARTS_GameState* gamestate = world->GetGameState<ARTS_GameState>();
+			if (gamestate)
+			{
+				if (Alignment != ETeamAlignment::E_NEUTRAL_AI && Alignment != ETeamAlignment::E_PLAYER)
+				{
+					if (EntityType == EEntityType::E_SPECIALIST)
+					{
+						gamestate->SpecialistsKilled++;
+					}
+					else if (EntityType != EEntityType::E_STRUCTURE)
+					{
+						gamestate->UnitsKilled++;
+					}
+				}
+				else if (Alignment == ETeamAlignment::E_PLAYER)
+				{
+					if (EntityType == EEntityType::E_SPECIALIST)
+					{
+						gamestate->SpecialistsLost++;
+					}
+					else if (EntityType != EEntityType::E_STRUCTURE)
+					{
+						gamestate->UnitsLost++;
+					}
+				}
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Kill > No gamestate present!"));
+			}
+
 			AGameStateBase* baseGameState = world->GetGameState();
 			ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
 			if (baseGameState && castedGameState)
@@ -569,6 +607,18 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 			{
 				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamemode found!"));
 			}
+
+			//Add end screen score
+			auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+			if (gamestate)
+			{
+				gamestate->UnitsOverdosed++;
+				gamestate->UnitsLost++;
+			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamestate found!"));
+			}
 		}
 	}
 }
@@ -613,22 +663,28 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 			return;
 		}
 
+		float magnitudeTick = effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+
 		// only apply effect if it was not finished yet
 		switch (effect->AffectedStat)
 		{
 		case EUnitEffectStat::ARMOR:
-			CurrentDefenceStats.Armor += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			CurrentDefenceStats.Armor += magnitudeTick;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL), false);
+			ApplyDamage(magnitudeTick, false);
 			break;
 		case EUnitEffectStat::HEALING:
-			ApplyHealing(effect->Magnitude / (effect->Duration / EFFECT_INTERVAL));
+			ApplyHealing(magnitudeTick);
 			break;
 		case EUnitEffectStat::MOVEMENT_SPEED:
-			CurrentMovementStats.Speed += effect->Magnitude / (effect->Duration / EFFECT_INTERVAL);
+			CurrentMovementStats.Speed += magnitudeTick;
 			break;
-
+		case EUnitEffectStat::LUMA:
+			if (effect->Magnitude > 0)
+				AddToLumaSaturation(magnitudeTick);
+			else
+				RemoveLumaSaturation(magnitudeTick);
 			break;
 		default:
 			break;
@@ -679,6 +735,13 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			AttackAdditionalAnimSpeed += percentage;
 			break;
 		}
+
+		case EUnitEffectStat::LUMA:
+			if (effect->Magnitude > 0)
+				AddToLumaSaturation(effect->Magnitude);
+			else
+				AddToLumaSaturation(effect->Magnitude);
+			break;
 
 		default:
 			break;

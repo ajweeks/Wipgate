@@ -112,7 +112,7 @@ public:
 		URTS_HUDBase* GetRTS_HUDBase();
 
 	UFUNCTION(BlueprintCallable)
-		void AddLuma(int32 LumaAmount);
+		void AddLuma(int32 LumaAmount, bool applyToEndScore = false);
 
 	UFUNCTION(BlueprintCallable)
 		void SpendLuma(int32 LumaAmount);
