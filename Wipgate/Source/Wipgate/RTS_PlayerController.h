@@ -200,7 +200,7 @@ private:
 
 	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
 
-	void MoveToSelectionCenter();
+	void MoveToCenterOfUnits(bool FocusOnSelectedUnits);
 	void MoveToTarget();
 
 	void StartMovingToLevelEnd();
@@ -221,11 +221,13 @@ private:
 
 	ARTS_Specialist* m_SpecialistShowingAbilities = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Misc")
 		bool m_EdgeMovementEnabled = true;
 
-	UPROPERTY(EditAnywhere, Category = "Misc")
 		FQuat m_StartingRotation;
+
+	// When true, camera stays centered on friendly units, regardless of selection
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		bool m_AlwaysCenterOnUnits = false;
 
 	// How much faster to move when move fast key is held (shift)
 	UPROPERTY(EditAnywhere, Category = "Movement")

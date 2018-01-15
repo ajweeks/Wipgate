@@ -645,7 +645,8 @@ bool ARTS_Entity::IsSelectableByPlayer() const
 	if (aiController)
 	{
 		bool selectable = (Health > 0) && 
-			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI);
+			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI) &&
+			(Alignment != ETeamAlignment::E_AGGRESSIVE_AI);
 		return selectable;
 	}
 

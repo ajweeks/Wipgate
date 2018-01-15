@@ -331,7 +331,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 	{
-		if (IsInputKeyDown(EKeys::SpaceBar))
+		if (!m_AlwaysCenterOnUnits && IsInputKeyDown(EKeys::SpaceBar))
 		{
 			ActionCenterOnSelection();
 		}
@@ -342,9 +342,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		MoveToTarget();
 		return;
 	}
-	else if (m_MovingToSelectionCenter)
+	else if (m_MovingToSelectionCenter || m_AlwaysCenterOnUnits)
 	{
-		MoveToSelectionCenter();
+		MoveToCenterOfUnits(!m_AlwaysCenterOnUnits);
 	}
 	// If mouse is at edge of screen, update camera pos
 	/*
@@ -1282,12 +1282,13 @@ float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float Delta
 	return 0.0f;
 }
 
-void ARTS_PlayerController::MoveToSelectionCenter()
+void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 {
+	UE_LOG(RTS_PlayerController_Log, Error, TEXT("center %b"), FocusOnSelectedUnits);
 	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
 	const int32 selectedEntityCount = m_RTS_GameState->SelectedEntities.Num();
 
-	if (selectedEntityCount == 0)
+	if (FocusOnSelectedUnits && selectedEntityCount == 0)
 	{
 		m_MovingToSelectionCenter = false;
 		return;
@@ -1299,6 +1300,8 @@ void ARTS_PlayerController::MoveToSelectionCenter()
 
 	float maxEntityVelocityMag = 0.0f;
 
+	if (FocusOnSelectedUnits)
+	{
 	for (int32 i = 0; i < selectedEntityCount; ++i)
 	{
 		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
@@ -1319,6 +1322,42 @@ void ARTS_PlayerController::MoveToSelectionCenter()
 	}
 
 	averageEntityLocation /= selectedEntityCount;
+	}
+	else
+	{
+		int32 entityCount = 0;
+
+		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
+		{
+			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
+			if (entity && entity->IsSelectableByPlayer())
+			{
+				++entityCount;
+
+				FVector entityLocation = entity->GetActorLocation();
+				averageEntityLocation += entityLocation;
+
+				FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+
+				UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
+				entityLocationCopy = entityLocation;
+				UGeneralFunctionLibrary_CPP::FVectorMinMax(entityLocationCopy, maxEntityLocation);
+
+				const float entityVelocityMag = entity->GetVelocity().Size();
+				if (entityVelocityMag > maxEntityVelocityMag)
+				{
+					maxEntityVelocityMag = entityVelocityMag;
+				}
+			}
+		}
+
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("entityCount %d"), entityCount);
+		if (entityCount > 0)
+		{
+			averageEntityLocation /= entityCount;
+		}
+	}
+
 
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(averageEntityLocation.X, averageEntityLocation.Y,
