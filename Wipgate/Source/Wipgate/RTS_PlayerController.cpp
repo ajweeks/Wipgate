@@ -494,7 +494,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
+		if (!SelectedAbility && entity->Team && 
+			(entity->Team->Alignment == ETeamAlignment::E_PLAYER ||
+				entity->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 		{
 			if (!entityIsSelectable)
 			{
@@ -899,7 +901,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		float currentTimeSeconds = GetWorld()->GetTimeSeconds();
 
-		if (unitUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER &&
+		if ((unitUnderCursor->Team->Alignment == ETeamAlignment::E_PLAYER ||
+			unitUnderCursor->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI) &&
 			(currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
 		{
 			doubleClicked = true;
@@ -907,7 +910,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 			for (auto entity : m_RTS_GameState->Entities)
 			{
-				if (entity->Team->Alignment == ETeamAlignment::E_PLAYER && entity->CurrentAttackStats.Range == targetRange && 
+				if (entity->Team->Alignment == unitUnderCursor->Team->Alignment && entity->CurrentAttackStats.Range == targetRange &&
 					entity->IsSelectableByPlayer())
 				{
 					entity->SetSelected(true);
@@ -935,7 +938,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		{
 			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
 
-			if (entity->IsSelected() && entity->Team->Alignment == ETeamAlignment::E_PLAYER)
+			if (entity->IsSelected() && (entity->Team->Alignment == ETeamAlignment::E_PLAYER ||
+				entity->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 			{
 				m_RTS_GameState->SelectedEntities.AddUnique(entity);
 			}
@@ -1193,7 +1197,8 @@ void ARTS_PlayerController::InvertSelection()
 
 		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
 		{
-			if (m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER &&
+			if ((m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_PLAYER ||
+				m_RTS_GameState->Entities[i]->Team->Alignment == ETeamAlignment::E_NEUTRAL_AI) &&
 				m_RTS_GameState->Entities[i]->IsSelectableByPlayer() &&
 				!m_RTS_GameState->SelectedEntities.Contains(m_RTS_GameState->Entities[i]))
 			{
