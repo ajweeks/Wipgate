@@ -109,7 +109,10 @@ public:
 		void AddCommand_CastTarget(AAbility* ability, ARTS_Entity* target, const bool isForced, const bool isQueued);
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_CastGround(AAbility* ability, FVector target, const bool isForced, const bool isQueued);
-
+	UFUNCTION(BlueprintImplementableEvent, Category = "Command")
+		void UpdateCommandQueueIndicator();
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void EnableCommandQueueIndicator(const bool enabled);
 
 public:
 	UPROPERTY(BlueprintReadWrite)
@@ -132,6 +135,8 @@ protected:
 		TArray<UCommand*> m_CommandQueue;
 	UPROPERTY(BlueprintReadWrite)
 		UCommand* m_CurrentCommand;
+	UPROPERTY(BlueprintReadWrite)
+		bool m_ShowQueueIndicator = false;
 	UPROPERTY(BlueprintReadWrite)
 		AAbility* CurrentAbility;
 
