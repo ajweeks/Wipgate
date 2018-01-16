@@ -290,6 +290,9 @@ private:
 	// These two fields are private so that the setters must be used, which will update the HUD with the new values
 	int32 m_CurrentLuma = 0;
 
+	// This variable is set shift applying an ability
+	// Once shift is released, this ability is deselected
+	AAbility* m_AbilityOnShift = nullptr;
 
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
