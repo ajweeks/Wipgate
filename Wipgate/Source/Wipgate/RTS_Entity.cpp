@@ -353,6 +353,7 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 		//if (effect->SocketName != "None")
 		effect->StartParticleConstant(RootComponent);
 		effect->AttachParticleToSocket(GetMesh());
+		effect->SetFloatParameter("Amount", CurrentLumaStats.LumaSaturation);
 	}
 }
 
@@ -488,6 +489,9 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP();
 
+			for (auto e : UnitEffects)
+				RemoveUnitEffect(e);
+
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
 	
@@ -569,6 +573,8 @@ void ARTS_Entity::Kill()
 	{
 		BarWidget->DestroyComponent();
 	}
+
+
 
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);

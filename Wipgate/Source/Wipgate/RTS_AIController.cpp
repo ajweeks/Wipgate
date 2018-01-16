@@ -595,6 +595,7 @@ void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool
 void ARTS_AIController::AddCommand_Stop()
 {
 	m_CommandQueue.Empty();
+	UpdateCommandQueueIndicator();
 	StopMovement();
 	SetCurrentTask(EUNIT_TASK::IDLE);
 }
