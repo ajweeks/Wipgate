@@ -332,9 +332,7 @@ void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-		{
 			e->IsFinished = true;
-		}
 	}
 }
 
@@ -489,8 +487,10 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP();
 
-			for (auto e : UnitEffects)
-				RemoveUnitEffect(e);
+			for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
+			{
+				RemoveUnitEffect(UnitEffects[i]);
+			}
 
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
