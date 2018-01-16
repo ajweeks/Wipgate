@@ -581,7 +581,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		if (m_AbilityOnShift)
 		{
-			//m_AbilityOnShift->Activate();
 			if (SelectedAbility->Icon)
 			{
 				SelectedAbility->Icon->OnAbilityActivate();
@@ -788,6 +787,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				else // No valid specialist - don't perform range check
 				{
 					SelectedAbility->Activate();
+
 					if (shiftIsDown)
 					{
 						m_AbilityOnShift = SelectedAbility;
@@ -814,13 +814,14 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (m_SpecialistShowingAbilities)
 				{
+					SelectedAbility->SetTarget(unitUnderCursor);
+
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 					else
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
 
-					SelectedAbility->SetTarget(unitUnderCursor);
 					unitUnderCursor->SetHighlighted();
 
 					if (shiftIsDown)
@@ -840,6 +841,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				else // No valid specialist - don't perform range check
 				{
 					SelectedAbility->SetTarget(unitUnderCursor);
+					SelectedAbility->Activate();
 					unitUnderCursor->SetHighlighted();
 
 					if (shiftIsDown)
@@ -871,6 +873,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (m_SpecialistShowingAbilities)
 					{
+						SelectedAbility->SetTarget(unitUnderCursor);
+
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
@@ -878,6 +882,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
 
 						unitUnderCursor->SetHighlighted();
+
 						if (shiftIsDown)
 						{
 							m_AbilityOnShift = SelectedAbility;
@@ -932,6 +937,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (m_SpecialistShowingAbilities)
 					{
+						SelectedAbility->SetTarget(unitUnderCursor);
+
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
