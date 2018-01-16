@@ -15,12 +15,16 @@
 #include "RTS_PlayerSpawner.h"
 #include "RTS_LevelBounds.h"
 #include "UpgradeShopBase.h"
+#include "Runtime/Core/Public/Misc/FileHelper.h"
+#include "Runtime/Core/Public/Misc/Paths.h"
+#include "JsonObjectConverter.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
 void AWipgateGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (!m_TeamTable)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No team table was linked. Returning..."));
@@ -136,32 +140,81 @@ void AWipgateGameModeBase::BeginPlay()
 		{
 			// Add entities to player's team
 			TArray<FEntityRow*> playerRows;
-			m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
+			FString json;
+			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + UnitToSpawnPath;
+			auto success = FFileHelper::LoadFileToString(json, *path, FFileHelper::EHashOptions::EnableVerify);
 
-			for (auto pr : playerRows)
+			//TODO: Add check for development build
+			if (m_UseJSON && success)
 			{
-				if (pr->Round == gameinstance->CurrentRound)
+				//Read json file
+				TArray<TSharedPtr<FJsonValue>> arrayDeserialized;
+				TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(json);
+				if (FJsonSerializer::Deserialize(reader, arrayDeserialized))
 				{
-					for (int i = 0; i < pr->Spawns.Num(); i++)
+					for (TSharedPtr<FJsonValue> jsonObject : arrayDeserialized)
 					{
-						FEntitySpawn es = pr->Spawns[i];
-						ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
-						for (int i = 0; i < es.Amount; i++)
+						TArray<FEntitySpawn> spawns;
+						auto row = jsonObject->AsObject();
+						auto round = row->GetIntegerField("Round");
+						auto spawnsJson = row->GetArrayField("Spawns");
+						FJsonObjectConverter::JsonArrayToUStruct(spawnsJson, &spawns, 0, 0);
+						if (round == gameinstance->CurrentRound)
 						{
-							FEntitySave save;
-							save.Entity = es.Entity;
-							save.Health = defaultObject->BaseDefenceStats.MaxHealth;
-							save.LumaStats = defaultObject->CurrentLumaStats;
-							gameinstance->SavedEntities.Add(save);
+							for (int i = 0; i < spawns.Num(); i++)
+							{
+								FEntitySpawn es = spawns[i];
+								ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+								for (int i = 0; i < es.Amount; i++)
+								{
+									FEntitySave save;
+									save.Entity = es.Entity;
+									save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+									save.LumaStats = defaultObject->CurrentLumaStats;
+									gameinstance->SavedEntities.Add(save);
+								}
+							}
 						}
 					}
 				}
+				else
+				{
+					UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Could not deserialize json file!"));
+				}
+			}
+			else if (!m_UseJSON)
+			{
+				m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
+
+				for (auto pr : playerRows)
+				{
+					if (pr->Round == gameinstance->CurrentRound)
+					{
+						for (int i = 0; i < pr->Spawns.Num(); i++)
+						{
+							FEntitySpawn es = pr->Spawns[i];
+							ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+							for (int i = 0; i < es.Amount; i++)
+							{
+								FEntitySave save;
+								save.Entity = es.Entity;
+								save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+								save.LumaStats = defaultObject->CurrentLumaStats;
+								gameinstance->SavedEntities.Add(save);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s path not found!"), *path);
 			}
 		}
 
 		// Spawn player
 		auto playerspawner = GetPlayerSpawner();
-		if(playerspawner)
+		if (playerspawner)
 			playerspawner->SpawnEntities();
 
 		for (auto team : gamestate->Teams)
@@ -246,7 +299,7 @@ void AWipgateGameModeBase::SaveResources()
 		return;
 	}
 
-	if(!gameinstance)
+	if (!gameinstance)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveResources > No gameinstance. Returning..."));
 		return;
@@ -343,7 +396,7 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	TArray<AActor*> levelBoundsObjects;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelBounds::StaticClass(), levelBoundsObjects);
 
-	if (levelBoundsObjects.Num() >=	1)
+	if (levelBoundsObjects.Num() >= 1)
 	{
 		m_LevelBounds = Cast<ARTS_LevelBounds>(levelBoundsObjects[0]);
 	}

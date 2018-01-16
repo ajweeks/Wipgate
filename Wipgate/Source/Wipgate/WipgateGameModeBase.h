@@ -49,6 +49,10 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool m_UseFriendlyAddedTroops = true;
 
+	//Path to json file that sets the unit spawns
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString UnitToSpawnPath = "Stats/Unitspawns.json";
+
 private:
 
 	//Make sure the datatable is inheriting from FTeamRow
@@ -70,6 +74,10 @@ private:
 	//Spawn chance increase per round
 	UPROPERTY(EditAnywhere)
 		float SpawnChanceRoundIncrease = 0.05f;
+
+	//Will the spawners / unit stats will be set by the json file
+	UPROPERTY(EditAnywhere)
+		bool m_UseJSON = true;
 
 	ARTS_LevelEnd* m_LevelEnd;
 	ARTS_PlayerSpawner* m_PlayerSpawner;
