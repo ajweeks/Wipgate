@@ -538,6 +538,42 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
+	if (m_SpecialistShowingAbilities)
+	{
+		if (m_SpecialistShowingAbilities->IsSelectableByPlayer())
+		{
+			UpdateSpecialistAbilityButtons();
+		}
+		else
+		{
+			ClearSpecialistAbilityButtons();
+			m_RTS_GameState->SelectedEntities.Empty();
+			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
+			m_SpecialistShowingAbilities = nullptr;
+		}
+	}
+
+	if (m_RTS_GameState->SelectedEntities.Num() == 1)
+	{
+		ARTS_Entity* selectedEntity = m_RTS_GameState->SelectedEntities[0];
+		if (selectedEntity->Health <= 0)
+		{
+			selectedEntity = nullptr;
+			m_RTS_GameState->SelectedEntities.Empty();
+			UpdateSelectedEntitiesBase();
+		}
+		else if (selectedEntity->IsSelectableByPlayer())
+		{
+			m_RTSHUD->ShowSelectedEntityStats(selectedEntity);
+		}
+	}
+
+	if (prevSelectedEntityCount == 1 && m_RTS_GameState->SelectedEntities.Num() != 1)
+	{
+		m_RTSHUD->HideSelectedEntityStats();
+	}
+
+
 	/* Cursor */
 	if (CursorRef)
 	{
@@ -618,77 +654,30 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			} break;
 			}
 		}
-		else
+		else // No selected ability
 		{
-
-			//auto baseGameMode = GetWorld()->GetAuthGameMode();
-			//AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
-			//if (castedGameMode)
-			//{
-			//	bool changedCursor = false;
-
-			//	TArray<AUpgradeShopBase*> shops = castedGameMode->GetShops();
-			//	for (auto shop : shops)
-			//	{
-			//		FVector shopRelativeScale = shop->OverlapCube->RelativeScale3D;
-			//		FVector shopLocation = shop->OverlapCube->GetOwner()->GetActorLocation();
-			//		if (hitResult.ImpactPoint.X > shopLocation.X - shopRelativeScale.X * 100 &&
-			//			hitResult.ImpactPoint.X < shopLocation.X + shopRelativeScale.X * 100 && 
-			//			hitResult.ImpactPoint.Y > shopLocation.Y - shopRelativeScale.Y * 100 &&
-			//			hitResult.ImpactPoint.Y < shopLocation.Y + shopRelativeScale.Y * 100)
-			//		{
-			//			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Changed cursor"));
-			//			CursorRef->SetCursorTexture(CursorRef->ShopTexture);
-			//			changedCursor = true;
-			//			break;
-			//		}
-			//	}
-
-			//	if (!changedCursor)
-			//	{
-			//		if (CursorRef->CurrentTexture == CursorRef->ShopTexture)
-			//		{
-			//			// Cursor just left shop area, set back to default cursor
-			//			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-			//		}
-			//	}
-			//}
+			if (m_RTS_GameState->SelectedEntities.Num() > 0)
+			{
+				if (entityUnderCursor)
+				{
+					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
+				}
+				else
+				{
+					if (CursorRef->CurrentTexture == CursorRef->AttackMoveTexture)
+					{
+						CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+					}
+				}
+			}
+			else
+			{
+				if (CursorRef->CurrentTexture == CursorRef->AttackMoveTexture)
+				{
+					CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+				}
+			}
 		}
-	}
-
-	if (m_SpecialistShowingAbilities)
-	{
-		if (m_SpecialistShowingAbilities->IsSelectableByPlayer())
-		{
-			UpdateSpecialistAbilityButtons();
-		}
-		else
-		{
-			ClearSpecialistAbilityButtons();
-			m_RTS_GameState->SelectedEntities.Empty();
-			m_RTS_GameState->Entities.Remove(m_SpecialistShowingAbilities);
-			m_SpecialistShowingAbilities = nullptr;
-		}
-	}
-
-	if (m_RTS_GameState->SelectedEntities.Num() == 1)
-	{
-		ARTS_Entity* selectedEntity = m_RTS_GameState->SelectedEntities[0];
-		if (selectedEntity->Health <= 0)
-		{
-			selectedEntity = nullptr;
-			m_RTS_GameState->SelectedEntities.Empty();
-			UpdateSelectedEntitiesBase();
-		}
-		else if (selectedEntity->IsSelectableByPlayer())
-		{
-			m_RTSHUD->ShowSelectedEntityStats(selectedEntity);
-		}
-	}
-
-	if (prevSelectedEntityCount == 1 && m_RTS_GameState->SelectedEntities.Num() != 1)
-	{
-		m_RTSHUD->HideSelectedEntityStats();
 	}
 }
 
@@ -702,8 +691,6 @@ void ARTS_PlayerController::ActionPrimaryClickPressed()
 
 void ARTS_PlayerController::ActionPrimaryClickReleased()
 {
-	//if (IsInputKeyDown(FKey("Q"))) { return; }
-
 	if (!m_RTS_GameState || !m_RTSHUD)
 	{
 		return;
@@ -967,6 +954,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
+
 	// Ensure specialist whos is showing their ability buttons is still selected
 	if (m_SpecialistShowingAbilities)
 	{
@@ -982,6 +970,27 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
+	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult hitResult;
+	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	AActor* actorUnderCursor = hitResult.Actor.Get();
+	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
+	if (unitUnderCursor)
+	{
+		if (unitUnderCursor->Health <= 0)
+		{
+			unitUnderCursor = nullptr; // Don't target dead people
+		}
+		else if (unitUnderCursor->Immaterial)
+		{
+			unitUnderCursor = nullptr; // Don't target immaterial people
+		}
+
+		if (m_RTS_GameState->SelectedEntities.Num() > 0)
+		{
+			unitUnderCursor->SetHighlighted();
+		}
+	}
 }
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()
