@@ -954,6 +954,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
+
 	// Ensure specialist whos is showing their ability buttons is still selected
 	if (m_SpecialistShowingAbilities)
 	{
@@ -969,6 +970,27 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 void ARTS_PlayerController::ActionSecondaryClickPressed()
 {
+	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult hitResult;
+	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
+	AActor* actorUnderCursor = hitResult.Actor.Get();
+	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
+	if (unitUnderCursor)
+	{
+		if (unitUnderCursor->Health <= 0)
+		{
+			unitUnderCursor = nullptr; // Don't target dead people
+		}
+		else if (unitUnderCursor->Immaterial)
+		{
+			unitUnderCursor = nullptr; // Don't target immaterial people
+		}
+
+		if (m_RTS_GameState->SelectedEntities.Num() > 0)
+		{
+			unitUnderCursor->SetHighlighted();
+		}
+	}
 }
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()
