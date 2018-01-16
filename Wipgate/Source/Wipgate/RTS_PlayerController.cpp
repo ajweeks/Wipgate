@@ -573,6 +573,23 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		m_RTSHUD->HideSelectedEntityStats();
 	}
 
+	static bool shiftWasDown = IsInputKeyDown(FKey("LeftShift"));
+	bool shiftIsDown = IsInputKeyDown(FKey("LeftShift"));
+	if (shiftWasDown && !shiftIsDown)
+	{
+		if (m_AbilityOnShift)
+		{
+			//m_AbilityOnShift->Activate();
+			if (SelectedAbility->Icon)
+			{
+				SelectedAbility->Icon->OnAbilityActivate();
+			}
+			SelectedAbility->Deselect();
+			m_AbilityOnShift = nullptr;
+			SelectedAbility = nullptr;
+		}
+	}
+	shiftWasDown = shiftIsDown;
 
 	/* Cursor */
 	if (CursorRef)
@@ -721,6 +738,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		}
 	}
 
+	const bool shiftIsDown = IsInputKeyDown(FKey("LeftShift"));
+
 	if (SelectedAbility)
 	{
 		EAbilityType abilityType = SelectedAbility->Type;
@@ -742,28 +761,42 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (m_SpecialistShowingAbilities)
 				{
-					if (SelectedAbility->Icon)
-					{
-						SelectedAbility->Icon->OnAbilityActivate();
-					}
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
 						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, true);
 					else
 						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, false);
 
-					SelectedAbility->Deselect();
-					SelectedAbility = nullptr;
+					if (shiftIsDown)
+					{
+						m_AbilityOnShift = SelectedAbility;
+					}
+					else
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
+					}
 				}
 				else // No valid specialist - don't perform range check
 				{
-					if (SelectedAbility->Icon)
-					{
-						SelectedAbility->Icon->OnAbilityActivate();
-					}
 					SelectedAbility->Activate();
-					SelectedAbility->Deselect();
-					SelectedAbility = nullptr;
+					if (shiftIsDown)
+					{
+						m_AbilityOnShift = SelectedAbility;
+					}
+					else
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
+					}
 				}
 			}
 			else
@@ -777,31 +810,47 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			{
 				if (m_SpecialistShowingAbilities)
 				{
-					if (SelectedAbility->Icon)
-					{
-						SelectedAbility->Icon->OnAbilityActivate();
-					}
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 					else
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
 
-					SelectedAbility->Deselect();
-					SelectedAbility = nullptr;
+					SelectedAbility->SetTarget(unitUnderCursor);
 					unitUnderCursor->SetHighlighted();
+
+					if (shiftIsDown)
+					{
+						m_AbilityOnShift = SelectedAbility;
+					}
+					else
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
+					}
 				}
 				else // No valid specialist - don't perform range check
 				{
-					if (SelectedAbility->Icon)
-					{
-						SelectedAbility->Icon->OnAbilityActivate();
-					}
 					SelectedAbility->SetTarget(unitUnderCursor);
-					SelectedAbility->Activate();
-					SelectedAbility->Deselect();
-					SelectedAbility = nullptr;
 					unitUnderCursor->SetHighlighted();
+
+					if (shiftIsDown)
+					{
+						m_AbilityOnShift = SelectedAbility;
+					}
+					else
+					{
+						if (SelectedAbility->Icon)
+						{
+							SelectedAbility->Icon->OnAbilityActivate();
+						}
+						SelectedAbility->Deselect();
+						SelectedAbility = nullptr;
+					}
 				}
 			}
 			else
@@ -818,31 +867,46 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (m_SpecialistShowingAbilities)
 					{
-						if (SelectedAbility->Icon)
-						{
-							SelectedAbility->Icon->OnAbilityActivate();
-						}
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 						else
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
 
-						SelectedAbility->Deselect();
-						SelectedAbility = nullptr;
 						unitUnderCursor->SetHighlighted();
+						if (shiftIsDown)
+						{
+							m_AbilityOnShift = SelectedAbility;
+						}
+						else
+						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
+						}
 					}
 					else // No valid specialist - don't perform range check
 					{
-						if (SelectedAbility->Icon)
-						{
-							SelectedAbility->Icon->OnAbilityActivate();
-						}
 						SelectedAbility->SetTarget(unitUnderCursor);
 						SelectedAbility->Activate();
-						SelectedAbility->Deselect();
-						SelectedAbility = nullptr;
 						unitUnderCursor->SetHighlighted();
+
+						if (shiftIsDown)
+						{
+							m_AbilityOnShift = SelectedAbility;
+						}
+						else
+						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
+						}
 					}
 				}
 				else
@@ -864,31 +928,47 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				{
 					if (m_SpecialistShowingAbilities)
 					{
-						if (SelectedAbility->Icon)
-						{
-							SelectedAbility->Icon->OnAbilityActivate();
-						}
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 						else
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
 
-						SelectedAbility->Deselect();
-						SelectedAbility = nullptr;
 						unitUnderCursor->SetHighlighted();
+
+						if (shiftIsDown)
+						{
+							m_AbilityOnShift = SelectedAbility;
+						}
+						else
+						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
+						}
 					}
 					else // No valid specialist - don't perform range check
 					{
-						if (SelectedAbility->Icon)
-						{
-							SelectedAbility->Icon->OnAbilityActivate();
-						}
 						SelectedAbility->SetTarget(unitUnderCursor);
 						SelectedAbility->Activate();
-						SelectedAbility->Deselect();
-						SelectedAbility = nullptr;
 						unitUnderCursor->SetHighlighted();
+
+						if (shiftIsDown)
+						{
+							m_AbilityOnShift = SelectedAbility;
+						}
+						else
+						{
+							if (SelectedAbility->Icon)
+							{
+								SelectedAbility->Icon->OnAbilityActivate();
+							}
+							SelectedAbility->Deselect();
+							SelectedAbility = nullptr;
+						}
 					}
 				}
 				else
