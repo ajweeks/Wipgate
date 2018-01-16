@@ -40,6 +40,7 @@
 #include "RTS_Unit.h"
 #include "RTS_AIController.h"
 #include "WipgateGameModeBase.h"
+#include "UpgradeShopBase.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_PlayerController_Log, Log, All);
 
@@ -331,7 +332,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 	{
-		if (IsInputKeyDown(EKeys::SpaceBar))
+		if (!AlwaysCenterOnUnits && IsInputKeyDown(EKeys::SpaceBar))
 		{
 			ActionCenterOnSelection();
 		}
@@ -342,9 +343,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		MoveToTarget();
 		return;
 	}
-	else if (m_MovingToSelectionCenter)
+	else if (m_MovingToSelectionCenter || AlwaysCenterOnUnits)
 	{
-		MoveToSelectionCenter();
+		MoveToCenterOfUnits(!AlwaysCenterOnUnits);
 	}
 	// If mouse is at edge of screen, update camera pos
 	/*
@@ -619,21 +620,41 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 		else
 		{
-			bool cursorInShop = false; // actorUnderCursor
-			if (cursorInShop)
-			{
-				CursorRef->SetCursorTexture(CursorRef->ShopTexture);
-			}
-			else
-			{
-				if (CursorRef->CurrentTexture == CursorRef->ShopTexture)
-				{
-					// Cursor just left shop area, set back to default cursor
-					CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-				}
-			}
+
+			//auto baseGameMode = GetWorld()->GetAuthGameMode();
+			//AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
+			//if (castedGameMode)
+			//{
+			//	bool changedCursor = false;
+
+			//	TArray<AUpgradeShopBase*> shops = castedGameMode->GetShops();
+			//	for (auto shop : shops)
+			//	{
+			//		FVector shopRelativeScale = shop->OverlapCube->RelativeScale3D;
+			//		FVector shopLocation = shop->OverlapCube->GetOwner()->GetActorLocation();
+			//		if (hitResult.ImpactPoint.X > shopLocation.X - shopRelativeScale.X * 100 &&
+			//			hitResult.ImpactPoint.X < shopLocation.X + shopRelativeScale.X * 100 && 
+			//			hitResult.ImpactPoint.Y > shopLocation.Y - shopRelativeScale.Y * 100 &&
+			//			hitResult.ImpactPoint.Y < shopLocation.Y + shopRelativeScale.Y * 100)
+			//		{
+			//			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Changed cursor"));
+			//			CursorRef->SetCursorTexture(CursorRef->ShopTexture);
+			//			changedCursor = true;
+			//			break;
+			//		}
+			//	}
+
+			//	if (!changedCursor)
+			//	{
+			//		if (CursorRef->CurrentTexture == CursorRef->ShopTexture)
+			//		{
+			//			// Cursor just left shop area, set back to default cursor
+			//			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+			//		}
+			//	}
+			//}
 		}
-	} // CursorRef not nullptr
+	}
 
 	if (m_SpecialistShowingAbilities)
 	{
@@ -965,7 +986,7 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 
 void ARTS_PlayerController::ActionSecondaryClickReleased()
 {
-	CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+	//CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 }
 
 void ARTS_PlayerController::ActionMoveFastPressed()
@@ -1282,12 +1303,13 @@ float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float Delta
 	return 0.0f;
 }
 
-void ARTS_PlayerController::MoveToSelectionCenter()
+void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 {
+	UE_LOG(RTS_PlayerController_Log, Error, TEXT("center %b"), FocusOnSelectedUnits);
 	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
 	const int32 selectedEntityCount = m_RTS_GameState->SelectedEntities.Num();
 
-	if (selectedEntityCount == 0)
+	if (FocusOnSelectedUnits && selectedEntityCount == 0)
 	{
 		m_MovingToSelectionCenter = false;
 		return;
@@ -1299,26 +1321,64 @@ void ARTS_PlayerController::MoveToSelectionCenter()
 
 	float maxEntityVelocityMag = 0.0f;
 
-	for (int32 i = 0; i < selectedEntityCount; ++i)
+	if (FocusOnSelectedUnits)
 	{
-		ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-		FVector entityLocation = entity->GetActorLocation();
-		averageEntityLocation += entityLocation;
-
-		FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
-
-		UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
-		entityLocationCopy = entityLocation;
-		UGeneralFunctionLibrary_CPP::FVectorMinMax(entityLocationCopy, maxEntityLocation);
-
-		const float entityVelocityMag = entity->GetVelocity().Size();
-		if (entityVelocityMag > maxEntityVelocityMag)
+		for (int32 i = 0; i < selectedEntityCount; ++i)
 		{
-			maxEntityVelocityMag = entityVelocityMag;
+			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
+			FVector entityLocation = entity->GetActorLocation();
+			averageEntityLocation += entityLocation;
+
+			FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+
+			UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
+			entityLocationCopy = entityLocation;
+			UGeneralFunctionLibrary_CPP::FVectorMinMax(entityLocationCopy, maxEntityLocation);
+
+			const float entityVelocityMag = entity->GetVelocity().Size();
+			if (entityVelocityMag > maxEntityVelocityMag)
+			{
+				maxEntityVelocityMag = entityVelocityMag;
+			}
+		}
+
+		averageEntityLocation /= selectedEntityCount;
+	}
+	else
+	{
+		int32 entityCount = 0;
+
+		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
+		{
+			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
+			if (entity && entity->IsSelectableByPlayer())
+			{
+				++entityCount;
+
+				FVector entityLocation = entity->GetActorLocation();
+				averageEntityLocation += entityLocation;
+
+				FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+
+				UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
+				entityLocationCopy = entityLocation;
+				UGeneralFunctionLibrary_CPP::FVectorMinMax(entityLocationCopy, maxEntityLocation);
+
+				const float entityVelocityMag = entity->GetVelocity().Size();
+				if (entityVelocityMag > maxEntityVelocityMag)
+				{
+					maxEntityVelocityMag = entityVelocityMag;
+				}
+			}
+		}
+
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("entityCount %d"), entityCount);
+		if (entityCount > 0)
+		{
+			averageEntityLocation /= entityCount;
 		}
 	}
 
-	averageEntityLocation /= selectedEntityCount;
 
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(averageEntityLocation.X, averageEntityLocation.Y,

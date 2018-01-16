@@ -376,7 +376,7 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 			CurrentDefenceStats.Armor -= effect->Magnitude;
 		}
 	} break;
-	case EUnitEffectStat::DAMAGE:
+	case EUnitEffectStat::ATTACK_DAMAGE:
 	{
 		if (effect->Type == EUnitEffectType::OVER_TIME)
 		{
@@ -645,7 +645,8 @@ bool ARTS_Entity::IsSelectableByPlayer() const
 	if (aiController)
 	{
 		bool selectable = (Health > 0) && 
-			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI);
+			(Alignment != ETeamAlignment::E_ATTACKEVERYTHING_AI) &&
+			(Alignment != ETeamAlignment::E_AGGRESSIVE_AI);
 		return selectable;
 	}
 
@@ -670,6 +671,9 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 		{
 		case EUnitEffectStat::ARMOR:
 			CurrentDefenceStats.Armor += magnitudeTick;
+			break;
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			CurrentAttackStats.Damage += magnitudeTick;
 			break;
 		case EUnitEffectStat::DAMAGE:
 			ApplyDamage(magnitudeTick, false);
@@ -714,7 +718,9 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 		case EUnitEffectStat::ARMOR:
 			CurrentDefenceStats.Armor += effect->Magnitude;
 			break;
-
+		case EUnitEffectStat::ATTACK_DAMAGE:
+			CurrentAttackStats.Damage += effect->Magnitude;
+			break;
 		case EUnitEffectStat::DAMAGE:
 			ApplyDamage(effect->Magnitude, false);
 			break;

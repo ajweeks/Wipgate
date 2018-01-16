@@ -14,6 +14,7 @@
 #include "RTS_LevelEnd.h"
 #include "RTS_PlayerSpawner.h"
 #include "RTS_LevelBounds.h"
+#include "UpgradeShopBase.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
@@ -114,7 +115,7 @@ void AWipgateGameModeBase::BeginPlay()
 
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
-		{
+	{
 		//Spawn entities
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
@@ -204,9 +205,21 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
 	}
+
+	TArray<AActor*> uncastedShops;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedShops);
+
+	for (auto uncastedShop : uncastedShops)
+	{
+		AUpgradeShopBase* castedShop = Cast<AUpgradeShopBase>(uncastedShop);
+		if (castedShop)
+		{
+			m_Shops.Push(castedShop);
+		}
+	}
 }
 
-URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
+URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 {
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	for (URTS_Team* team : gamestate->Teams)
@@ -338,4 +351,9 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	}
 
 	return m_LevelBounds;
+}
+
+const TArray<AUpgradeShopBase*>& AWipgateGameModeBase::GetShops()
+{
+	return m_Shops;
 }
