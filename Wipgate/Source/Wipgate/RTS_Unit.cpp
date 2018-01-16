@@ -95,7 +95,7 @@ void ARTS_Unit::Kill()
 		ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
 		if (playercontroller)
 		{
-			if (Team && (Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Team->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
+			if (Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
 			{
 				//Add luma
 				int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);

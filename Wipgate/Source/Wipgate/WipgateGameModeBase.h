@@ -45,7 +45,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 		const TArray<AUpgradeShopBase*>& GetShops();
 
+	// Disable to spawn custom squads
+	UPROPERTY(BlueprintReadWrite)
+		bool m_UseFriendlyAddedTroops = true;
+
 private:
+
 	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_TeamTable;

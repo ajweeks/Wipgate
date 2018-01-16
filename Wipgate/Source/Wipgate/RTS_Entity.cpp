@@ -141,17 +141,13 @@ void ARTS_Entity::Tick(float DeltaTime)
 	for (auto e : UnitEffects)
 	{
 		if (!e)
-		{
 			continue;
-		}
 
 		e->Elapsed += DeltaTime;
 
 		// only apply effect after delay
 		if (e->Elapsed < 0)
-		{
 			continue;
-		}
 
 		switch (e->Type)
 		{
@@ -166,18 +162,15 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 
 		if (e->Ticks >= e->Duration)
-		{
 			e->IsFinished = true;
-		}
 	}
 
 	/* Clean up effects */
-	for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
+	int length = UnitEffects.Num();
+	for (size_t i = UnitEffects.Num() - 1; i < length; i--)
 	{
 		if (UnitEffects[i]->IsFinished)
-		{
 			RemoveUnitEffect(UnitEffects[i]);
-		}
 	}
 }
 
@@ -332,9 +325,7 @@ void ARTS_Entity::RemoveUnitEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-		{
 			e->IsFinished = true;
-		}
 	}
 }
 
@@ -353,6 +344,7 @@ void ARTS_Entity::AddUnitEffect(UUnitEffect * effect)
 		//if (effect->SocketName != "None")
 		effect->StartParticleConstant(RootComponent);
 		effect->AttachParticleToSocket(GetMesh());
+		effect->SetFloatParameter("Amount", CurrentLumaStats.LumaSaturation);
 	}
 }
 
@@ -488,6 +480,12 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP();
 
+			int lenght = UnitEffects.Num();
+			for (size_t i = UnitEffects.Num() - 1; i < lenght; i--)
+			{
+				RemoveUnitEffect(UnitEffects[i]);
+			}
+
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
 	
@@ -569,6 +567,8 @@ void ARTS_Entity::Kill()
 	{
 		BarWidget->DestroyComponent();
 	}
+
+
 
 	//FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	//GetMesh()->DetachFromComponent(rules);

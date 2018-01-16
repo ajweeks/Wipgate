@@ -524,6 +524,7 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 	case ECOMMAND_TYPE::NONE:
 		break;
 	case ECOMMAND_TYPE::STOP:
+		UpdateCommandQueueIndicator();
 		break;
 	case ECOMMAND_TYPE::MOVE_TO_LOCATION:
 		SetCurrentTask(EUNIT_TASK::MOVING);
@@ -540,7 +541,7 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 	case ECOMMAND_TYPE::PATROL:
 		break;
 	case ECOMMAND_TYPE::ATTACK:
-		m_CurrentTask = EUNIT_TASK::ATTACKING;
+		m_CurrentTask = EUNIT_TASK::CHASING;
 		SetTargetEntity(Cast<UCommand_Attack>(command)->Target);
 		break;
 	case ECOMMAND_TYPE::CAST_ON_TARGET:
@@ -595,6 +596,7 @@ void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool
 void ARTS_AIController::AddCommand_Stop()
 {
 	m_CommandQueue.Empty();
+	UpdateCommandQueueIndicator();
 	StopMovement();
 	SetCurrentTask(EUNIT_TASK::IDLE);
 }

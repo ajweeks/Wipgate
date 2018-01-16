@@ -46,9 +46,7 @@ public:
 		void StartParticleConstant(USceneComponent* comp);
 	void StopParticleConstant();
 	void AttachParticleToSocket(USceneComponent * skeletalMesh);
-
-	//UFUNCTION(BlueprintCallable)
-	//UUnitEffect* GetCopy();
+	void SetFloatParameter(const FName name, const float amount);
 
 public:
 	float Elapsed = 0;
