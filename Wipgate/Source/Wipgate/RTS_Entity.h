@@ -181,6 +181,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* IconTexture;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)	
+		UTexture2D* LargeIconTexture;	//used when unit is only selected unit.
+
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
 
