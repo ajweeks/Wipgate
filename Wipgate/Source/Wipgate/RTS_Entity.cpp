@@ -141,17 +141,13 @@ void ARTS_Entity::Tick(float DeltaTime)
 	for (auto e : UnitEffects)
 	{
 		if (!e)
-		{
 			continue;
-		}
 
 		e->Elapsed += DeltaTime;
 
 		// only apply effect after delay
 		if (e->Elapsed < 0)
-		{
 			continue;
-		}
 
 		switch (e->Type)
 		{
@@ -166,18 +162,15 @@ void ARTS_Entity::Tick(float DeltaTime)
 		}
 
 		if (e->Ticks >= e->Duration)
-		{
 			e->IsFinished = true;
-		}
 	}
 
 	/* Clean up effects */
-	for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
+	int length = UnitEffects.Num();
+	for (size_t i = UnitEffects.Num() - 1; i < length; i--)
 	{
 		if (UnitEffects[i]->IsFinished)
-		{
 			RemoveUnitEffect(UnitEffects[i]);
-		}
 	}
 }
 
@@ -487,7 +480,8 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP();
 
-			for (size_t i = UnitEffects.Num() - 1; i < UnitEffects.Num(); i--)
+			int lenght = UnitEffects.Num();
+			for (size_t i = UnitEffects.Num() - 1; i < lenght; i--)
 			{
 				RemoveUnitEffect(UnitEffects[i]);
 			}
