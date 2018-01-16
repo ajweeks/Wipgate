@@ -297,6 +297,12 @@ private:
 	FVector2D m_ClickStartSS;
 	FVector2D m_ClickEndSS;
 
+	// How many seconds to delay edge movement enabling
+	// Without this, the camera can end up on the other side 
+	// of the map because tick gets called while things are loading
+	// but nothing gets rendered
+	float m_EdgeModeDisableDelaySec = 1.5f;
+
 	float m_LastEntityClickedFrameTime = 0.0f;
 	float m_DoubleClickPeriodSeconds = 0.5f;
 	ARTS_Entity* m_LastEntityClicked = nullptr;

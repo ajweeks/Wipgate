@@ -338,6 +338,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 	
+	const float realTimeSeconds = GetWorld()->GetRealTimeSeconds();
+
 	if (m_MovingToTarget)
 	{
 		MoveToTarget();
@@ -353,7 +355,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		before they are set in BeginPlay somehow
 		TODO: Look into call order - I think this function even gets called in the editor for some reason
 	*/
-	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
+	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn && realTimeSeconds > m_EdgeModeDisableDelaySec)
 	{
 		if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 		{
