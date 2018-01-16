@@ -42,7 +42,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	bool m_IsActive = false;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<ARTS_Entity*> m_SpawnedEntities;
 	
 };

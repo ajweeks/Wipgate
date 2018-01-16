@@ -1070,7 +1070,8 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 
 		if (m_RTS_GameState->SelectedEntities.Num() > 0)
 		{
-			unitUnderCursor->SetHighlighted();
+			if (unitUnderCursor)
+				unitUnderCursor->SetHighlighted();
 		}
 	}
 }

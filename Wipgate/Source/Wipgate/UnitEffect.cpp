@@ -31,8 +31,10 @@ void UUnitEffect::StartParticleConstant(USceneComponent* comp)
 
 void UUnitEffect::StopParticleConstant()
 {
-	if(ParticleComponent)
+	if (ParticleComponent)
+	{
 		ParticleComponent->DestroyComponent();
+	}
 }
 
 void UUnitEffect::AttachParticleToSocket(USceneComponent * skeletalMesh)
@@ -45,18 +47,7 @@ void UUnitEffect::AttachParticleToSocket(USceneComponent * skeletalMesh)
 		ParticleComponent->AttachToComponent(skeletalMesh, rules, SocketName);
 }
 
-//UUnitEffect * UUnitEffect::GetCopy()
-//{
-//	UUnitEffect* copy = NewObject<UUnitEffect>(this);
-//	copy->AffectedStat = this->AffectedStat;
-//	copy->Type = this->Type;
-//	copy->Elapsed = this->Elapsed;
-//	copy->Delay = this->Delay;
-//	copy->Duration = this->Duration;
-//	copy->IsFinished = this->IsFinished;
-//	copy->Magnitude = this->Magnitude;
-//	copy->TickParticles = this->TickParticles;
-//	copy->StartParticles = this->StartParticles;
-//	copy->EndParticles = this->EndParticles;
-//	return nullptr;
-//}
+void UUnitEffect::SetFloatParameter(const FName name, const float amount)
+{
+	ParticleComponent->SetFloatParameter(name, amount);
+}
