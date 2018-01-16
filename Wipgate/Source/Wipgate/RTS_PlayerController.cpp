@@ -1394,7 +1394,6 @@ float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float Delta
 
 void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 {
-	UE_LOG(RTS_PlayerController_Log, Error, TEXT("center %b"), FocusOnSelectedUnits);
 	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
 	const int32 selectedEntityCount = m_RTS_GameState->SelectedEntities.Num();
 
@@ -1461,7 +1460,6 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 			}
 		}
 
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("entityCount %d"), entityCount);
 		if (entityCount > 0)
 		{
 			averageEntityLocation /= entityCount;
