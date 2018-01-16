@@ -33,16 +33,11 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	if (!m_FriendlyAddedTroops)
+	if (m_UseFriendlyAddedTroops && !m_FriendlyAddedTroops)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No friendly added troops table was linked. Returning..."));
 		return;
 	}
-
-	//Get table rows
-	TArray<FTeamRow*> rows;
-	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
-	TArray<FName> rowNames = m_TeamTable->GetRowNames();
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
@@ -52,7 +47,12 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	//Loop over all team rows and make team objects
+	// Get table rows
+	TArray<FTeamRow*> rows;
+	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
+	TArray<FName> rowNames = m_TeamTable->GetRowNames();
+
+	// Loop over all team rows and make team objects
 	for (int i = 0; i < rows.Num(); ++i)
 	{
 		FTeamRow* row = rows[i];
@@ -60,7 +60,7 @@ void AWipgateGameModeBase::BeginPlay()
 		{
 			FName name = rowNames[i];
 
-			//Create team
+			// Create team
 			URTS_Team* team = NewObject<URTS_Team>();
 			team->Alignment = row->Alignment;
 			team->Color = row->Color;
@@ -68,13 +68,13 @@ void AWipgateGameModeBase::BeginPlay()
 
 			gamestate->Teams.Add(team);
 
-			//Set playercontroller team if it's player
+			// Set playercontroller team if it's player
 			if (team->Alignment == ETeamAlignment::E_PLAYER)
 			{
 				playercontroller->Team = team;
 			}
 
-			//Check users in that group
+			// Check users in that group
 			for (ARTS_Entity* entity : gamestate->Entities)
 			{
 				if (entity->Alignment == team->Alignment)
@@ -86,14 +86,14 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 	}
 
-	//Check if the playercontroller has a team
+	// Check if the playercontroller has a team
 	if (!playercontroller->Team)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
 		return;
 	}
 
-	//Check if there are still null teams
+	// Check if there are still null teams
 	for (ARTS_Entity* entity : gamestate->Entities)
 	{
 		if (entity->Team == nullptr)
@@ -116,14 +116,14 @@ void AWipgateGameModeBase::BeginPlay()
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
 	{
-		//Spawn entities
+		// Spawn entities
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
 		for (auto actor : actors)
 		{
 			ARTS_EntitySpawner* entitySpawn = Cast<ARTS_EntitySpawner>(actor);
 
-			//Percentual chance of spawning
+			// Percentual chance of spawning
 			float rand = FMath::FRandRange(0, 1);
 			if (rand < BaseSpawnChance + (gameinstance->CurrentRound * SpawnChanceRoundIncrease) + entitySpawn->SpawnModifier)
 			{
@@ -132,53 +132,55 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 		actors.Empty();
 
-		//Add entities to player's team
-		TArray<FEntityRow*> playerRows;
-		m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
-		
-		for (auto pr : playerRows)
+		if (m_UseFriendlyAddedTroops)
 		{
-			if (pr->Round == gameinstance->CurrentRound)
+			// Add entities to player's team
+			TArray<FEntityRow*> playerRows;
+			m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
+
+			for (auto pr : playerRows)
 			{
-				for (int i = 0; i < pr->Spawns.Num(); i++)
+				if (pr->Round == gameinstance->CurrentRound)
 				{
-					FEntitySpawn es = pr->Spawns[i];
-					ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
-					for (int i = 0; i < es.Amount; i++)
+					for (int i = 0; i < pr->Spawns.Num(); i++)
 					{
-						FEntitySave save;
-						save.Entity = es.Entity;
-						save.Health = defaultObject->BaseDefenceStats.MaxHealth;
-						save.LumaStats = defaultObject->CurrentLumaStats;
-						gameinstance->SavedEntities.Add(save);
+						FEntitySpawn es = pr->Spawns[i];
+						ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+						for (int i = 0; i < es.Amount; i++)
+						{
+							FEntitySave save;
+							save.Entity = es.Entity;
+							save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+							save.LumaStats = defaultObject->CurrentLumaStats;
+							gameinstance->SavedEntities.Add(save);
+						}
 					}
 				}
 			}
 		}
 
-
-		//Spawn player
+		// Spawn player
 		auto playerspawner = GetPlayerSpawner();
 		if(playerspawner)
 			playerspawner->SpawnEntities();
 
 		for (auto team : gamestate->Teams)
 		{
-			//Empty all upgrades
+			// Empty all upgrades
 			team->Upgrades.Empty();
 		}
 
-		//Add upgrades to player
+		// Add upgrades to player
 		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
 
-		//Give random upgrades to enemy based on round amount
+		// Give random upgrades to enemy based on round amount
 		auto team = GetTeamWithAlignment(ETeamAlignment::E_AGGRESSIVE_AI);
 		if (team)
 		{
 			auto round = gameinstance->CurrentRound;
 			for (int i = 0; i < round; ++i)
 			{
-				//Add random upgrade
+				// Add random upgrade
 				TArray<FEnemyUpgradeRow*> rows;
 				m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
 				if (rows.Num() > 0)
@@ -198,7 +200,7 @@ void AWipgateGameModeBase::BeginPlay()
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy team. Returning..."));
 		}
 
-		//Update luma
+		// Update luma
 		playercontroller->AddLuma(gameinstance->CurrentLuma);
 	}
 	else
@@ -269,7 +271,7 @@ void AWipgateGameModeBase::NextLevel()
 	}
 	SaveResources();
 
-	//Open same level
+	// Open same level
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
 }
 
@@ -307,10 +309,10 @@ ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 
 	if (levelEnds.Num() > 0)
 	{
-		//Get potential end zone
+		// Get potential end zone
 		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
 
-		//Destroy any endzone that wasn't selected
+		// Destroy any endzone that wasn't selected
 		for (int i = levelEnds.Num() - 1; i >= 0; --i)
 		{
 			if (i == chosenEndZoneIndex)
