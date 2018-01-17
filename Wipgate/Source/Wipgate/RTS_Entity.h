@@ -83,7 +83,7 @@ public:
 
 
 	UPROPERTY(BlueprintReadOnly)
-		int LumaToRemoveOnEnemyDeath = 1;
+		int LumaToRemoveOnEnemyDeath = 2;
 
 	// When true, this unit's stats can not be changed, and it can not be targeted
 	UPROPERTY(BlueprintReadWrite)
