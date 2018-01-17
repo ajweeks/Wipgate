@@ -38,12 +38,8 @@
 				"Amount": 5
 			},
 			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
-				"Amount": 1
-			},
-			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Morph.Spec_Morph_C'",
-				"Amount": 1
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Rifleboii.Unit_Rifleboii_C'",
+				"Amount": 5
 			}
 		]
 	},

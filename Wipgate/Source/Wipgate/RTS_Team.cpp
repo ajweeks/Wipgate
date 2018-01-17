@@ -63,7 +63,7 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 				upgradedAttackStats.Range += upgrade.Effect;
 				break;
 			case EUpgradeStat::E_RATEOFFIRE:
-				upgradedAttackStats.AttackCooldown += upgrade.Effect;
+				upgradedAttackStats.AttackCooldown -= upgrade.Effect;
 				break;
 			default:
 				break;
@@ -240,9 +240,9 @@ void URTS_Team::CalculateUpgradeEffects()
 				break;
 			case EUpgradeStat::E_RATEOFFIRE:
 				//entity->CurrentAttackStats.AttackCooldown *= totalEffect;
-				entity->CurrentAttackStats.AttackCooldown -= FMath::Clamp(entity->CurrentAttackStats.AttackCooldown * totalEffect, 0.0f, 
+				entity->CurrentAttackStats.AttackCooldown -= FMath::Clamp(entity->CurrentAttackStats.AttackCooldown * (1 - totalEffect), 0.0f, 
 					entity->CurrentAttackStats.AttackCooldown);
-				entity-> AttackAdditionalAnimSpeed += totalEffect;
+				entity-> AttackAdditionalAnimSpeed += totalEffect - 1;
 				break;
 			case EUpgradeStat::E_SPEED:
 				entity->CurrentMovementStats.Speed *= totalEffect;
