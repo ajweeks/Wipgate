@@ -815,14 +815,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 				if (m_SpecialistShowingAbilities)
 				{
 					SelectedAbility->SetTarget(unitUnderCursor);
+					unitUnderCursor->SetHighlighted();
 
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 					else
 						controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
-
-					unitUnderCursor->SetHighlighted();
 
 					if (shiftIsDown)
 					{
@@ -874,14 +873,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					if (m_SpecialistShowingAbilities)
 					{
 						SelectedAbility->SetTarget(unitUnderCursor);
+						unitUnderCursor->SetHighlighted();
 
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 						else
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
-
-						unitUnderCursor->SetHighlighted();
 
 						if (shiftIsDown)
 						{
@@ -938,14 +936,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 					if (m_SpecialistShowingAbilities)
 					{
 						SelectedAbility->SetTarget(unitUnderCursor);
+						unitUnderCursor->SetHighlighted();
 
 						ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 						if (IsInputKeyDown(FKey("LeftShift")))
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, true);
 						else
 							controller->AddCommand_CastTarget(SelectedAbility, Cast<ARTS_Entity>(unitUnderCursor), true, false);
-
-						unitUnderCursor->SetHighlighted();
 
 						if (shiftIsDown)
 						{

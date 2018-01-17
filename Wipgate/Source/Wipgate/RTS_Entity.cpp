@@ -481,8 +481,8 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP();
 
-			int lenght = UnitEffects.Num();
-			for (size_t i = UnitEffects.Num() - 1; i < lenght; i--)
+			int length = UnitEffects.Num();
+			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
 			{
 				RemoveUnitEffect(UnitEffects[i]);
 			}
