@@ -1,11 +1,41 @@
 [
 	{
+		"Name": "TEMPLATE",
+		"Round": -1,
+		"Spawns": [
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_BlackDynamite.Spec_BlackDynamite_C'",
+				"Amount": 0
+			},
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
+				"Amount": 0
+			},
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Morph.Spec_Morph_C'",
+				"Amount": 0
+			},
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Batman.Unit_Batman_C'",
+				"Amount": 0
+			},
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Crossbowman.Unit_Crossbowman_C'",
+				"Amount": 0
+			},
+			{
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Rifleboii.Unit_Rifleboii_C'",
+				"Amount": 0
+			}
+		]
+	},
+	{
 		"Name": "Round0",
 		"Round": 0,
 		"Spawns": [
 			{
 				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Batman.Unit_Batman_C'",
-				"Amount": 1
+				"Amount": 5
 			},
 			{
 				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
