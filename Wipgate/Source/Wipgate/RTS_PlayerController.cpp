@@ -1005,11 +1005,10 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			(currentTimeSeconds - m_LastEntityClickedFrameTime) <= m_DoubleClickPeriodSeconds && m_LastEntityClicked == unitUnderCursor)
 		{
 			doubleClicked = true;
-			float targetRange = unitUnderCursor->CurrentAttackStats.Range;
 
 			for (auto entity : m_RTS_GameState->Entities)
 			{
-				if (entity->Alignment == unitUnderCursor->Alignment && entity->CurrentAttackStats.Range == targetRange &&
+				if (entity->Alignment == unitUnderCursor->Alignment && entity->EntityType == unitUnderCursor->EntityType &&
 					entity->IsSelectableByPlayer())
 				{
 					entity->SetSelected(true);
