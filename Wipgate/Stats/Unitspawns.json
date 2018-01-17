@@ -34,8 +34,8 @@
 		"Round": 0,
 		"Spawns": [
 			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Rifleboii.Unit_Rifleboii_C'",
-				"Amount": 20
+				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Batman.Unit_Batman_C'",
+				"Amount": 5
 			},
 			{
 				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Rifleboii.Unit_Rifleboii_C'",
