@@ -221,34 +221,13 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 		ARTS_Entity* hitEntity = Cast<ARTS_Entity>(hitOut.GetActor());
 		if (hitEntity)
 		{
-			if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY && !m_CurrentCommand->IsForced)
-				SetTargetEntity(hitEntity);
+			if (m_CurrentCommand && !m_CurrentCommand->IsForced)
+			{
+				if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY )
+					SetTargetEntity(hitEntity);
+			}
 		}
 
-		//if (m_CurrentTask == EUNIT_TASK::CHASING)
-		//{
-		//	// is obstacle left or right?
-		//	FVector hitLoc = hitOut.GetActor()->GetActorLocation();
-		//	FVector toObstacle = hitOut.GetActor()->GetActorLocation() - start;
-		//	toObstacle.Normalize();
-		//	FVector toHit = hitLoc - start;
-		//	toHit.Normalize();
-		//	//DrawDebugLine(GetWorld(), start, hitOut.GetActor()->GetActorLocation(), FColor::Black, false, 0, (uint8)'\000', 2);
-
-		//	if (isRightHit)
-		//	{
-		//		avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle, m_Entity->GetActorUpVector());
-		//		avoidance.Normalize();
-		//		avoidance *= 1;
-		//	}
-		//	else
-		//	{
-		//		avoidance = UKismetMathLibrary::Cross_VectorVector(toObstacle, m_Entity->GetActorUpVector());
-		//		avoidance.Normalize();
-		//		avoidance *= -1;
-		//	}
-		//	avoidance.Normalize();
-		//}
 		avoidance += avoidanceAverage;
 		avoidance.Normalize();
 	}
@@ -330,9 +309,6 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 
 bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
-	//m_FlockTick++;
-	//if (m_FlockTick % 3 != 0) return false;
-
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingMoveRadius);
 
@@ -370,11 +346,6 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 
 bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
-	//m_FlockTick++;
-	//if (m_FlockTick % 2 != 0) return false;
-	
-	DrawDebugBox(GetWorld(), TargetEntity->GetActorLocation(), FVector(20, 20, 100), FColor::White, false, 0, (uint8)'\000', 3);
-
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
 

@@ -163,7 +163,6 @@ protected:
 private:
 
 	FVector m_FlockCenter;
-	int m_FlockTick = 0;
 
 	FVector FlattenVector(FVector vec);
 
