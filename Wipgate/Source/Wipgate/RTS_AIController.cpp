@@ -221,7 +221,7 @@ FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 		ARTS_Entity* hitEntity = Cast<ARTS_Entity>(hitOut.GetActor());
 		if (hitEntity)
 		{
-			if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY)
+			if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY && !m_CurrentCommand->IsForced)
 				SetTargetEntity(hitEntity);
 		}
 
@@ -372,6 +372,8 @@ bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separat
 {
 	//m_FlockTick++;
 	//if (m_FlockTick % 2 != 0) return false;
+	
+	DrawDebugBox(GetWorld(), TargetEntity->GetActorLocation(), FVector(20, 20, 100), FColor::White, false, 0, (uint8)'\000', 3);
 
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
