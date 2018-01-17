@@ -37,7 +37,7 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	if (m_UseFriendlyAddedTroops && !m_FriendlyAddedTroops)
+	if (UseFriendlyAddedTroops && !m_FriendlyAddedTroops)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No friendly added troops table was linked. Returning..."));
 		return;
@@ -136,7 +136,7 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 		actors.Empty();
 
-		if (m_UseFriendlyAddedTroops)
+		if (UseFriendlyAddedTroops)
 		{
 			// Add entities to player's team
 			TArray<FEntityRow*> playerRows;

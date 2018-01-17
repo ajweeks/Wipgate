@@ -47,7 +47,7 @@ public:
 
 	// Disable to spawn custom squads
 	UPROPERTY(BlueprintReadWrite)
-		bool m_UseFriendlyAddedTroops = true;
+		bool UseFriendlyAddedTroops = true;
 
 	//Path to json file that sets the unit spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
