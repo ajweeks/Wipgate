@@ -42,15 +42,5 @@
 				"Amount": 5
 			}
 		]
-	},
-	{
-		"Name": "Round1",
-		"Round": 1,
-		"Spawns": [
-			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Batman.Unit_Batman_C'",
-				"Amount": 10
-			}
-		]
 	}
 ]
