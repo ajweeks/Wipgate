@@ -581,11 +581,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		if (m_AbilityOnShift)
 		{
-			if (SelectedAbility->Icon)
+			if (m_AbilityOnShift->Icon)
 			{
-				SelectedAbility->Icon->OnAbilityActivate();
+				m_AbilityOnShift->Icon->OnAbilityActivate();
 			}
-			SelectedAbility->Deselect();
+			m_AbilityOnShift->Deselect();
 			m_AbilityOnShift = nullptr;
 			SelectedAbility = nullptr;
 		}
@@ -1477,10 +1477,13 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 		}
 	}
 
-
+	// Shift the target position up to account for the HUD at the bottom of the screen
+	float yOffset = 600.0f;
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
-	m_TargetLocation = FVector(averageEntityLocation.X, averageEntityLocation.Y,
-		oldCameraLocation.Z); // NOTE: Don't change the height of the camera here (handled with zooming)
+	m_TargetLocation = FVector(
+		averageEntityLocation.X, 
+		averageEntityLocation.Y + yOffset, 
+		oldCameraLocation.Z); // NOTE: Camera height is not effected here (it is handled with zooming)
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
 	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
 
@@ -1489,19 +1492,19 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	if (newCamLocation.X > m_TargetLocation.X && dCamLocation.X > 0.0f ||
 		newCamLocation.X < m_TargetLocation.X && dCamLocation.X < 0.0f)
 	{
-		// We passed the target in the X direction
+		// Passed the target in the X direction
 		newCamLocation.X = m_TargetLocation.X;
 	}
 	if (newCamLocation.Y > m_TargetLocation.Y && dCamLocation.Y > 0.0f ||
 		newCamLocation.Y < m_TargetLocation.Y && dCamLocation.Y < 0.0f)
 	{
-		// We passed the target in the Y direction
+		// Passed the target in the Y direction
 		newCamLocation.Y = m_TargetLocation.Y;
 	}
 	if (newCamLocation.Z > m_TargetLocation.Z && dCamLocation.Z > 0.0f ||
 		newCamLocation.Z < m_TargetLocation.Z && dCamLocation.Z < 0.0f)
 	{
-		// We passed the target in the Z direction
+		// Passed the target in the Z direction
 		newCamLocation.Z = m_TargetLocation.Z;
 	}
 	

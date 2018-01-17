@@ -584,54 +584,68 @@ bool ARTS_Entity::IsAlive()
 
 void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 {
-	CurrentLumaStats.LumaSaturation += LumaToAdd;
-	if (CurrentLumaStats.LumaSaturation >= CurrentLumaStats.MaxLumaSaturation)
+	if (LumaToAdd > 0)
 	{
-		CurrentLumaStats.LumaSaturation = CurrentLumaStats.MaxLumaSaturation;
-		ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
-		if (aiController)
+		CurrentLumaStats.LumaSaturation += LumaToAdd;
+		if (CurrentLumaStats.LumaSaturation >= CurrentLumaStats.MaxLumaSaturation)
 		{
-			Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
-			m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
-
-			//Set team color
-			auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
-			if (gamemode)
+			CurrentLumaStats.LumaSaturation = CurrentLumaStats.MaxLumaSaturation;
+			ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+			if (aiController)
 			{
-				URTS_Team* team = gamemode->GetTeamWithAlignment(ETeamAlignment::E_ATTACKEVERYTHING_AI);
-				if (team)
+				Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
+				m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
+
+				//Set team color
+				auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
+				if (gamemode)
 				{
-					SetTeamMaterial(team);
+					URTS_Team* team = gamemode->GetTeamWithAlignment(ETeamAlignment::E_ATTACKEVERYTHING_AI);
+					if (team)
+					{
+						SetTeamMaterial(team);
+					}
+				}
+				else
+				{
+					UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamemode found!"));
+				}
+
+				//Add end screen score
+				auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
+				if (gamestate)
+				{
+					gamestate->UnitsOverdosed++;
+					gamestate->UnitsLost++;
+				}
+				else
+				{
+					UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamestate found!"));
 				}
 			}
-			else
-			{
-				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamemode found!"));
-			}
-
-			//Add end screen score
-			auto gamestate = GetWorld()->GetGameState<ARTS_GameState>();
-			if (gamestate)
-			{
-				gamestate->UnitsOverdosed++;
-				gamestate->UnitsLost++;
-			}
-			else
-			{
-				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("AddToLumaSaturation > No gamestate found!"));
-			}
 		}
+	}
+	else
+	{
+		UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Attempt to add negative luma to unit's saturation!"));
 	}
 }
 
 void ARTS_Entity::RemoveLumaSaturation(int32 LumaToRemove)
 {
-	ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
-
-	CurrentLumaStats.LumaSaturation -= LumaToRemove;
-	if (CurrentLumaStats.LumaSaturation < 0)
+	if (LumaToRemove > 0)
 	{
-		CurrentLumaStats.LumaSaturation = 0;
+		ARTS_AIController* aiController = Cast<ARTS_AIController>(Controller);
+
+		CurrentLumaStats.LumaSaturation -= LumaToRemove;
+		if (CurrentLumaStats.LumaSaturation < 0)
+		{
+			CurrentLumaStats.LumaSaturation = 0;
+		}
+	}
+	else
+	{
+		UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Attempt to remove negative luma to unit's saturation!"));
 	}
 }
 
@@ -654,7 +668,7 @@ bool ARTS_Entity::IsSelectableByPlayer() const
 	return (Health > 0);
 }
 
-void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
+void ARTS_Entity::ApplyEffectLinear(UUnitEffect* effect)
 {
 	if (effect->Elapsed > EFFECT_INTERVAL)
 	{
@@ -689,7 +703,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 			if (effect->Magnitude > 0)
 				AddToLumaSaturation(magnitudeTick);
 			else
-				RemoveLumaSaturation(magnitudeTick);
+				RemoveLumaSaturation(-magnitudeTick);
 			break;
 		default:
 			break;
@@ -704,7 +718,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect * effect)
 	}
 }
 
-void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
+void ARTS_Entity::ApplyEffectOnce(UUnitEffect* effect)
 {
 	if (effect->Ticks == 0)
 	{
@@ -747,7 +761,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect * effect)
 			if (effect->Magnitude > 0)
 				AddToLumaSaturation(effect->Magnitude);
 			else
-				AddToLumaSaturation(effect->Magnitude);
+				RemoveLumaSaturation(-effect->Magnitude);
 			break;
 
 		default:

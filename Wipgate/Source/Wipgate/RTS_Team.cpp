@@ -40,8 +40,7 @@ void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 {
 	auto upgradeList = Upgrades;
-	FAttackStat upgradedAttackStats;
-	upgradedAttackStats = entity->BaseAttackStats;
+	FAttackStat upgradedAttackStats = entity->BaseAttackStats;
 
 	//Remove all flat upgrades
 	for (int32 i = upgradeList.Num() - 1; i >= 0; --i)
@@ -49,27 +48,25 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 		auto upgrade = upgradeList[i];
 		if (upgrade.Type == EUpgradeType::E_FLAT)
 		{
-			
-			if (upgrade.AffectedType != entity->EntityType)
-				continue;
-
-			//Apply upgrade
-			switch (upgrade.Stat)
+			if (upgrade.AffectedType == entity->EntityType)
 			{
-			case EUpgradeStat::E_DAMAGE:
-				upgradedAttackStats.Damage += upgrade.Effect;
-				break;
-			case EUpgradeStat::E_RANGE:
-				upgradedAttackStats.Range += upgrade.Effect;
-				break;
-			case EUpgradeStat::E_RATEOFFIRE:
-				upgradedAttackStats.AttackCooldown -= upgrade.Effect;
-				break;
-			default:
-				break;
+				//Apply upgrade
+				switch (upgrade.Stat)
+				{
+				case EUpgradeStat::E_DAMAGE:
+					upgradedAttackStats.Damage += upgrade.Effect;
+					break;
+				case EUpgradeStat::E_RANGE:
+					upgradedAttackStats.Range += upgrade.Effect;
+					break;
+				case EUpgradeStat::E_RATEOFFIRE:
+					upgradedAttackStats.AttackCooldown -= upgrade.Effect;
+					break;
+				default:
+					break;
+				}
 			}
-			
-			//Remove from list
+
 			upgradeList.RemoveAt(i);
 		}
 	}
@@ -78,7 +75,7 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 	{
 		//Upgrade to compare with
 		auto checkUpgrade = upgradeList[upgradeList.Num() - 1];
-		float totalEffect = 1.f;
+		float totalEffect = 1.0f;
 		for (int32 i = upgradeList.Num() - 1; i >= 0; --i)
 		{
 			auto upgrade = upgradeList[i];
@@ -93,36 +90,31 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 					{
 						totalEffect += upgrade.Effect;
 						upgradeList.RemoveAt(i);
-						//break;
 					}
 				}
 			}
 			else
 			{
-				UE_LOG(RTS_TEAM_LOG, Warning, TEXT("ARTS_Team::CalculateUpgradeEffects > Non-percentual upgrade found!"));
+				UE_LOG(RTS_TEAM_LOG, Warning, TEXT("ARTS_Team::GetUpgradedAttackStats > Non-percentual upgrade found!"));
 			}
 		}
 
-		//Apply effect
-		for (auto entity : Entities)
-		{
-			if (checkUpgrade.AffectedType != entity->EntityType)
-				continue;
+		if (checkUpgrade.AffectedType != entity->EntityType)
+			continue;
 
-			switch (checkUpgrade.Stat)
-			{
-			case EUpgradeStat::E_DAMAGE:
-				upgradedAttackStats.Damage *= totalEffect;
-				break;
-			case EUpgradeStat::E_RANGE:
-				upgradedAttackStats.Range *= totalEffect;
-				break;
-			case EUpgradeStat::E_RATEOFFIRE:
-				upgradedAttackStats.AttackCooldown *= totalEffect;
-				break;
-			default:
-				break;
-			}
+		switch (checkUpgrade.Stat)
+		{
+		case EUpgradeStat::E_DAMAGE:
+			upgradedAttackStats.Damage *= totalEffect;
+			break;
+		case EUpgradeStat::E_RANGE:
+			upgradedAttackStats.Range *= totalEffect;
+			break;
+		case EUpgradeStat::E_RATEOFFIRE:
+			upgradedAttackStats.AttackCooldown *= totalEffect;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -208,7 +200,6 @@ void URTS_Team::CalculateUpgradeEffects()
 					{
 						totalEffect += upgrade.Effect;
 						upgradeList.RemoveAt(i);
-						//break;
 					}
 				}
 			}
