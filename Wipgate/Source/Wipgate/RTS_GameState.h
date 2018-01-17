@@ -51,6 +51,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
 
+	UPROPERTY()
 	TArray<URTS_Team*> Teams;
 
 	// Event Dispatchers
