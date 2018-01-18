@@ -12,22 +12,10 @@
 void ARTS_AIController::SetTargetLocation(const FVector target)
 {
 	m_TargetLocation = target;
-
- 	if (TargetEntity)
-	{
-		if (GetController(TargetEntity))
-			GetController(TargetEntity)->m_IsAlert = false;
-	}
 }
 
 void ARTS_AIController::SetTargetEntity(ARTS_Entity * targetEntity)
 {
-	if (TargetEntity)
-	{
-		if (GetController(TargetEntity))
-			GetController(TargetEntity)->m_IsAlert = false;
-	}
-
 	TargetEntity = targetEntity;
 }
 
@@ -442,6 +430,14 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 			enemiesInRange.Add(Cast<ARTS_Entity>(entity));
 		}
 	}
+
+	//GameState notification "under attack"
+	if (enemiesInRange.Num() > 0)
+	{
+		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
+		gameState->UnderAttackDelegate.Broadcast(m_Entity);
+	}
+
 	return enemiesInRange;
 }
 
@@ -572,6 +568,7 @@ void ARTS_AIController::AddCommand_Stop()
 	UpdateCommandQueueIndicator();
 	StopMovement();
 	SetCurrentTask(EUNIT_TASK::IDLE);
+	m_IsAlert = false;
 }
 
 void ARTS_AIController::AddCommand_Attack(ARTS_Entity * target, const bool isForced, const bool isQueued)
