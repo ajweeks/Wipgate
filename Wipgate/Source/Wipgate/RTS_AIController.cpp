@@ -435,7 +435,7 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 	if (enemiesInRange.Num() > 0 && GetController(m_Entity)->m_CurrentTask == EUNIT_TASK::IDLE && !m_IsAlert)
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-		gameState->UnderAttackDelegate.Broadcast(m_Entity);
+		gameState->UnderAttackDelegate.Broadcast(m_Entity, GetClosestEntity(enemiesInRange));
 	}
 
 	return enemiesInRange;

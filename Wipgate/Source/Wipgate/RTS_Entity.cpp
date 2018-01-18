@@ -425,14 +425,14 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	UnitEffects.Remove(effect);
 }
 
-bool ARTS_Entity::ApplyDamage(int damage, bool armor)
+bool ARTS_Entity::ApplyDamage(int damage, bool armor, ARTS_Entity* attacker)
 {
 	//GameState notification "under attack"
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(GetController());
 	if (aiController->GetCurrentTask() == EUNIT_TASK::IDLE && !aiController->IsAlert())
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-		gameState->UnderAttackDelegate.Broadcast(this);
+		gameState->UnderAttackDelegate.Broadcast(this, attacker);
 	}
 
 	if (Health <= 0)
@@ -765,7 +765,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect* effect)
 			CurrentAttackStats.Damage += magnitudeTick;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(magnitudeTick, false);
+			ApplyDamage(magnitudeTick, false, this);
 			break;
 		case EUnitEffectStat::HEALING:
 			ApplyHealing(magnitudeTick);
@@ -811,7 +811,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect* effect)
 			CurrentAttackStats.Damage += effect->Magnitude;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(effect->Magnitude, false);
+			ApplyDamage(effect->Magnitude, false, this);
 			break;
 
 		case EUnitEffectStat::HEALING:

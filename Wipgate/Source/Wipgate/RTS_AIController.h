@@ -145,7 +145,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAlert;
 	UPROPERTY(BlueprintReadWrite)
-		ARTS_Entity* m_AlertingEntity;
+		ARTS_Entity* m_AlertTarget;
 
 	/* --- Flocking variables --- */
 	UPROPERTY(BlueprintReadWrite)

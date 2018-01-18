@@ -61,7 +61,7 @@ public:
 		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-		bool ApplyDamage(int damage, bool armor);
+		bool ApplyDamage(int damage, bool armor, ARTS_Entity* attacker);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
