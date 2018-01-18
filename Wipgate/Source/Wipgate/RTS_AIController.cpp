@@ -7,26 +7,15 @@
 #include "RTS_GameState.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/AI/Navigation/NavigationPath.h"
+#include "Runtime/Engine/Classes/Engine/EngineTypes.h"
 
 void ARTS_AIController::SetTargetLocation(const FVector target)
 {
 	m_TargetLocation = target;
-
- 	if (TargetEntity)
-	{
-		if (GetController(TargetEntity))
-			GetController(TargetEntity)->m_IsAlert = false;
-	}
 }
 
 void ARTS_AIController::SetTargetEntity(ARTS_Entity * targetEntity)
 {
-	if (TargetEntity)
-	{
-		if (GetController(TargetEntity))
-			GetController(TargetEntity)->m_IsAlert = false;
-	}
-
 	TargetEntity = targetEntity;
 }
 
@@ -41,7 +30,8 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEntitiesWithTask(const TArray<ARTS_En
 	TArray<ARTS_Entity*> entitiesWithTask;
 	for (int i = 0; i < entities.Num(); i++)
 	{
-		if (GetController(entities[i])->GetCurrentTask() == task)
+		ARTS_AIController* controller = GetController(entities[i]);
+		if (entities[i] && controller && controller->GetCurrentTask() == task)
 			entitiesWithTask.Add(entities[i]);
 	}
 	return entitiesWithTask;
@@ -65,7 +55,23 @@ ARTS_Entity* ARTS_AIController::GetClosestEntity(const TArray<ARTS_Entity*> enti
 void ARTS_AIController::RotateTowardsTarget()
 {
 	FVector start = m_FlockCenter;
-	FVector end = TargetEntity->GetActorLocation();
+	FVector end;
+	if (TargetEntity)
+		end = TargetEntity->GetActorLocation();
+	else
+		end = m_TargetLocation;
+
+	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
+	newRotation.Roll = 0;
+	newRotation.Pitch = 0;
+	m_Entity->SetActorRotation(newRotation);
+}
+
+void ARTS_AIController::RotateTowardsTargetLocation()
+{
+	FVector start = m_FlockCenter;
+	FVector end = m_TargetLocation;
+
 	FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(start, end);
 	newRotation.Roll = 0;
 	newRotation.Pitch = 0;
@@ -152,45 +158,85 @@ FVector ARTS_AIController::GetSeekVector(const FVector target, FVector& nextPath
 
 FVector ARTS_AIController::GetAvoidanceVector(const FVector nextPathPoint)
 {
-	TArray<FVector> obstaclePositions = GetEntityPositions(GetObstacles()); // TODO: take entity size into account
+	FVector avoidance = FVector(0, 0, 0);
 
-	if (obstaclePositions.Num() <= 0)
-		return FVector(0, 0, 0);
+	// linetrace
+	ECollisionChannel collisionChannel = ECC_Pawn;
+	FHitResult hitLeft;
+	FHitResult hitRight;
+	FVector start = m_Entity->GetActorLocation();
+	FVector moveDir = nextPathPoint - start;
+	float distanceToTarget = moveDir.Size();
+	moveDir.Normalize();
+	moveDir = moveDir * FMath::Clamp(300.0f, 0.0f, distanceToTarget - 75); // offset to avoid actual target
 
-	FVector fromObstacle = m_FlockCenter - UKismetMathLibrary::GetVectorArrayAverage(obstaclePositions);
-	fromObstacle = FlattenVector(fromObstacle);
-	FVector toPathPoint = nextPathPoint - m_FlockCenter;
-	toPathPoint = FlattenVector(toPathPoint);
-	// extra avoid priority based on distance to obstacle and next path point
-	float avoidPriority = fromObstacle.Size() / toPathPoint.Size();
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(m_Entity);
 
-	float dotProduct = FVector::DotProduct(FlattenVector(fromObstacle), FlattenVector(m_Entity->GetActorForwardVector()));
-	dotProduct = FMath::Abs(dotProduct / 360);
-	//UE_LOG(LogTemp, Log, TEXT("Forward - avoidance dot product: %f"), dotProduct);
+	float radius = m_Entity->GetCapsuleComponent()->GetScaledCapsuleRadius();
+	FVector right = start + m_Entity->GetActorRightVector() * (radius / 2) ;
+	FVector left = start - m_Entity->GetActorRightVector() * (radius / 2);
 
-	fromObstacle.Normalize();
-	toPathPoint.Normalize();
+	bool isRightHit = GetWorld()->LineTraceSingleByChannel(hitRight, right, right + moveDir, collisionChannel, params);
+	bool isLeftHit = GetWorld()->LineTraceSingleByChannel(hitLeft, left, left + moveDir, collisionChannel, params);
 
-	FVector avoidance = toPathPoint + fromObstacle * (1 + avoidPriority);
-	//FVector avoidance = 0.75 * toPathPoint + fromObstacle * (0.5f + 0.5f * dotProduct);
-	avoidance.Normalize();
+	if (isRightHit || isLeftHit)
+	{
+		// calculate average avoidance
+		TArray<FVector> obstaclePositions = GetEntityPositions(GetObstacles()); // TODO: take entity size into account
+
+		if (obstaclePositions.Num() <= 0)
+			return FVector(0, 0, 0);
+
+		FVector fromObstacle = m_FlockCenter - UKismetMathLibrary::GetVectorArrayAverage(obstaclePositions);
+		fromObstacle = FlattenVector(fromObstacle);
+		FVector toPathPoint = nextPathPoint - m_FlockCenter;
+		toPathPoint = FlattenVector(toPathPoint);
+
+		fromObstacle.Normalize();
+		toPathPoint.Normalize();
+
+		FVector avoidanceAverage = toPathPoint + fromObstacle;
+		avoidanceAverage.Normalize();
+
+		FHitResult hitOut;
+		if (isRightHit)
+			hitOut = hitRight;
+		if (isLeftHit)
+			hitOut = hitLeft;
+
+		// if obstacle is an enemy, make that the target
+		ARTS_Entity* hitEntity = Cast<ARTS_Entity>(hitOut.GetActor());
+		if (hitEntity)
+		{
+			if (m_CurrentCommand && !m_CurrentCommand->IsForced)
+			{
+				if (GetRelativeAlignment(hitEntity, m_Entity) == ERelativeAlignment::E_ENEMY )
+					SetTargetEntity(hitEntity);
+			}
+		}
+
+		avoidance += avoidanceAverage;
+		avoidance.Normalize();
+	}
+
 	return avoidance;
 }
 
 TArray<ARTS_Entity*> ARTS_AIController::GetObstacles()
 {
 	TArray<ARTS_Entity*> obstacles;
-	if (m_CurrentTask == EUNIT_TASK::CHASING && m_CurrentCommand)
+	if (m_CurrentTask == EUNIT_TASK::CHASING)
 	{
 		// forced attack entity: everyone is an obstacle
-		if (m_CurrentCommand->Type == ECOMMAND_TYPE::ATTACK)
+		if (m_CurrentCommand && m_CurrentCommand->Type == ECOMMAND_TYPE::ATTACK)
 		{
 			for (auto e : m_NearbyEntities)
 				if (e != TargetEntity)
 					obstacles.Add(e);
 		}
-		// attack move: allies are an obstacle
-		else if (m_CurrentCommand->Type == ECOMMAND_TYPE::ATTACK_MOVE)
+		// attack move or chasing: allies are an obstacle
+		else
 		{
 			for (auto e : m_NearbyEntities)
 				if (GetRelativeAlignment(m_Entity, e) == ERelativeAlignment::E_FRIENDLY)
@@ -208,10 +254,12 @@ TArray<ARTS_Entity*> ARTS_AIController::GetObstacles()
 		{
 			controller = GetController(e);
 
-			if (GetRelativeAlignment(m_Entity, e) == ERelativeAlignment::E_ENEMY)
-				obstacles.Add(e);
-
 			if (!controller) continue;
+			if (GetRelativeAlignment(m_Entity, e) == ERelativeAlignment::E_ENEMY) {
+				obstacles.Add(e);
+				continue;
+			}
+			
 			if (controller->GetCurrentTask() == EUNIT_TASK::ATTACKING
 				|| controller->GetCurrentTask() == EUNIT_TASK::IDLE
 				|| controller->GetCurrentTask() == EUNIT_TASK::CASTING)
@@ -226,7 +274,7 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 {
 	FVector offset = FVector(0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 15);
 	FVector start = m_FlockCenter - offset;
-	float step = stepLength;
+	float step = stepLength * 2;
 
 	// separation
 	FVector end = start + separation * step - offset;
@@ -262,6 +310,7 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint) * avoidanceWeight;
 
+
 		if (m_Entity->RenderFlockingDebugInfo)
 			RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
 		
@@ -277,18 +326,13 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 	FVector target2D = FlattenVector(target);
 	float distanceToTarget = (pos2D - target2D).Size();
 
-	// standard acceptance radius
 	if (distanceToTarget < acceptanceRadius) 
 		return true;
-	// acceptance radius relative to velocity and nearby entity count
-	//else if (distanceToTarget <= m_NearbyEntities.Num() * 30
-	//	&& m_Entity->GetVelocity().Size() <= 30)
-	//	return true;
 
 	return false;
 }
 
-bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
+bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
@@ -297,11 +341,14 @@ bool ARTS_AIController::FlockChaseToLocation(const FVector target, const float s
 		MoveToLocation(target);
 	else
 	{
-		FVector separation = GetSeparationVector(m_FlockingChaseRadius) * separationWeight;
-		FVector cohesion = GetCohesionVector() * cohesionweight;
 		FVector nextPathPoint;
 		FVector seek = GetSeekVector(target, nextPathPoint) * seekWeight;
 		FVector avoidance = GetAvoidanceVector(nextPathPoint) * avoidanceWeight;
+
+		separationWeight *= 1 + m_ObstructedTimer * 30;
+		FVector separation = GetSeparationVector(m_FlockingChaseRadius) * separationWeight;
+		FVector cohesion = GetCohesionVector() * cohesionweight;
+		//UE_LOG(LogTemp, Log, TEXT("Avoidance length: %f, Avoidance weight: %f"), avoidance.Size(), avoidanceWeight);
 
 		if (m_Entity->RenderFlockingDebugInfo)
 			RenderFlockingDebug(separation, cohesion, seek, avoidance, stepLength);
@@ -383,12 +430,32 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 			enemiesInRange.Add(Cast<ARTS_Entity>(entity));
 		}
 	}
+
+	//GameState notification "under attack"
+	if (enemiesInRange.Num() > 0 && GetController(m_Entity)->m_CurrentTask == EUNIT_TASK::IDLE && !m_IsAlert)
+	{
+		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
+		gameState->UnderAttackDelegate.Broadcast(m_Entity);
+	}
+
 	return enemiesInRange;
 }
 
 bool ARTS_AIController::IsTargetAttacking()
 {
 	return (GetController(TargetEntity)->GetCurrentTask() == EUNIT_TASK::ATTACKING);
+}
+
+bool ARTS_AIController::IsTargetAgressive()
+{
+	if (!TargetEntity) return false;
+
+	ARTS_AIController* controller = GetController(TargetEntity);
+	if (!controller) return false;
+
+	EUNIT_TASK targetTask = controller->GetCurrentTask();
+
+	return (targetTask  == EUNIT_TASK::ATTACKING || targetTask == EUNIT_TASK::CHASING);
 }
 
 TArray<ARTS_Entity*> ARTS_AIController::GetFriendlyEntities(const TArray<ARTS_Entity*> entities)
@@ -414,7 +481,8 @@ TArray<FVector> ARTS_AIController::GetEntityPositions(const TArray<ARTS_Entity*>
 
 void ARTS_AIController::ExecuteCommand(UCommand * command)
 {
-	if (!IsValid(command))
+	if (!IsValid(command) && m_CurrentTask != EUNIT_TASK::CASTING 
+		&& m_CurrentTask != EUNIT_TASK::EXECUTING)
 	{
 		m_CurrentTask = EUNIT_TASK::IDLE;
 		return;
@@ -425,6 +493,7 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 	case ECOMMAND_TYPE::NONE:
 		break;
 	case ECOMMAND_TYPE::STOP:
+		UpdateCommandQueueIndicator();
 		break;
 	case ECOMMAND_TYPE::MOVE_TO_LOCATION:
 		SetCurrentTask(EUNIT_TASK::MOVING);
@@ -441,10 +510,16 @@ void ARTS_AIController::ExecuteCommand(UCommand * command)
 	case ECOMMAND_TYPE::PATROL:
 		break;
 	case ECOMMAND_TYPE::ATTACK:
-		m_CurrentTask = EUNIT_TASK::ATTACKING;
+		m_CurrentTask = EUNIT_TASK::CHASING;
 		SetTargetEntity(Cast<UCommand_Attack>(command)->Target);
 		break;
-	case ECOMMAND_TYPE::CAST:
+	case ECOMMAND_TYPE::CAST_ON_TARGET:
+		m_CurrentTask = EUNIT_TASK::CHASING;
+		SetTargetEntity(Cast<UCommand_CastTarget>(command)->Target);
+		break;
+	case ECOMMAND_TYPE::CAST_ON_GROUND:
+		m_CurrentTask = EUNIT_TASK::CHASING;
+		SetTargetLocation(Cast<UCommand_CastGround>(command)->Target);
 		break;
 	default:
 		break;
@@ -457,6 +532,8 @@ void ARTS_AIController::PopCommand()
 {
 	if (m_CommandQueue.Num() > 0)
 		m_CommandQueue.RemoveAt(0);
+	m_CurrentCommand = nullptr;
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const bool isForced, const bool isQueued)
@@ -469,6 +546,7 @@ void ARTS_AIController::AddCommand_MoveToLocation(const FVector location, const 
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool isForced, const bool isQueued)
@@ -481,11 +559,13 @@ void ARTS_AIController::AddCommand_MoveToEntity(ARTS_Entity * target, const bool
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_Stop()
 {
 	m_CommandQueue.Empty();
+	UpdateCommandQueueIndicator();
 	StopMovement();
 	SetCurrentTask(EUNIT_TASK::IDLE);
 }
@@ -500,6 +580,7 @@ void ARTS_AIController::AddCommand_Attack(ARTS_Entity * target, const bool isFor
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
 }
 
 void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued)
@@ -512,12 +593,55 @@ void ARTS_AIController::AddCommand_AttackMove(const FVector location, const bool
 		m_CommandQueue.Empty();
 
 	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
+}
+
+void ARTS_AIController::AddCommand_CastTarget(AAbility * ability, ARTS_Entity * target, const bool isForced, const bool isQueued)
+{
+	UCommand_CastTarget* command = NewObject<UCommand_CastTarget>(this);
+	command->Ability = ability;
+	command->Target = target;
+	command->IsForced = isForced;
+
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+		m_CommandQueue.Empty();
+
+	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
+}
+
+void ARTS_AIController::AddCommand_CastGround(AAbility * ability, FVector target, const bool isForced, const bool isQueued)
+{
+	UCommand_CastGround* command = NewObject<UCommand_CastGround>(this);
+	command->Ability = ability;
+	command->Target = target;
+	command->IsForced = isForced;
+
+	if (!isQueued && m_CurrentTask != EUNIT_TASK::EXECUTING)
+		m_CommandQueue.Empty();
+
+	m_CommandQueue.Add(command);
+	UpdateCommandQueueIndicator();
+}
+
+void ARTS_AIController::EnableCommandQueueIndicator(const bool enabled)
+{
+	m_ShowQueueIndicator = enabled;
 }
 
 ARTS_AIController* ARTS_AIController::GetController(ARTS_Entity* entity)
 {
 	AAIController* controller = Cast<AAIController>(entity->GetController());
 	return Cast<ARTS_AIController>(controller);
+}
+
+void ARTS_AIController::UpdateObstructedTimer(const float deltaTime)
+{
+	if (m_CurrentTask == EUNIT_TASK::CHASING && m_Entity->GetVelocity().Size() <= 60)
+		m_ObstructedTimer += deltaTime;
+	else if (m_CurrentTask == EUNIT_TASK::CHASING && m_Entity->GetVelocity().Size() >= 60)
+		m_ObstructedTimer = 0;
+	return;
 }
 
 FVector ARTS_AIController::FlattenVector(FVector vec)

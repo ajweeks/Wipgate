@@ -11,6 +11,7 @@
 #include "GeneralFunctionLibrary_CPP.h"
 #include "RTS_PlayerController.h"
 #include "RTS_Team.h"
+#include "RTS_Gamestate.h"
 #include "Components/StaticMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(RTS_UNIT_LOG, Log, All);
@@ -51,16 +52,16 @@ void ARTS_Unit::Tick(float DeltaTime)
 	}
 }
 
-void ARTS_Unit::SetTeamMaterial()
+void ARTS_Unit::SetTeamMaterial(URTS_Team* t)
 {
-	ARTS_Entity::SetTeamMaterial();
+	ARTS_Entity::SetTeamMaterial(t);
 
 	//Set skeletal mesh color
 	USkeletalMeshComponent* mesh = GetMesh();
-	if (mesh && mesh->GetMaterials().Num() > 0)
+	if (mesh && mesh->GetMaterials().Num() > 0 && mesh->GetMaterial(0))
 	{
 		UMaterialInstanceDynamic* bodyMatInst = mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, mesh->GetMaterial(0));
-		bodyMatInst->SetVectorParameterValue("TeamColor", Team->Color);
+		bodyMatInst->SetVectorParameterValue("TeamColor", t->Color);
 		mesh->SetReceivesDecals(false);
 	}
 
@@ -68,7 +69,7 @@ void ARTS_Unit::SetTeamMaterial()
 	if (Headpiece && Headpiece->GetMaterials().Num() > 0)
 	{
 		UMaterialInstanceDynamic* hatMatInst = Headpiece->CreateAndSetMaterialInstanceDynamicFromMaterial(0, Headpiece->GetMaterial(0));
-		hatMatInst->SetVectorParameterValue("TeamColor", Team->Color);
+		hatMatInst->SetVectorParameterValue("TeamColor", t->Color);
 		Headpiece->SetReceivesDecals(false);
 	}
 
@@ -81,31 +82,40 @@ void ARTS_Unit::SetTeamMaterial()
 
 void ARTS_Unit::Kill()
 {
-	//Spawn currency particle
-	auto transform = GetActorTransform();
-	if (DeathEffectClass)
-		GetWorld()->SpawnActor(DeathEffectClass, &transform);
-
-	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
-	if (playercontroller && Team->Alignment == ETeamAlignment::E_AGGRESSIVE_AI)
+	UWorld* world = GetWorld();
+	if (world)
 	{
-		//Add currency
-		int32 amount = FMath::RandRange(MinimumCurrencyDrop, MaximumCurrencyDrop);
-		playercontroller->AddLuma(amount);
-	}
-	else
-	{
-		UE_LOG(RTS_UNIT_LOG, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
-	}
+		//Spawn luma particle
+		auto transform = GetActorTransform();
+		if (DeathEffectClass)
+		{
+			world->SpawnActor(DeathEffectClass, &transform);
+		}
 
-	ARTS_Entity::Kill();
+		ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
+		if (playercontroller)
+		{
+			if (Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
+			{
+				//Add luma
+				int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
+				playercontroller->AddLuma(amount, true);
+			}
+		}
+		else
+		{
+		UE_LOG(RTS_UNIT_LOG, Error, TEXT("Kill > No playercontroller present!"));
+		}
 
-	USkeletalMeshComponent* skeletalMesh = GetMesh();
-	if (skeletalMesh)
-	{
-		skeletalMesh->SetCollisionProfileName("Ragdoll");
-		skeletalMesh->SetEnableGravity(true);
-		skeletalMesh->SetSimulatePhysics(true);
+		ARTS_Entity::Kill();
+
+		USkeletalMeshComponent* skeletalMesh = GetMesh();
+		if (skeletalMesh)
+		{
+			skeletalMesh->SetCollisionProfileName("Ragdoll");
+			skeletalMesh->SetEnableGravity(true);
+			skeletalMesh->SetSimulatePhysics(true);
+		}
 	}
 }
 

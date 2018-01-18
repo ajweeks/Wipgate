@@ -57,12 +57,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		bool IsTargetAttacking();
 	UFUNCTION(BlueprintCallable, Category = "AI")
+		bool IsTargetAgressive();
+	UFUNCTION(BlueprintCallable, Category = "AI")
 		TArray<ARTS_Entity*> GetFriendlyEntities(const TArray<ARTS_Entity*> entities);
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		TArray<FVector> GetEntityPositions(const TArray<ARTS_Entity*> entities);
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
 		void RotateTowardsTarget();
+	UFUNCTION(BlueprintCallable, Category = "AI")
+		void RotateTowardsTargetLocation();
 
 	/* --- Flocking functions --- */
 	UFUNCTION(BlueprintCallable, Category = "Flocking")
@@ -84,7 +88,7 @@ public:
 		bool FlockMoveToLocation(const FVector target, const float separationWeight = 1.0f, const float cohesionweight = 0.5f,
 			const float seekWeight = 2.0f, const float avoidanceWeight = 2.0f, const float stepLength = 300, const float acceptanceRadius = 50);
 	UFUNCTION(BlueprintCallable, Category = "Flocking")
-		bool FlockChaseToLocation(const FVector target, const float separationWeight = 0.8f, const float cohesionweight = 0.5f,
+		bool FlockChaseToLocation(const FVector target, float separationWeight = 0.8f, const float cohesionweight = 0.5f,
 			const float seekWeight = 2.0f, const float avoidanceWeight = 2.0f, const float stepLength = 300, const float acceptanceRadius = 50);
 
 	/* --- Command functions --- */
@@ -103,6 +107,14 @@ public:
 		void AddCommand_Attack(ARTS_Entity* target, const bool isForced, const bool isQueued);
 	UFUNCTION(BlueprintCallable, Category = "Command")
 		void AddCommand_AttackMove(const FVector location, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_CastTarget(AAbility* ability, ARTS_Entity* target, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void AddCommand_CastGround(AAbility* ability, FVector target, const bool isForced, const bool isQueued);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Command")
+		void UpdateCommandQueueIndicator();
+	UFUNCTION(BlueprintCallable, Category = "Command")
+		void EnableCommandQueueIndicator(const bool enabled);
 
 public:
 	UPROPERTY(BlueprintReadWrite)
@@ -125,9 +137,15 @@ protected:
 		TArray<UCommand*> m_CommandQueue;
 	UPROPERTY(BlueprintReadWrite)
 		UCommand* m_CurrentCommand;
+	UPROPERTY(BlueprintReadWrite)
+		bool m_ShowQueueIndicator = false;
+	UPROPERTY(BlueprintReadWrite)
+		AAbility* CurrentAbility;
 
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAlert;
+	UPROPERTY(BlueprintReadWrite)
+		ARTS_Entity* m_AlertingEntity;
 
 	/* --- Flocking variables --- */
 	UPROPERTY(BlueprintReadWrite)
@@ -136,10 +154,20 @@ protected:
 		float m_FlockingMoveRadius = 200;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_FlockingChaseRadius = 500;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_AlertRadius = 1000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_ObstructedTimer = 0;
+
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Obstruction")
+		void UpdateObstructedTimer(const float deltaTime);
 
 private:
 
 	FVector m_FlockCenter;
 
 	FVector FlattenVector(FVector vec);
+
 };

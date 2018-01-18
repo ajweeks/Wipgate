@@ -14,12 +14,17 @@
 #include "RTS_LevelEnd.h"
 #include "RTS_PlayerSpawner.h"
 #include "RTS_LevelBounds.h"
+#include "UpgradeShopBase.h"
+#include "Runtime/Core/Public/Misc/FileHelper.h"
+#include "Runtime/Core/Public/Misc/Paths.h"
+#include "JsonObjectConverter.h"
 
 DEFINE_LOG_CATEGORY(WipgateGameModeBase);
 
 void AWipgateGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (!m_TeamTable)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No team table was linked. Returning..."));
@@ -32,11 +37,11 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-
-	//Get table rows
-	TArray<FTeamRow*> rows;
-	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
-	TArray<FName> rowNames = m_TeamTable->GetRowNames();
+	if (UseFriendlyAddedTroops && !m_FriendlyAddedTroops)
+	{
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No friendly added troops table was linked. Returning..."));
+		return;
+	}
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
@@ -46,7 +51,12 @@ void AWipgateGameModeBase::BeginPlay()
 		return;
 	}
 
-	//Loop over all team rows and make team objects
+	// Get table rows
+	TArray<FTeamRow*> rows;
+	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
+	TArray<FName> rowNames = m_TeamTable->GetRowNames();
+
+	// Loop over all team rows and make team objects
 	for (int i = 0; i < rows.Num(); ++i)
 	{
 		FTeamRow* row = rows[i];
@@ -54,7 +64,7 @@ void AWipgateGameModeBase::BeginPlay()
 		{
 			FName name = rowNames[i];
 
-			//Create team
+			// Create team
 			URTS_Team* team = NewObject<URTS_Team>();
 			team->Alignment = row->Alignment;
 			team->Color = row->Color;
@@ -62,13 +72,13 @@ void AWipgateGameModeBase::BeginPlay()
 
 			gamestate->Teams.Add(team);
 
-			//Set playercontroller team if it's player
+			// Set playercontroller team if it's player
 			if (team->Alignment == ETeamAlignment::E_PLAYER)
 			{
 				playercontroller->Team = team;
 			}
 
-			//Check users in that group
+			// Check users in that group
 			for (ARTS_Entity* entity : gamestate->Entities)
 			{
 				if (entity->Alignment == team->Alignment)
@@ -80,14 +90,14 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 	}
 
-	//Check if the playercontroller has a team
+	// Check if the playercontroller has a team
 	if (!playercontroller->Team)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Playercontroller has no team!"));
 		return;
 	}
 
-	//Check if there are still null teams
+	// Check if there are still null teams
 	for (ARTS_Entity* entity : gamestate->Entities)
 	{
 		if (entity->Team == nullptr)
@@ -109,15 +119,15 @@ void AWipgateGameModeBase::BeginPlay()
 
 	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
 	if (gameinstance)
-		{
-		//Spawn entities
+	{
+		// Spawn entities
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
 		for (auto actor : actors)
 		{
 			ARTS_EntitySpawner* entitySpawn = Cast<ARTS_EntitySpawner>(actor);
 
-			//Percentual chance of spawning
+			// Percentual chance of spawning
 			float rand = FMath::FRandRange(0, 1);
 			if (rand < BaseSpawnChance + (gameinstance->CurrentRound * SpawnChanceRoundIncrease) + entitySpawn->SpawnModifier)
 			{
@@ -126,28 +136,104 @@ void AWipgateGameModeBase::BeginPlay()
 		}
 		actors.Empty();
 
-		//Spawn player
+		if (UseFriendlyAddedTroops)
+		{
+			// Add entities to player's team
+			TArray<FEntityRow*> playerRows;
+			FString json;
+			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + UnitToSpawnPath;
+			auto success = FFileHelper::LoadFileToString(json, *path, FFileHelper::EHashOptions::EnableVerify);
+
+			//TODO: Add check for development build
+			if (m_UseJSON && success)
+			{
+				//Read json file
+				TArray<TSharedPtr<FJsonValue>> arrayDeserialized;
+				TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(json);
+				if (FJsonSerializer::Deserialize(reader, arrayDeserialized))
+				{
+					for (TSharedPtr<FJsonValue> jsonObject : arrayDeserialized)
+					{
+						TArray<FEntitySpawn> spawns;
+						auto row = jsonObject->AsObject();
+						auto round = row->GetIntegerField("Round");
+						auto spawnsJson = row->GetArrayField("Spawns");
+						FJsonObjectConverter::JsonArrayToUStruct(spawnsJson, &spawns, 0, 0);
+						if (round == gameinstance->CurrentRound)
+						{
+							for (int i = 0; i < spawns.Num(); i++)
+							{
+								FEntitySpawn es = spawns[i];
+								ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+								for (int i = 0; i < es.Amount; i++)
+								{
+									FEntitySave save;
+									save.Entity = es.Entity;
+									save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+									save.LumaStats = defaultObject->CurrentLumaStats;
+									gameinstance->SavedEntities.Add(save);
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > Could not deserialize json file!"));
+				}
+			}
+			else if (!m_UseJSON)
+			{
+				m_FriendlyAddedTroops->GetAllRows("BeginPlay > Added friendly troops table not found!", playerRows);
+
+				for (auto pr : playerRows)
+				{
+					if (pr->Round == gameinstance->CurrentRound)
+					{
+						for (int i = 0; i < pr->Spawns.Num(); i++)
+						{
+							FEntitySpawn es = pr->Spawns[i];
+							ARTS_Entity* defaultObject = es.Entity.GetDefaultObject();
+							for (int i = 0; i < es.Amount; i++)
+							{
+								FEntitySave save;
+								save.Entity = es.Entity;
+								save.Health = defaultObject->BaseDefenceStats.MaxHealth;
+								save.LumaStats = defaultObject->CurrentLumaStats;
+								gameinstance->SavedEntities.Add(save);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s path not found!"), *path);
+			}
+		}
+
+		// Spawn player
 		auto playerspawner = GetPlayerSpawner();
-		if(playerspawner)
+		if (playerspawner)
 			playerspawner->SpawnEntities();
 
 		for (auto team : gamestate->Teams)
 		{
-			//Empty all upgrades
+			// Empty all upgrades
 			team->Upgrades.Empty();
 		}
 
-		//Add upgrades to player
+		// Add upgrades to player
 		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
 
-		//Give random upgrades to enemy based on round amount
+		// Give random upgrades to enemy based on round amount
 		auto team = GetTeamWithAlignment(ETeamAlignment::E_AGGRESSIVE_AI);
 		if (team)
 		{
 			auto round = gameinstance->CurrentRound;
 			for (int i = 0; i < round; ++i)
 			{
-				//Add random upgrade
+				// Add random upgrade
 				TArray<FEnemyUpgradeRow*> rows;
 				m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
 				if (rows.Num() > 0)
@@ -167,17 +253,28 @@ void AWipgateGameModeBase::BeginPlay()
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy team. Returning..."));
 		}
 
-		//Update currency & luma
-		playercontroller->AddCurrency(gameinstance->CurrentCurrency);
+		// Update luma
 		playercontroller->AddLuma(gameinstance->CurrentLuma);
 	}
 	else
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
 	}
+
+	TArray<AActor*> uncastedShops;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedShops);
+
+	for (auto uncastedShop : uncastedShops)
+	{
+		AUpgradeShopBase* castedShop = Cast<AUpgradeShopBase>(uncastedShop);
+		if (castedShop)
+		{
+			m_Shops.Push(castedShop);
+		}
+	}
 }
 
-URTS_Team * AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
+URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 {
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	for (URTS_Team* team : gamestate->Teams)
@@ -202,13 +299,12 @@ void AWipgateGameModeBase::SaveResources()
 		return;
 	}
 
-	if(!gameinstance)
+	if (!gameinstance)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("SaveResources > No gameinstance. Returning..."));
 		return;
 	}
 
-	gameinstance->CurrentCurrency = playercontroller->GetCurrentCurrencyAmount();
 	gameinstance->CurrentLuma = playercontroller->GetCurrentLumaAmount();
 }
 
@@ -228,7 +324,7 @@ void AWipgateGameModeBase::NextLevel()
 	}
 	SaveResources();
 
-	//Open same level
+	// Open same level
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
 }
 
@@ -266,10 +362,10 @@ ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 
 	if (levelEnds.Num() > 0)
 	{
-		//Get potential end zone
+		// Get potential end zone
 		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
 
-		//Destroy any endzone that wasn't selected
+		// Destroy any endzone that wasn't selected
 		for (int i = levelEnds.Num() - 1; i >= 0; --i)
 		{
 			if (i == chosenEndZoneIndex)
@@ -300,7 +396,7 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	TArray<AActor*> levelBoundsObjects;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelBounds::StaticClass(), levelBoundsObjects);
 
-	if (levelBoundsObjects.Num() >=	1)
+	if (levelBoundsObjects.Num() >= 1)
 	{
 		m_LevelBounds = Cast<ARTS_LevelBounds>(levelBoundsObjects[0]);
 	}
@@ -310,4 +406,9 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	}
 
 	return m_LevelBounds;
+}
+
+const TArray<AUpgradeShopBase*>& AWipgateGameModeBase::GetShops()
+{
+	return m_Shops;
 }

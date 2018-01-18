@@ -31,12 +31,5 @@ public:
 		TSubclassOf<AAbility> AbilityConstructClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 		TSubclassOf<AAbility> AbilityPassiveClass;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-		UTexture2D* IconAbilityActive;
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-		UTexture2D* IconAbilityConstruct;
-	UPROPERTY(BlueprintReadWrite, Category = "Abilities")
-		UTexture2D* IconAbilityPassive;
 	
 };

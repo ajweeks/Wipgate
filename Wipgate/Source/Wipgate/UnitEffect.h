@@ -17,6 +17,7 @@ enum class EUnitEffectStat : uint8
 	MOVEMENT_SPEED	UMETA(DisplayName = "Movement speed"),
 	ATTACK_RATE		UMETA(DisplayName = "Attack rate"),
 	ATTACK_DAMAGE	UMETA(DisplayName = "Attack damage"),
+	LUMA			UMETA(DisplayName = "Luma")
 };
 
 //TODO: E_ naming convention
@@ -45,9 +46,7 @@ public:
 		void StartParticleConstant(USceneComponent* comp);
 	void StopParticleConstant();
 	void AttachParticleToSocket(USceneComponent * skeletalMesh);
-
-	//UFUNCTION(BlueprintCallable)
-	//UUnitEffect* GetCopy();
+	void SetFloatParameter(const FName name, const float amount);
 
 public:
 	float Elapsed = 0;

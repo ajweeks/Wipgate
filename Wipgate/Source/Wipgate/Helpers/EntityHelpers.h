@@ -115,9 +115,6 @@ struct FEntitySpawn
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Amount = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETeamAlignment Alignment;
 };
 
 USTRUCT(BlueprintType)
@@ -133,4 +130,18 @@ struct FEntitySave
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FLumaStat LumaStats;
+};
+
+USTRUCT(BlueprintType)
+struct FEntityRow : public FTableRowBase
+{
+	FEntityRow() {}
+public:
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Round = 0;
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FEntitySpawn> Spawns;
 };

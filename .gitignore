@@ -55,6 +55,7 @@ Wipgate/Binaries/*
 
 # Builds
 Wipgate/Build/*
+Wipgate/Builds/*
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/

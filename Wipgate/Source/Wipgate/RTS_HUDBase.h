@@ -104,7 +104,7 @@ public:
 		void AddSelectionGroupIconsToGrid(int32 Count);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void ShowSelectionGroupIcon(int32 Index);
+		void ShowSelectionGroupIcon(int32 Index, int32 EntityCount);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void HideSelectionGroupIcon(int32 Index);
@@ -115,10 +115,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void DeselectEntity(ARTS_Entity* Entity);
-
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateCurrencyAmount(int32 CurrencyAmount);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateLumaAmount(int32 LumaAmount);

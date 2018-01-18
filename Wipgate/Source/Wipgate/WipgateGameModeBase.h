@@ -12,6 +12,7 @@ class URTS_Team;
 class ARTS_PlayerSpawner;
 class ARTS_LevelEnd;
 class ARTS_LevelBounds;
+class AUpgradeShopBase;
 
 DECLARE_LOG_CATEGORY_EXTERN(WipgateGameModeBase, Log, All);
 
@@ -41,7 +42,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 		ARTS_LevelBounds* GetLevelBounds();
 
+	UFUNCTION(BlueprintCallable)
+		const TArray<AUpgradeShopBase*>& GetShops();
+
+	// Disable to spawn custom squads
+	UPROPERTY(BlueprintReadWrite)
+		bool UseFriendlyAddedTroops = true;
+
+	//Path to json file that sets the unit spawns
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString UnitToSpawnPath = "Stats/Unitspawns.json";
+
 private:
+
 	//Make sure the datatable is inheriting from FTeamRow
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_TeamTable;
@@ -49,6 +62,10 @@ private:
 	//Make sure the datatable is inheriting from FEnemyUpgrade
 	UPROPERTY(EditAnywhere)
 	UDataTable* m_EnemyUpgradeTable;
+
+	//Make sure the datatable is inheriting from FEntityRow
+	UPROPERTY(EditAnywhere)
+		UDataTable* m_FriendlyAddedTroops;
 
 	//Base spawn chance of an entity spawner
 	UPROPERTY(EditAnywhere)
@@ -58,8 +75,13 @@ private:
 	UPROPERTY(EditAnywhere)
 		float SpawnChanceRoundIncrease = 0.05f;
 
+	//Will the spawners / unit stats will be set by the json file
+	UPROPERTY(EditAnywhere)
+		bool m_UseJSON = true;
+
 	ARTS_LevelEnd* m_LevelEnd;
 	ARTS_PlayerSpawner* m_PlayerSpawner;
 	ARTS_LevelBounds* m_LevelBounds;
+	TArray<AUpgradeShopBase*> m_Shops;
 
 };

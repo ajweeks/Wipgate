@@ -11,6 +11,9 @@
 /**
  * 
  */
+
+DECLARE_LOG_CATEGORY_EXTERN(RTS_GameInstance, Log, All);
+
 UCLASS()
 class WIPGATE_API URTS_GameInstance : public UGameInstance
 {
@@ -23,21 +26,11 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FUpgrade> ActiveUpgrades;
 	UPROPERTY(BlueprintReadWrite)
-	int CurrentCurrency = 0;
-	UPROPERTY(BlueprintReadWrite)
 	int CurrentLuma = 0;
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
 
-
-
 	/* FUNCTION */
 	UFUNCTION(BlueprintCallable)
-		void AddCurrency(int amount);
-	UFUNCTION(BlueprintCallable)
-		void SpendCurrency(int amount);
-	UFUNCTION(BlueprintCallable)
-		void AddLuma(int amount);
-	UFUNCTION(BlueprintCallable)
-		void SpendLuma(int amount);
+		void EndRound();
 };

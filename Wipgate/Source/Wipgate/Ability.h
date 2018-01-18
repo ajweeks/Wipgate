@@ -7,6 +7,10 @@
 #include "Ability.generated.h"
 
 class UAbilityIconBase;
+class UTexture2D;
+class USoundCue;
+class USoundAttenuation;
+class USoundConcurrency;
 
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
@@ -69,10 +73,21 @@ public:
 
 	// True once this ability has finished executing
 	UPROPERTY(BlueprintReadWrite)
-		bool IsCompleted;
+		bool IsCasting;
 
 	UPROPERTY(BlueprintReadWrite)
 		UAbilityIconBase* Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* CursorIconTexture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* ButtonTexture;
+
+
+	/* Sounds */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundCue* AbilitySound;
 
 protected:
 	/* protected non virtuals */
@@ -85,6 +100,8 @@ protected:
 		AActor* m_Caster;
 	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
 		AActor* m_Target;
+	UPROPERTY(BlueprintReadWrite, Category = "Ability parameters")
+		FVector m_TargetLocation;
 
 	virtual void BeginPlay() override;
 

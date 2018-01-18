@@ -22,9 +22,13 @@ public:
 	/* FUNCTIONS */
 	UFUNCTION(BlueprintImplementableEvent)
 		void SpawnEntities();
+		virtual void InitializeEntity(ARTS_Entity* entity, ETeamAlignment teamAlignment);
 	UFUNCTION(BlueprintCallable)
-		void InitializeEntity(ARTS_Entity* entity, ETeamAlignment alignment);
+		void AddEntity(ARTS_Entity* entity);
+	UFUNCTION(BlueprintCallable)
+		void RemoveEntity(ARTS_Entity* entity);
 	virtual void Tick(float DeltaTime) override;
+	virtual bool ShouldTickIfViewportsOnly() const override;
 
 	/* PROPERTIES */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -37,5 +41,8 @@ protected:
 	//Determines the color of the debug circle
 	UPROPERTY(BlueprintReadWrite)
 	bool m_IsActive = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<ARTS_Entity*> m_SpawnedEntities;
 	
 };

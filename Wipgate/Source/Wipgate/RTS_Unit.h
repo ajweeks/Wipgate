@@ -20,7 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial() override;
+	virtual void SetTeamMaterial(URTS_Team* t) override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void Kill() override;
@@ -32,13 +32,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 		TSubclassOf<AAbility> AbilityAttackClass;
 
-	//Minimum amount of currency this unit can drop
+	//Minimum amount of luma this unit can drop
 	UPROPERTY(EditAnywhere)
-		int MinimumCurrencyDrop = 0;
+		int MinimumLumaDrop = 3;
 
-	//Maximum amount of currency this unit can drop
+	//Maximum amount of luma this unit can drop
 	UPROPERTY(EditAnywhere)
-		int MaximumCurrencyDrop = 0;
+		int MaximumLumaDrop = 10;
 
 	//Class to spawn when unit dies
 	UPROPERTY(EditAnywhere)

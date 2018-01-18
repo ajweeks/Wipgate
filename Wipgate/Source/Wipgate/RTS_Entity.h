@@ -16,6 +16,8 @@ class UUnitEffect;
 class UStaticMeshComponent;
 class USoundCue;
 class USoundConcurrency;
+class URTS_Team;
+class ARTS_EntitySpawner;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -30,21 +32,21 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetSelected(bool selected);
+		void SetSelected(bool selected);
 
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintGetter, Category="Selection")
-	bool IsSelected() const;
+		bool IsSelected() const;
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetGroundLocation();
+		FVector GetGroundLocation();
 
 	UFUNCTION(BlueprintCallable, Category = "Team")
-	virtual void SetTeamMaterial();
+		virtual void SetTeamMaterial(URTS_Team* t);
 
 	UFUNCTION(BlueprintCallable)
-	void PostInitialize();
+		void PostInitialize();
 
 	/* --- Unit effect functions --- */
 	UFUNCTION(BlueprintGetter, Category = "Effects")
@@ -59,26 +61,33 @@ public:
 		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	bool ApplyDamage(int damage, bool armor);
+		bool ApplyDamage(int damage, bool armor);
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void ApplyHealing(int healing);
+		void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	virtual void Kill();
+		virtual void Kill();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
+		void Kill_NotifyBP();
 	UFUNCTION(BlueprintPure, Category = "Health")
-	bool IsAlive();
+		bool IsAlive();
 
 	UFUNCTION(BlueprintCallable)
-	void AddToLumaSaturation(int32 LumaToAdd);
+		void AddToLumaSaturation(int32 LumaToAdd);
 
 	UFUNCTION(BlueprintCallable)
-	void RemoveLumaSaturation(int32 LumaToRemove);
+		void RemoveLumaSaturation(int32 LumaToRemove);
+
+	// Calling this function will make the selection ring flash for a short period
+	UFUNCTION(BlueprintCallable)
+		void SetHighlighted();
+
 
 	UPROPERTY(BlueprintReadOnly)
-	int LumaToRemoveOnEnemyDeath = 1;
+		int LumaToRemoveOnEnemyDeath = 2;
 
 	// When true, this unit's stats can not be changed, and it can not be targeted
 	UPROPERTY(BlueprintReadWrite)
-	bool Immaterial = false;
+		bool Immaterial = false;
 
 	bool IsSelectableByPlayer() const;
 
@@ -87,47 +96,47 @@ public:
 
 	//SELECTION
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
-	FVector SelectionHitBox = FVector(30.0f, 30.0f, 100.0f);
+		FVector SelectionHitBox = FVector(30.0f, 30.0f, 100.0f);
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Selection")
-	UStaticMeshComponent* SelectionStaticMeshComponent = nullptr;
+		UStaticMeshComponent* SelectionStaticMeshComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selection")
-	float SelectionBrightness = 5.0f;
+		float SelectionBrightness = 5.0f;
 
 	//UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UWidgetComponent* BarWidget = nullptr;
+		UWidgetComponent* BarWidget = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UStaticMeshComponent* MinimapIcon = nullptr;
+		UStaticMeshComponent* MinimapIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	FName MinimapColorParameterName = "None";
+		FName MinimapColorParameterName = "None";
 
 	FRotator BarRotation;
 
 	//DEBUG
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool ShowUnitStats = false;
+		bool ShowUnitStats = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool RenderFlockingDebugInfo = false;
+		bool RenderFlockingDebugInfo = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
-	bool ShowSelectionBox = false;
+		bool ShowSelectionBox = false;
 
 
 	//STATS
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
-	FMovementStat BaseMovementStats;
+		FMovementStat BaseMovementStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	FMovementStat CurrentMovementStats;
+		FMovementStat CurrentMovementStats;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
-	FAttackStat BaseAttackStats;
+		FAttackStat BaseAttackStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	FAttackStat CurrentAttackStats;
+		FAttackStat CurrentAttackStats;
 
 	UPROPERTY(BlueprintReadWrite)
 		float TimerRateOfFire = 0.f;
@@ -137,45 +146,48 @@ public:
 		float AttackAdditionalAnimSpeed = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
-	FDefenceStat BaseDefenceStats;
+		FDefenceStat BaseDefenceStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	FDefenceStat CurrentDefenceStats;
+		FDefenceStat CurrentDefenceStats;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	FLumaStat CurrentLumaStats;
+		FLumaStat CurrentLumaStats;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	int Health = 0;
+		int Health = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
-	FVisionStat BaseVisionStats;
+		FVisionStat BaseVisionStats;
 	UPROPERTY(BlueprintReadWrite, Category = "Stats")
-	FVisionStat CurrentVisionStats;
+		FVisionStat CurrentVisionStats;
 
-	//TEAM
+	// TEAM
 	UPROPERTY(BlueprintReadWrite, Category = "Team")
-	URTS_Team* Team;
+		URTS_Team* Team;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Team")
-	ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
+		ETeamAlignment Alignment = ETeamAlignment::E_PLAYER;
 
-	//TYPE
+	// TYPE
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EEntityType EntityType = EEntityType::E_RANGED;
+		EEntityType EntityType = EEntityType::E_RANGED;
 
 	UPROPERTY(BlueprintReadWrite)
-	TArray<UUnitEffect*> UnitEffects;
+		TArray<UUnitEffect*> UnitEffects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 IconIndex = -1;
+		int32 IconIndex = -1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* IconTexture;
+		UTexture2D* IconTexture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)	
+		UTexture2D* LargeIconTexture;	//used when unit is only selected unit.
 
 	const int NUM_ABILITIES = 3;
 	bool ShowingAbilityIcons = false;
 
-	//SOUNDS
+	// SOUNDS
 	UPROPERTY(EditAnywhere, Category = "Sound")
 		USoundCue* DeathSound;
 
@@ -194,6 +206,17 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		FVector ForwardOnDeath;
 
+	// OVERDOSED
+	// How long to live once overdosed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_SecondsToLiveWhenOverdosed = 10.0f;
+
+	// Timer that upon reaching zero will cause the entity to die
+	UPROPERTY(BlueprintReadWrite)
+		float m_SecondsLeftOfOverdose = 0.0f;
+
+	//SPAWNER
+	ARTS_EntitySpawner* Spawner;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -205,7 +228,21 @@ private:
 
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
-	bool Selected;
+		bool Selected;
+
+	/* HIGHLIGHTED */
+	UPROPERTY(EditAnywhere)
+		int m_HighlightFlashCount = 4;
+
+	UPROPERTY(EditAnywhere)
+		float m_SecondsToHighlight = 0.8f;
+
+	// True when being targetted by the player (flashes selection mesh)
+	bool m_Highlighted;
+
+	// Timer used to determine how long to flash selection mesh for
+	float m_SecondsLeftOfHighlighting = 0.0f;
+
 
 	const int EFFECT_INTERVAL = 1;
 	

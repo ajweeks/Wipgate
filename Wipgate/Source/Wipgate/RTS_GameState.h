@@ -51,9 +51,34 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
 
+	UPROPERTY()
 	TArray<URTS_Team*> Teams;
 
 	// Event Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")
 		FEntityDelegate OnDeathDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+		FEntityDelegate UnderAttackDelegate;
+
+	//End screen stats
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int UnitsKilled = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int SpecialistsKilled = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int UnitsLost = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int SpecialistsLost = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int LumaGained = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int LumaSpent = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "End screen")
+		int UnitsOverdosed = 0;
 };

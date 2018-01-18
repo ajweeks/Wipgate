@@ -15,15 +15,15 @@ ARTS_EntitySpawnerBase::ARTS_EntitySpawnerBase()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignment alignment)
+void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignment teamAlignment)
 {
 	auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
 	if (gamemode)
 	{
-		URTS_Team* team = gamemode->GetTeamWithAlignment(alignment);
+		URTS_Team* team = gamemode->GetTeamWithAlignment(teamAlignment);
 		entity->Team = team;
 		team->Entities.Add(entity);
-		entity->Alignment = alignment;
+		entity->Alignment = teamAlignment;
 		entity->PostInitialize();
 		auto gamestate = gamemode->GetGameState<ARTS_GameState>();
 		if (gamestate)
@@ -39,6 +39,17 @@ void ARTS_EntitySpawnerBase::InitializeEntity(ARTS_Entity * entity, ETeamAlignme
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("InitializeEntity > No gamemode found!"));
 	}
+	m_SpawnedEntities.Add(entity);
+}
+
+void ARTS_EntitySpawnerBase::AddEntity(ARTS_Entity * entity)
+{
+	m_SpawnedEntities.Add(entity);
+}
+
+void ARTS_EntitySpawnerBase::RemoveEntity(ARTS_Entity * entity)
+{
+	m_SpawnedEntities.Remove(entity);
 }
 
 void ARTS_EntitySpawnerBase::Tick(float DeltaTime)
@@ -48,4 +59,9 @@ void ARTS_EntitySpawnerBase::Tick(float DeltaTime)
 	if (m_IsActive)
 		color = FColor::Green;
 	DrawDebugCircle(GetWorld(), GetActorLocation(), Radius, 36, color, false, 0.f, (uint8)'\000', 3.f, FVector(1.f, 0.f, 0.f), FVector(0.f, 1.f, 0.f), false);
+}
+
+bool ARTS_EntitySpawnerBase::ShouldTickIfViewportsOnly() const
+{
+	return true;
 }
