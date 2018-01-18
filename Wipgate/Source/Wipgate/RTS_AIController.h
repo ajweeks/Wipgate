@@ -144,6 +144,8 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAlert;
+	UPROPERTY(BlueprintReadWrite)
+		ARTS_Entity* m_AlertingEntity;
 
 	/* --- Flocking variables --- */
 	UPROPERTY(BlueprintReadWrite)
@@ -152,6 +154,8 @@ protected:
 		float m_FlockingMoveRadius = 200;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_FlockingChaseRadius = 500;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_AlertRadius = 1000;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_ObstructedTimer = 0;
