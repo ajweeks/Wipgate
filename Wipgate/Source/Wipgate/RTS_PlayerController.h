@@ -168,9 +168,12 @@ private:
 	void ActionPrimaryClickReleased();
 	void ActionSecondaryClickPressed();
 	void ActionSecondaryClickReleased();
+	void ActionTertiaryClickPressed();
+	void ActionTertiaryClickReleased();
 	void ActionMoveFastPressed();
 	void ActionMoveFastReleased();
-	void ActionCenterOnSelection();
+	void ActionCenterOnSelectionPressed();
+	void ActionCenterOnSelectionReleased();
 
 public:
 	// Helper function for selecting a selection group (index is 0-based)
@@ -202,7 +205,7 @@ private:
 
 private:
 
-	float CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds);
+	float CalculateMovementSpeedBasedOnCameraZoom();
 
 	void MoveToCenterOfUnits(bool FocusOnSelectedUnits);
 	void MoveToTarget();
@@ -306,6 +309,21 @@ private:
 	float m_LastEntityClickedFrameTime = 0.0f;
 	float m_DoubleClickPeriodSeconds = 0.5f;
 	ARTS_Entity* m_LastEntityClicked = nullptr;
+
+	/* Middle mouse button panning */
+	// True when MMB is down and AlwaysCenterOnUnits is false
+	bool m_Panning = false;
+
+	// Normalized screen-space mouse starting location ([0,1], [0,1])
+	FVector2D m_PanMouseStartLocationSSNorm;
+
+	// Camera's world-space location on pan start
+	FVector m_PanCamStartLocation;
+
+	// How fast middle mouse dragging pans
+	UPROPERTY(EditAnywhere, Category="Movement")
+		float m_PanSpeed = 12.0f;
+
 
 	TArray<URTS_Squad*> m_Squads;
 };

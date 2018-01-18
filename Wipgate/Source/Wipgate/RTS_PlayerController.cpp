@@ -189,6 +189,8 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Primary Click", IE_Released, this, &ARTS_PlayerController::ActionPrimaryClickReleased);
 	InputComponent->BindAction("Secondary Click", IE_Pressed, this, &ARTS_PlayerController::ActionSecondaryClickPressed);
 	InputComponent->BindAction("Secondary Click", IE_Released, this, &ARTS_PlayerController::ActionSecondaryClickReleased);
+	InputComponent->BindAction("Tertiary Click", IE_Pressed, this, &ARTS_PlayerController::ActionTertiaryClickPressed);
+	InputComponent->BindAction("Tertiary Click", IE_Released, this, &ARTS_PlayerController::ActionTertiaryClickReleased);
 	InputComponent->BindAction("Move Fast", IE_Pressed, this, &ARTS_PlayerController::ActionMoveFastPressed);
 	InputComponent->BindAction("Move Fast", IE_Released, this, &ARTS_PlayerController::ActionMoveFastReleased);
 
@@ -213,6 +215,9 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Create Selection Group 4", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup4);
 	InputComponent->BindAction("Selection Group 5", IE_Pressed, this, &ARTS_PlayerController::ActionSelectionGroup5);
 	InputComponent->BindAction("Create Selection Group 5", IE_Pressed, this, &ARTS_PlayerController::ActionCreateSelectionGroup5);
+
+	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelectionPressed);
+	InputComponent->BindAction("Center On Selection", IE_Released, this, &ARTS_PlayerController::ActionCenterOnSelectionReleased);
 
 	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
@@ -330,14 +335,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
-	{
-		if (!AlwaysCenterOnUnits && IsInputKeyDown(EKeys::SpaceBar))
-		{
-			ActionCenterOnSelection();
-		}
-	}
-	
 	const float realTimeSeconds = GetWorld()->GetRealTimeSeconds();
 
 	if (m_MovingToTarget)
@@ -345,19 +342,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		MoveToTarget();
 		return;
 	}
-	else if (m_MovingToSelectionCenter || AlwaysCenterOnUnits)
+	else
 	{
-		MoveToCenterOfUnits(!AlwaysCenterOnUnits);
-	}
-	// If mouse is at edge of screen, update camera pos
-	/*
-		These two values need to be checked because Tick can be called
-		before they are set in BeginPlay somehow
-		TODO: Look into call order - I think this function even gets called in the editor for some reason
-	*/
-	else if (m_EdgeMovementEnabled && m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn && realTimeSeconds > m_EdgeModeDisableDelaySec)
-	{
-		if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
+		if (realTimeSeconds > m_EdgeModeDisableDelaySec &&
+			!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd) &&
+			m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
 		{
 			FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 			FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
@@ -366,40 +355,67 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 			float camDistSpeedMultiplier = 0.0f;
 			UWorld* world = GetWorld();
-			if (!world)
+			if (world)
 			{
-				UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
+				camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom();
 			}
 			else
 			{
-				camDistSpeedMultiplier = CalculateMovementSpeedBasedOnCameraZoom(world->DeltaTimeSeconds);
+				UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
 			}
-
 			FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
-			FVector targetDCamLocation = FVector::ZeroVector;
 
-			FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
-			if (normMousePos.X > 1.0f - m_EdgeSize)
+			if (m_Panning)
 			{
-				targetDCamLocation = rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+				FVector2D currentMousePosNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+				FVector2D dMousePos = currentMousePosNorm - m_PanMouseStartLocationSSNorm;
+
+				FVector targetDCamLocation = FVector::ZeroVector;
+				targetDCamLocation = -dMousePos.X * rightVec * m_PanSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+				targetDCamLocation += dMousePos.Y * forwardVec * m_PanSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+
+				FVector targetCamLocation = m_PanCamStartLocation + targetDCamLocation;
+
+				targetCamLocation = ClampCamPosWithBounds(targetCamLocation);
+
+				m_RTS_CameraPawn->SetActorLocation(targetCamLocation);
 			}
-			else if (normMousePos.X < m_EdgeSize)
+			else if (m_EdgeMovementEnabled)
 			{
-				targetDCamLocation = -rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+				FVector targetDCamLocation = FVector::ZeroVector;
+
+				FVector2D normMousePos = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+				if (normMousePos.X > 1.0f - m_EdgeSize)
+				{
+					targetDCamLocation = rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier * DeltaSeconds;
+					m_MovingToSelectionCenter = false;
+				}
+				else if (normMousePos.X < m_EdgeSize)
+				{
+					targetDCamLocation = -rightVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier * DeltaSeconds;
+					m_MovingToSelectionCenter = false;
+				}
+
+				if (normMousePos.Y > 1.0f - m_EdgeSize)
+				{
+					targetDCamLocation -= forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier * DeltaSeconds;
+					m_MovingToSelectionCenter = false;
+				}
+				else if (normMousePos.Y < m_EdgeSize)
+				{
+					targetDCamLocation += forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier * DeltaSeconds;
+					m_MovingToSelectionCenter = false;
+				}
+
+				targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
+
+				m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
 			}
 
-			if (normMousePos.Y > 1.0f - m_EdgeSize)
+			if (m_MovingToSelectionCenter || AlwaysCenterOnUnits)
 			{
-				targetDCamLocation = -forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
+				MoveToCenterOfUnits(!AlwaysCenterOnUnits);
 			}
-			else if (normMousePos.Y < m_EdgeSize)
-			{
-				targetDCamLocation = forwardVec * m_EdgeMoveSpeed * m_FastMoveMultiplier * camDistSpeedMultiplier;
-			}
-
-			targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
-
-			m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
 		}
 	}
 
@@ -1086,6 +1102,22 @@ void ARTS_PlayerController::ActionSecondaryClickReleased()
 	//CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 }
 
+void ARTS_PlayerController::ActionTertiaryClickPressed()
+{
+	if (!AlwaysCenterOnUnits)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+		m_Panning = true;
+	}
+}
+
+void ARTS_PlayerController::ActionTertiaryClickReleased()
+{
+	m_Panning = false;
+}
+
 void ARTS_PlayerController::ActionMoveFastPressed()
 {
 	m_FastMoveMultiplier = m_FastMoveSpeed;
@@ -1096,7 +1128,7 @@ void ARTS_PlayerController::ActionMoveFastReleased()
 	m_FastMoveMultiplier = 1.0f;
 }
 
-void ARTS_PlayerController::ActionCenterOnSelection()
+void ARTS_PlayerController::ActionCenterOnSelectionPressed()
 {
 	if (!m_RTS_GameState || !m_RTS_CameraPawnCameraComponent)
 	{
@@ -1108,7 +1140,17 @@ void ARTS_PlayerController::ActionCenterOnSelection()
 		return; // No selected entities to center on
 	}
 
-	m_MovingToSelectionCenter = true;
+	if (!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
+	{
+		if (!AlwaysCenterOnUnits)
+		{
+			m_MovingToSelectionCenter = !m_MovingToSelectionCenter;
+		}
+	}
+}
+
+void ARTS_PlayerController::ActionCenterOnSelectionReleased()
+{
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
@@ -1389,11 +1431,11 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 	return m_CurrentLuma;
 }
 
-float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom(float DeltaSeconds)
+float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom()
 {
 	if (m_RTS_CameraPawnSpringArmComponent)
 	{
-		float movementSpeedMultiplier = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_MoveSpeedZoomMultiplier * DeltaSeconds;
+		float movementSpeedMultiplier = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_MoveSpeedZoomMultiplier;
 		return movementSpeedMultiplier;
 	}
 
@@ -1474,13 +1516,17 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 		}
 	}
 
+	FVector camForward = m_RTS_CameraPawnMeshComponent->GetForwardVector();
+	camForward.Z = 0; // Only move along XY plane
+	camForward.Normalize();
 	// Shift the target position up to account for the HUD at the bottom of the screen
 	float yOffset = 600.0f;
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(
 		averageEntityLocation.X, 
-		averageEntityLocation.Y + yOffset, 
+		averageEntityLocation.Y, 
 		oldCameraLocation.Z); // NOTE: Camera height is not effected here (it is handled with zooming)
+	m_TargetLocation -= camForward * yOffset;
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
 	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
 
@@ -1508,12 +1554,6 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	newCamLocation = ClampCamPosWithBounds(newCamLocation);
 
 	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
-
-	float locationTolerance = m_MovingToSelectionCenterThreshold + maxEntityVelocityMag;
-	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
-	{
-		m_MovingToSelectionCenter = false;
-	}
 }
 
 void ARTS_PlayerController::MoveToTarget()
