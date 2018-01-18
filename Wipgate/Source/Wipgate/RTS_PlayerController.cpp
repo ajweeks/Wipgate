@@ -62,7 +62,7 @@ void ARTS_PlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	// Get references to camera and its components
-	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	m_RTS_CameraPawn = GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
 	
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
@@ -308,7 +308,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		return;
 	}
-	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
+	
+	
+	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		// Update selection box size if mouse is being dragged
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
@@ -1456,6 +1458,8 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	FVector minEntityLocation = FVector::ZeroVector;
 	FVector maxEntityLocation = FVector::ZeroVector;
 	FVector averageEntityLocation = FVector::ZeroVector;
+	static FVector averageEntityForwardLastFrame = FVector::ZeroVector;
+	FVector averageEntityForward = FVector::ZeroVector;
 
 	float maxEntityVelocityMag = 0.0f;
 
@@ -1466,8 +1470,9 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
 			FVector entityLocation = entity->GetActorLocation();
 			averageEntityLocation += entityLocation;
+			averageEntityForward += entity->GetActorForwardVector();
 
-			FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+			FVector entityLocationCopy = entityLocation;
 
 			UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
 			entityLocationCopy = entityLocation;
@@ -1480,6 +1485,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 			}
 		}
 
+		averageEntityForward.Normalize();
 		averageEntityLocation /= selectedEntityCount;
 	}
 	else
@@ -1495,8 +1501,9 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 
 				FVector entityLocation = entity->GetActorLocation();
 				averageEntityLocation += entityLocation;
+				averageEntityForward += entity->GetActorForwardVector();
 
-				FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+				FVector entityLocationCopy = entityLocation;
 
 				UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
 				entityLocationCopy = entityLocation;
@@ -1512,6 +1519,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 
 		if (entityCount > 0)
 		{
+			averageEntityForward.Normalize();
 			averageEntityLocation /= entityCount;
 		}
 	}
@@ -1520,6 +1528,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	camForward.Z = 0; // Only move along XY plane
 	camForward.Normalize();
 	// Shift the target position up to account for the HUD at the bottom of the screen
+	
 	float yOffset = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetY;
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(
@@ -1527,6 +1536,15 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 		averageEntityLocation.Y, 
 		oldCameraLocation.Z); // NOTE: Camera height is not effected here (it is handled with zooming)
 	m_TargetLocation -= camForward * yOffset;
+
+	averageEntityForward = FMath::Lerp(averageEntityForwardLastFrame, averageEntityForward, m_CenterOffsetEntitySpeed);
+	if (averageEntityForward != FVector::ZeroVector)
+	{
+		m_TargetLocation += averageEntityForward * m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetEntityDirection;
+	}
+
+	averageEntityForwardLastFrame = averageEntityForward;
+
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
 	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
 
