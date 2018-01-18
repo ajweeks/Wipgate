@@ -57,6 +57,8 @@ public:
 	// Event Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")
 		FEntityDelegate OnDeathDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+		FEntityDelegate UnderAttackDelegate;
 
 	//End screen stats
 	UPROPERTY(BlueprintReadOnly, Category = "End screen")

@@ -427,6 +427,10 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 
 bool ARTS_Entity::ApplyDamage(int damage, bool armor)
 {
+	//GameState notification "under attack"
+	ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
+	gameState->UnderAttackDelegate.Broadcast(this);
+
 	if (Health <= 0)
 	{
 		return true;
@@ -479,7 +483,7 @@ void ARTS_Entity::Kill()
 		UWorld* world = GetWorld();
 		if (world)
 		{
-			Kill_NotifyBP();
+			Kill_NotifyBP(); // notify to blueprint version to detach weapon and hat
 
 			int length = UnitEffects.Num();
 			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
