@@ -432,7 +432,7 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 	}
 
 	//GameState notification "under attack"
-	if (enemiesInRange.Num() > 0)
+	if (enemiesInRange.Num() > 0 && GetController(m_Entity)->m_CurrentTask == EUNIT_TASK::IDLE && !m_IsAlert)
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
 		gameState->UnderAttackDelegate.Broadcast(m_Entity);
@@ -568,7 +568,6 @@ void ARTS_AIController::AddCommand_Stop()
 	UpdateCommandQueueIndicator();
 	StopMovement();
 	SetCurrentTask(EUNIT_TASK::IDLE);
-	m_IsAlert = false;
 }
 
 void ARTS_AIController::AddCommand_Attack(ARTS_Entity * target, const bool isForced, const bool isQueued)
