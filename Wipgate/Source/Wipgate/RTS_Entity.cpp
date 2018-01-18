@@ -542,7 +542,7 @@ void ARTS_Entity::Kill()
 			{
 				castedGameState->SelectedEntities.Remove(this);
 				castedGameState->Entities.Remove(this);
-
+				
 				APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
 				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
 
@@ -553,6 +553,72 @@ void ARTS_Entity::Kill()
 					if (hud)
 					{
 						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
+
+						if (castedGameState->SelectionGroup1.Contains(this))
+						{
+							castedGameState->SelectionGroup1.Remove(this);
+
+							if (castedGameState->SelectionGroup1.Num() > 0)
+							{
+								hud->ShowSelectionGroupIcon(0, castedGameState->SelectionGroup1.Num());
+							}
+							else
+							{
+								hud->HideSelectionGroupIcon(0);
+							}
+						}
+						if (castedGameState->SelectionGroup2.Contains(this))
+						{
+							castedGameState->SelectionGroup2.Remove(this);
+
+							if (castedGameState->SelectionGroup2.Num() > 0)
+							{
+								hud->ShowSelectionGroupIcon(1, castedGameState->SelectionGroup2.Num());
+							}
+							else
+							{
+								hud->HideSelectionGroupIcon(1);
+							}
+						}
+						if (castedGameState->SelectionGroup3.Contains(this))
+						{
+							castedGameState->SelectionGroup3.Remove(this);
+
+							if (castedGameState->SelectionGroup3.Num() > 0)
+							{
+								hud->ShowSelectionGroupIcon(2, castedGameState->SelectionGroup3.Num());
+							}
+							else
+							{
+								hud->HideSelectionGroupIcon(2);
+							}
+						}
+						if (castedGameState->SelectionGroup4.Contains(this))
+						{
+							castedGameState->SelectionGroup4.Remove(this);
+
+							if (castedGameState->SelectionGroup4.Num() > 0)
+							{
+								hud->ShowSelectionGroupIcon(3, castedGameState->SelectionGroup4.Num());
+							}
+							else
+							{
+								hud->HideSelectionGroupIcon(3);
+							}
+						}
+						if (castedGameState->SelectionGroup5.Contains(this))
+						{
+							castedGameState->SelectionGroup5.Remove(this);
+
+							if (castedGameState->SelectionGroup5.Num() > 0)
+							{
+								hud->ShowSelectionGroupIcon(4, castedGameState->SelectionGroup5.Num());
+							}
+							else
+							{
+								hud->HideSelectionGroupIcon(4);
+							}
+						}
 					}
 				}
 			}
