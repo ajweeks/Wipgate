@@ -7,12 +7,6 @@
 
 DEFINE_LOG_CATEGORY(RTS_TEAM_LOG);
 
-void URTS_Team::AddUpgrade(FUpgrade upgrade)
-{
-	Upgrades.Add(upgrade);
-	CalculateUpgradeEffects();
-}
-
 void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 {
 	if (!World)
@@ -55,12 +49,14 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 				{
 				case EUpgradeStat::E_DAMAGE:
 					upgradedAttackStats.Damage += upgrade.Effect;
+					upgradedAttackStats.Damage = FMath::Clamp(upgradedAttackStats.Damage, 0, upgradedAttackStats.Damage);
 					break;
 				case EUpgradeStat::E_RANGE:
 					upgradedAttackStats.Range += upgrade.Effect;
+					upgradedAttackStats.Range = FMath::Clamp(upgradedAttackStats.Range, 0.f, upgradedAttackStats.Range);
 					break;
 				case EUpgradeStat::E_RATEOFFIRE:
-					upgradedAttackStats.AttackCooldown -= upgrade.Effect;
+					UE_LOG(RTS_TEAM_LOG, Warning, TEXT("CalculateUpgradeEffects > Flat upgrades don't work on rate of fire!"))
 					break;
 				default:
 					break;
@@ -106,12 +102,15 @@ FAttackStat URTS_Team::GetUpgradedAttackStats(ARTS_Entity* entity)
 		{
 		case EUpgradeStat::E_DAMAGE:
 			upgradedAttackStats.Damage *= totalEffect;
+			upgradedAttackStats.Damage = FMath::Clamp(upgradedAttackStats.Damage, 0, upgradedAttackStats.Damage);
 			break;
 		case EUpgradeStat::E_RANGE:
 			upgradedAttackStats.Range *= totalEffect;
+			upgradedAttackStats.Range = FMath::Clamp(upgradedAttackStats.Range, 0.f, upgradedAttackStats.Range);
 			break;
 		case EUpgradeStat::E_RATEOFFIRE:
 			upgradedAttackStats.AttackCooldown *= totalEffect;
+			upgradedAttackStats.AttackCooldown = FMath::Clamp(upgradedAttackStats.AttackCooldown, 0.f, upgradedAttackStats.AttackCooldown);
 			break;
 		default:
 			break;
@@ -151,25 +150,33 @@ void URTS_Team::CalculateUpgradeEffects()
 				{
 				case EUpgradeStat::E_ARMOR:
 					entity->CurrentDefenceStats.Armor += upgrade.Effect;
+					entity->CurrentDefenceStats.Armor = FMath::Clamp(entity->CurrentDefenceStats.Armor, 0, entity->CurrentDefenceStats.Armor);
 					break;
 				case EUpgradeStat::E_DAMAGE:
 					entity->CurrentAttackStats.Damage += upgrade.Effect;
+					entity->CurrentAttackStats.Damage = FMath::Clamp(entity->CurrentAttackStats.Damage, 0, entity->CurrentAttackStats.Damage);
 					break;
 				case EUpgradeStat::E_HEALTH:
 					entity->CurrentDefenceStats.MaxHealth += upgrade.Effect;
+					entity->Health += upgrade.Effect;
+					entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
 					break;
 				case EUpgradeStat::E_RANGE:
 					entity->CurrentAttackStats.Range += upgrade.Effect;
+					entity->CurrentAttackStats.Range = FMath::Clamp(entity->CurrentAttackStats.Range, 0.f, entity->CurrentAttackStats.Range);
 					break;
 				case EUpgradeStat::E_RATEOFFIRE:
-					entity->CurrentAttackStats.AttackCooldown += upgrade.Effect;
+					UE_LOG(RTS_TEAM_LOG, Warning, TEXT("CalculateUpgradeEffects > Flat upgrades don't work on rate of fire!"));
 					break;
 				case EUpgradeStat::E_SPEED:
 					entity->CurrentMovementStats.Speed += upgrade.Effect;
+					entity->CurrentMovementStats.Speed = FMath::Clamp(entity->CurrentMovementStats.Speed, 0.f, entity->CurrentMovementStats.Speed);
 					break;
 				case EUpgradeStat::E_VISION:
 					entity->CurrentVisionStats.InnerRange += upgrade.Effect;
 					entity->CurrentVisionStats.OuterRange += upgrade.Effect;
+					entity->CurrentVisionStats.InnerRange = FMath::Clamp(entity->CurrentVisionStats.InnerRange, 0.f, entity->CurrentVisionStats.InnerRange);
+					entity->CurrentVisionStats.OuterRange = FMath::Clamp(entity->CurrentVisionStats.OuterRange, 0.f, entity->CurrentVisionStats.OuterRange);
 					break;
 				default:
 					break;
@@ -205,7 +212,7 @@ void URTS_Team::CalculateUpgradeEffects()
 			}
 			else
 			{
-				UE_LOG(RTS_TEAM_LOG, Warning, TEXT("ARTS_Team::CalculateUpgradeEffects > Non-percentual upgrade found!"));
+				UE_LOG(RTS_TEAM_LOG, Warning, TEXT("CalculateUpgradeEffects > Non-percentual upgrade found!"));
 			}
 		}
 
@@ -219,28 +226,37 @@ void URTS_Team::CalculateUpgradeEffects()
 			{
 			case EUpgradeStat::E_ARMOR:
 				entity->CurrentDefenceStats.Armor *= totalEffect;
+				entity->CurrentDefenceStats.Armor = FMath::Clamp(entity->CurrentDefenceStats.Armor, 0, entity->CurrentDefenceStats.Armor);
 				break;
 			case EUpgradeStat::E_DAMAGE:
 				entity->CurrentAttackStats.Damage *= totalEffect;
+				entity->CurrentAttackStats.Damage = FMath::Clamp(entity->CurrentAttackStats.Damage, 0, entity->CurrentAttackStats.Damage);
 				break;
 			case EUpgradeStat::E_HEALTH:
 				entity->CurrentDefenceStats.MaxHealth *= totalEffect;
+				entity->Health *= totalEffect;
+				entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
 				break;
 			case EUpgradeStat::E_RANGE:
 				entity->CurrentAttackStats.Range *= totalEffect;
+				entity->CurrentAttackStats.Range = FMath::Clamp(entity->CurrentAttackStats.Range, 0.f, entity->CurrentAttackStats.Range);
 				break;
 			case EUpgradeStat::E_RATEOFFIRE:
-				//entity->CurrentAttackStats.AttackCooldown *= totalEffect;
 				entity->CurrentAttackStats.AttackCooldown -= FMath::Clamp(entity->CurrentAttackStats.AttackCooldown * (1 - totalEffect), 0.0f, 
 					entity->CurrentAttackStats.AttackCooldown);
+				entity->CurrentAttackStats.AttackCooldown = FMath::Clamp(entity->CurrentAttackStats.AttackCooldown, 0.f, entity->CurrentAttackStats.AttackCooldown);
 				entity-> AttackAdditionalAnimSpeed += totalEffect - 1;
+				entity->AttackAdditionalAnimSpeed = FMath::Clamp(entity->AttackAdditionalAnimSpeed, 0.f, entity->AttackAdditionalAnimSpeed);
 				break;
 			case EUpgradeStat::E_SPEED:
 				entity->CurrentMovementStats.Speed *= totalEffect;
+				entity->CurrentMovementStats.Speed = FMath::Clamp(entity->CurrentMovementStats.Speed, 0.f, entity->CurrentMovementStats.Speed);
 				break;
 			case EUpgradeStat::E_VISION:
 				entity->CurrentVisionStats.InnerRange *= totalEffect;
 				entity->CurrentVisionStats.OuterRange *= totalEffect;
+				entity->CurrentVisionStats.InnerRange = FMath::Clamp(entity->CurrentVisionStats.InnerRange, 0.f, entity->CurrentVisionStats.InnerRange);
+				entity->CurrentVisionStats.OuterRange = FMath::Clamp(entity->CurrentVisionStats.OuterRange, 0.f, entity->CurrentVisionStats.OuterRange);
 				break;
 			default:
 				break;
