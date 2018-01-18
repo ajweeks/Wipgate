@@ -216,7 +216,12 @@ private:
 	FVector ClampDCamPosWithBounds(FVector dCamPos);
 	FVector ClampCamPosWithBounds(FVector camPos);
 
-	APawn* m_RTS_CameraPawn = nullptr;
+public:
+	UPROPERTY(BlueprintReadWrite)
+		APawn* m_RTS_CameraPawn = nullptr;
+
+private:
+
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
@@ -327,6 +332,14 @@ private:
 	// How far to shift the center up (because of HUD at bottom of screen)
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		float m_CenterOffsetY = 0.1f;
+
+	// How far to shift the center in direction of average entity facing direction
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		float m_CenterOffsetEntityDirection = 0.25f;
+
+	// How fast to shift the center in direction of average entity facing direction (0=never, 1=instantly)
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		float m_CenterOffsetEntitySpeed = 0.015f;
 
 
 	TArray<URTS_Squad*> m_Squads;

@@ -21,8 +21,6 @@ class WIPGATE_API URTS_Team : public UObject
 	public:
 		/* Functions */
 		UFUNCTION(BlueprintCallable)
-		void AddUpgrade(FUpgrade upgrade);
-		UFUNCTION(BlueprintCallable)
 		void AddUpgrades(TArray<FUpgrade> upgrades);
 
 		FAttackStat GetUpgradedAttackStats(ARTS_Entity* entity);
