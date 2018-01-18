@@ -1520,7 +1520,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	camForward.Z = 0; // Only move along XY plane
 	camForward.Normalize();
 	// Shift the target position up to account for the HUD at the bottom of the screen
-	float yOffset = 600.0f;
+	float yOffset = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetY;
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(
 		averageEntityLocation.X, 

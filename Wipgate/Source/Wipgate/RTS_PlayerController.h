@@ -324,6 +324,10 @@ private:
 	UPROPERTY(EditAnywhere, Category="Movement")
 		float m_PanSpeed = 12.0f;
 
+	// How far to shift the center up (because of HUD at bottom of screen)
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		float m_CenterOffsetY = 0.1f;
+
 
 	TArray<URTS_Squad*> m_Squads;
 };
