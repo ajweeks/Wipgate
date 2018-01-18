@@ -34,11 +34,11 @@ public:
 
 	//Minimum amount of luma this unit can drop
 	UPROPERTY(EditAnywhere)
-		int MinimumLumaDrop = 0;
+		int MinimumLumaDrop = 3;
 
 	//Maximum amount of luma this unit can drop
 	UPROPERTY(EditAnywhere)
-		int MaximumLumaDrop = 0;
+		int MaximumLumaDrop = 10;
 
 	//Class to spawn when unit dies
 	UPROPERTY(EditAnywhere)
