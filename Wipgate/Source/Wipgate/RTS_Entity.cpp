@@ -669,6 +669,15 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 				Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
 				m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
 
+				// We are no longer selectable - let player controller know
+				APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+				if (playerController && rtsPlayerController)
+				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
+				}
+
 				//Set team color
 				auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
 				if (gamemode)
