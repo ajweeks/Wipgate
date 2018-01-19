@@ -219,6 +219,9 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelectionPressed);
 	InputComponent->BindAction("Center On Selection", IE_Released, this, &ARTS_PlayerController::ActionCenterOnSelectionReleased);
 
+	InputComponent->BindAction("Add To Selection", IE_Pressed, this, &ARTS_PlayerController::ActionAddToSelectionPressed);
+	InputComponent->BindAction("Add To Selection", IE_Released, this, &ARTS_PlayerController::ActionAddToSelectionReleased);
+
 	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -246,12 +249,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 		else
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-			// Sanity check (shouldn't be necessary but crashes without occasionally)
-			if (m_RTS_GameState->SelectedEntities.Contains(entity))
-			{
-				m_RTS_GameState->SelectedEntities.Remove(entity);
-			}
+			m_RTS_GameState->SelectedEntities.RemoveAt(i);
 		}
 	}
 
@@ -439,7 +437,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		if (IsCursorOverPurchasableItem())
 		{
 			// Player clicked on a powerup, don't deselect anything
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out tick"));
 			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 			return;
 		}
@@ -754,10 +751,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		// Player clicked on a powerup, don't deselect anything
 		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out release"));
 		return;
 	}
-	UE_LOG(RTS_PlayerController_Log, Error, TEXT("not early out release!"));
 
 	// Hide selection box when mouse isn't being held
 	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
@@ -1176,6 +1171,26 @@ void ARTS_PlayerController::ActionCenterOnSelectionReleased()
 {
 }
 
+void ARTS_PlayerController::ActionAddToSelectionPressed()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
+void ARTS_PlayerController::ActionAddToSelectionReleased()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 {
 	switch (Index)
@@ -1452,6 +1467,28 @@ void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 int32 ARTS_PlayerController::GetCurrentLumaAmount()
 {
 	return m_CurrentLuma;
+}
+
+void ARTS_PlayerController::AddHealth(int32 healthAmount)
+{
+	if (!Team)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > No player team present!"))
+		return;
+	}
+
+	if (healthAmount < 0)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > Health addition can not be smaller than 0"))
+		return;
+	}
+
+	for (auto entity : Team->Entities)
+	{
+		entity->Health += healthAmount;
+		entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
+	}
+	
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom()

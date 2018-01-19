@@ -89,6 +89,18 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool Immaterial = false;
 
+	//Minimum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MinimumLumaDrop = 3;
+
+	//Maximum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MaximumLumaDrop = 10;
+
+	//Class to spawn when unit dies
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AActor> DeathEffectClass;
+
 	bool IsSelectableByPlayer() const;
 
 public:

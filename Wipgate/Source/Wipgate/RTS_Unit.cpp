@@ -85,28 +85,6 @@ void ARTS_Unit::Kill()
 	UWorld* world = GetWorld();
 	if (world)
 	{
-		//Spawn luma particle
-		auto transform = GetActorTransform();
-		if (DeathEffectClass)
-		{
-			world->SpawnActor(DeathEffectClass, &transform);
-		}
-
-		ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
-		if (playercontroller)
-		{
-			if (Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
-			{
-				//Add luma
-				int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
-				playercontroller->AddLuma(amount, true);
-			}
-		}
-		else
-		{
-		UE_LOG(RTS_UNIT_LOG, Error, TEXT("Kill > No playercontroller present!"));
-		}
-
 		ARTS_Entity::Kill();
 
 		USkeletalMeshComponent* skeletalMesh = GetMesh();

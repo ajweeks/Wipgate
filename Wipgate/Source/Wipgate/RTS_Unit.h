@@ -32,18 +32,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 		TSubclassOf<AAbility> AbilityAttackClass;
 
-	//Minimum amount of luma this unit can drop
-	UPROPERTY(EditAnywhere)
-		int MinimumLumaDrop = 3;
-
-	//Maximum amount of luma this unit can drop
-	UPROPERTY(EditAnywhere)
-		int MaximumLumaDrop = 10;
-
-	//Class to spawn when unit dies
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<AActor> DeathEffectClass;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Visual")
 		UStaticMeshComponent* Headpiece = nullptr;
 
