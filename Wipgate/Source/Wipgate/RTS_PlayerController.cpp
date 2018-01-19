@@ -219,6 +219,9 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelectionPressed);
 	InputComponent->BindAction("Center On Selection", IE_Released, this, &ARTS_PlayerController::ActionCenterOnSelectionReleased);
 
+	InputComponent->BindAction("Add To Selection", IE_Pressed, this, &ARTS_PlayerController::ActionAddToSelectionPressed);
+	InputComponent->BindAction("Add To Selection", IE_Released, this, &ARTS_PlayerController::ActionAddToSelectionReleased);
+
 	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -1168,6 +1171,26 @@ void ARTS_PlayerController::ActionCenterOnSelectionReleased()
 {
 }
 
+void ARTS_PlayerController::ActionAddToSelectionPressed()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
+void ARTS_PlayerController::ActionAddToSelectionReleased()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
 {
 	switch (Index)
@@ -1444,6 +1467,28 @@ void ARTS_PlayerController::SpendLuma(int32 LumaAmount)
 int32 ARTS_PlayerController::GetCurrentLumaAmount()
 {
 	return m_CurrentLuma;
+}
+
+void ARTS_PlayerController::AddHealth(int32 healthAmount)
+{
+	if (!Team)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > No player team present!"))
+		return;
+	}
+
+	if (healthAmount < 0)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > Health addition can not be smaller than 0"))
+		return;
+	}
+
+	for (auto entity : Team->Entities)
+	{
+		entity->Health += healthAmount;
+		entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
+	}
+	
 }
 
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom()
