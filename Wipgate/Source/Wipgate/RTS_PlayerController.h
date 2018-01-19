@@ -216,6 +216,8 @@ private:
 	FVector ClampDCamPosWithBounds(FVector dCamPos);
 	FVector ClampCamPosWithBounds(FVector camPos);
 
+	bool IsCursorOverPurchasableItem();
+
 public:
 	UPROPERTY(BlueprintReadWrite)
 		APawn* m_RTS_CameraPawn = nullptr;
