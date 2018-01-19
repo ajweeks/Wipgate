@@ -552,12 +552,11 @@ void ARTS_Entity::Kill()
 
 				if (playerController && rtsPlayerController)
 				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
 					rtsPlayerController->UpdateSpecialistAbilityButtons();
 					URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
 					if (hud)
 					{
-						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
-
 						if (castedGameState->SelectionGroup1.Contains(this))
 						{
 							castedGameState->SelectionGroup1.Remove(this);

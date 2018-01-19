@@ -246,12 +246,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 		else
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-			// Sanity check (shouldn't be necessary but crashes without occasionally)
-			if (m_RTS_GameState->SelectedEntities.Contains(entity))
-			{
-				m_RTS_GameState->SelectedEntities.Remove(entity);
-			}
+			m_RTS_GameState->SelectedEntities.RemoveAt(i);
 		}
 	}
 
@@ -439,7 +434,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		if (IsCursorOverPurchasableItem())
 		{
 			// Player clicked on a powerup, don't deselect anything
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out tick"));
 			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 			return;
 		}
@@ -754,10 +748,8 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		// Player clicked on a powerup, don't deselect anything
 		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out release"));
 		return;
 	}
-	UE_LOG(RTS_PlayerController_Log, Error, TEXT("not early out release!"));
 
 	// Hide selection box when mouse isn't being held
 	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
