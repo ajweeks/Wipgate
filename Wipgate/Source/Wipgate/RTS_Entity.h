@@ -61,7 +61,7 @@ public:
 		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-		bool ApplyDamage(int damage, bool armor);
+		bool ApplyDamage(int damage, bool armor, ARTS_Entity* attacker);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
@@ -88,6 +88,18 @@ public:
 	// When true, this unit's stats can not be changed, and it can not be targeted
 	UPROPERTY(BlueprintReadWrite)
 		bool Immaterial = false;
+
+	//Minimum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MinimumLumaDrop = 3;
+
+	//Maximum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MaximumLumaDrop = 10;
+
+	//Class to spawn when unit dies
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AActor> DeathEffectClass;
 
 	bool IsSelectableByPlayer() const;
 

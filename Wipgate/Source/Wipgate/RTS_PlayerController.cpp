@@ -62,7 +62,7 @@ void ARTS_PlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	// Get references to camera and its components
-	m_RTS_CameraPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	m_RTS_CameraPawn = GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
 	
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
@@ -86,7 +86,7 @@ void ARTS_PlayerController::BeginPlay()
 		if (levelEnd)
 		{
 			m_LevelEndLocation = levelEnd->GetActorLocation();
-		}
+		}	
 	}
 
 	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
@@ -219,6 +219,9 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelectionPressed);
 	InputComponent->BindAction("Center On Selection", IE_Released, this, &ARTS_PlayerController::ActionCenterOnSelectionReleased);
 
+	InputComponent->BindAction("Add To Selection", IE_Pressed, this, &ARTS_PlayerController::ActionAddToSelectionPressed);
+	InputComponent->BindAction("Add To Selection", IE_Released, this, &ARTS_PlayerController::ActionAddToSelectionReleased);
+
 	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -246,12 +249,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 		else
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-			// Sanity check (shouldn't be necessary but crashes without occasionally)
-			if (m_RTS_GameState->SelectedEntities.Contains(entity))
-			{
-				m_RTS_GameState->SelectedEntities.Remove(entity);
-			}
+			m_RTS_GameState->SelectedEntities.RemoveAt(i);
 		}
 	}
 
@@ -308,7 +306,9 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		return;
 	}
-	else if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
+	
+	
+	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
 		// Update selection box size if mouse is being dragged
 		m_ClickEndSS = UGeneralFunctionLibrary_CPP::GetMousePositionVector2D(this);
@@ -432,6 +432,16 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
 
 
+	if (isPrimaryClickButtonDown)
+	{
+		if (IsCursorOverPurchasableItem())
+		{
+			// Player clicked on a powerup, don't deselect anything
+			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+			return;
+		}
+	}
+
 	if (!isAddToSelectionKeyDown)
 	{
 		for (int i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
@@ -444,10 +454,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-	FHitResult hitResult;
-	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	AActor* actorUnderCursor = hitResult.Actor.Get();
+	static ETraceTypeQuery pawnTraceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult pawnHitResult;
+	GetHitResultUnderCursorByChannel(pawnTraceType, false, pawnHitResult);
+	AActor* actorUnderCursor = pawnHitResult.Actor.Get();
 	static ARTS_Entity* entityUnderCursor = nullptr;
 	ARTS_Entity* prevEntityUnderCursor = entityUnderCursor;
 	entityUnderCursor = nullptr;
@@ -481,22 +491,87 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		if (isPrimaryClickButtonDown)
 		{
 			// Check if this entity's min or max bounding box points lie within the selection box
-			FVector entityBoundsMinWS = entityLocation - entity->SelectionHitBox;
-			FVector2D entityBoundsMinSS;
-			ProjectWorldLocationToScreen(entityBoundsMinWS, entityBoundsMinSS, true);
+			/*
+			    
+			     ^
+			    / \
+			   /   \
+			  <     >
+			  |\   /|
+			  | \ / |
+			  |  v  |
+			  |  |  |
+			  |  |  |
+			  |  |  |
+			  \  |  /
+			   \ | /
+			     v
+			
+			*/
+			FVector entityBounds0 = entityLocation + FVector(
+				-entity->SelectionHitBox.X,
+				0.0f,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds1 = entityLocation + FVector(
+				0.0f,
+				-entity->SelectionHitBox.Y,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds2 = entityLocation + FVector(
+				entity->SelectionHitBox.X,
+				0.0f,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds3 = entityLocation + FVector(
+				0.0f,
+				entity->SelectionHitBox.Y,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds4 = entityLocation + FVector(
+				-entity->SelectionHitBox.X,
+				0.0f,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds5 = entityLocation + FVector(
+				0.0f,
+				-entity->SelectionHitBox.Y,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds6 = entityLocation + FVector(
+				entity->SelectionHitBox.X,
+				0.0f,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds7 = entityLocation + FVector(
+				0.0f,
+				entity->SelectionHitBox.Y,
+				entity->SelectionHitBox.Z);
 
-			FVector entityBoundsMaxWS = entityLocation + entity->SelectionHitBox;
-			FVector2D entityBoundsMaxSS;
-			ProjectWorldLocationToScreen(entityBoundsMaxWS, entityBoundsMaxSS, true);
+			TArray<FVector2D> entityBoundsSS;
+			entityBoundsSS.AddUninitialized(8);
 
-			UGeneralFunctionLibrary_CPP::FVector2DMinMax(entityBoundsMinSS, entityBoundsMaxSS);
+			ProjectWorldLocationToScreen(entityBounds0, entityBoundsSS[0], true);
+			ProjectWorldLocationToScreen(entityBounds1, entityBoundsSS[1], true);
+			ProjectWorldLocationToScreen(entityBounds2, entityBoundsSS[2], true);
+			ProjectWorldLocationToScreen(entityBounds3, entityBoundsSS[3], true);
+			ProjectWorldLocationToScreen(entityBounds4, entityBoundsSS[4], true);
+			ProjectWorldLocationToScreen(entityBounds5, entityBoundsSS[5], true);
+			ProjectWorldLocationToScreen(entityBounds6, entityBoundsSS[6], true);
+			ProjectWorldLocationToScreen(entityBounds7, entityBoundsSS[7], true);
+
+			TArray<float> entityBoundsSSX;
+			TArray<float> entityBoundsSSY;
+			TArray<float> entityBoundsSSZ;
+
+			FVector2D entityBoundsMinSS = FVector2D(MAX_flt, MAX_flt);
+			FVector2D entityBoundsMaxSS = FVector2D(MIN_flt, MIN_flt);
+
+			for (int32 v = 0; v < 8; ++v)
+			{
+				entityBoundsMinSS.X = FMath::Min(entityBoundsSS[v].X, entityBoundsMinSS.X);
+				entityBoundsMinSS.Y = FMath::Min(entityBoundsSS[v].Y, entityBoundsMinSS.Y);
+				entityBoundsMaxSS.X = FMath::Max(entityBoundsSS[v].X, entityBoundsMaxSS.X);
+				entityBoundsMaxSS.Y = FMath::Max(entityBoundsSS[v].Y, entityBoundsMaxSS.Y);
+			}
 
 			entityBoundsMinSS /= viewportScale;
 			entityBoundsMaxSS /= viewportScale;
 
-			entityInSelectionBox =
-				UGeneralFunctionLibrary_CPP::PointInBounds2D(entityBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
-				UGeneralFunctionLibrary_CPP::PointInBounds2D(entityBoundsMaxSS, selectionBoxMin, selectionBoxMax);
+			entityInSelectionBox = UGeneralFunctionLibrary_CPP::BoxesOverlap(entityBoundsMinSS, entityBoundsMaxSS, selectionBoxMin, selectionBoxMax);
 		}
 
 		// Check if entity is under mouse cursor (for single clicks)
@@ -513,7 +588,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team && 
+		if (!SelectedAbility && 
 			(entity->Alignment == ETeamAlignment::E_PLAYER ||
 				entity->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 		{
@@ -666,7 +741,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 				{
 					UWorld* world = GetWorld();
 					FNavLocation navPoint;
-					if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
+					if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(pawnHitResult.Location, navPoint))
 					{
 						if (CursorRef->CurrentTexture == CursorRef->InvalidTexture)
 						{
@@ -734,6 +809,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	if (IsPaused())
 	{
+		return;
+	}
+
+	if (IsCursorOverPurchasableItem())
+	{
+		// Player clicked on a powerup, don't deselect anything
+		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 		return;
 	}
 
@@ -1104,7 +1186,8 @@ void ARTS_PlayerController::ActionSecondaryClickReleased()
 
 void ARTS_PlayerController::ActionTertiaryClickPressed()
 {
-	if (!AlwaysCenterOnUnits)
+	if (!AlwaysCenterOnUnits &&
+		(!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd)))
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
@@ -1151,6 +1234,26 @@ void ARTS_PlayerController::ActionCenterOnSelectionPressed()
 
 void ARTS_PlayerController::ActionCenterOnSelectionReleased()
 {
+}
+
+void ARTS_PlayerController::ActionAddToSelectionPressed()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
+void ARTS_PlayerController::ActionAddToSelectionReleased()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
@@ -1431,6 +1534,28 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 	return m_CurrentLuma;
 }
 
+void ARTS_PlayerController::AddHealth(int32 healthAmount)
+{
+	if (!Team)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > No player team present!"))
+		return;
+	}
+
+	if (healthAmount < 0)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > Health addition can not be smaller than 0"))
+		return;
+	}
+
+	for (auto entity : Team->Entities)
+	{
+		entity->Health += healthAmount;
+		entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
+	}
+	
+}
+
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom()
 {
 	if (m_RTS_CameraPawnSpringArmComponent)
@@ -1456,6 +1581,8 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	FVector minEntityLocation = FVector::ZeroVector;
 	FVector maxEntityLocation = FVector::ZeroVector;
 	FVector averageEntityLocation = FVector::ZeroVector;
+	static FVector averageEntityForwardLastFrame = FVector::ZeroVector;
+	FVector averageEntityForward = FVector::ZeroVector;
 
 	float maxEntityVelocityMag = 0.0f;
 
@@ -1466,8 +1593,9 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
 			FVector entityLocation = entity->GetActorLocation();
 			averageEntityLocation += entityLocation;
+			averageEntityForward += entity->GetActorForwardVector();
 
-			FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+			FVector entityLocationCopy = entityLocation;
 
 			UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
 			entityLocationCopy = entityLocation;
@@ -1480,6 +1608,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 			}
 		}
 
+		averageEntityForward.Normalize();
 		averageEntityLocation /= selectedEntityCount;
 	}
 	else
@@ -1495,8 +1624,9 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 
 				FVector entityLocation = entity->GetActorLocation();
 				averageEntityLocation += entityLocation;
+				averageEntityForward += entity->GetActorForwardVector();
 
-				FVector entityLocationCopy = entityLocation; // TODO: Is this needed?
+				FVector entityLocationCopy = entityLocation;
 
 				UGeneralFunctionLibrary_CPP::FVectorMinMax(minEntityLocation, entityLocationCopy);
 				entityLocationCopy = entityLocation;
@@ -1512,6 +1642,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 
 		if (entityCount > 0)
 		{
+			averageEntityForward.Normalize();
 			averageEntityLocation /= entityCount;
 		}
 	}
@@ -1520,6 +1651,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	camForward.Z = 0; // Only move along XY plane
 	camForward.Normalize();
 	// Shift the target position up to account for the HUD at the bottom of the screen
+	
 	float yOffset = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetY;
 	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(
@@ -1527,6 +1659,15 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 		averageEntityLocation.Y, 
 		oldCameraLocation.Z); // NOTE: Camera height is not effected here (it is handled with zooming)
 	m_TargetLocation -= camForward * yOffset;
+
+	averageEntityForward = FMath::Lerp(averageEntityForwardLastFrame, averageEntityForward, m_CenterOffsetEntitySpeed);
+	if (averageEntityForward != FVector::ZeroVector)
+	{
+		m_TargetLocation += averageEntityForward * m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetEntityDirection;
+	}
+
+	averageEntityForwardLastFrame = averageEntityForward;
+
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
 	FVector camMovement = dCamLocation * m_SelectionCenterMaxMoveSpeed * DeltaSeconds;
 
@@ -1643,6 +1784,19 @@ FVector ARTS_PlayerController::ClampCamPosWithBounds(FVector camPos)
 	}
 
 	return camPos;
+}
+
+bool ARTS_PlayerController::IsCursorOverPurchasableItem()
+{
+	static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
+	FHitResult visibilityHitResult;
+	GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
+	AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
+	if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
+	{
+		return true;
+	}
+	return false;
 }
 
 FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)

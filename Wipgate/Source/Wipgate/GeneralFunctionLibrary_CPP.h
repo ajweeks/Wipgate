@@ -54,6 +54,9 @@ public:
 		static bool PointInBounds2D(FVector2D point, FVector2D boundsMin, FVector2D boundsMax);
 
 	UFUNCTION(BlueprintPure, Category = "Math")
+		static bool BoxesOverlap(FVector2D boxAMin, FVector2D boxAMax, FVector2D boxBMin, FVector2D boxBMax);
+
+	UFUNCTION(BlueprintPure, Category = "Math")
 		static FVector2D GetNormalizedMousePosition(APlayerController* playerController);
 
 	UFUNCTION(BlueprintPure, Category = "Math")
