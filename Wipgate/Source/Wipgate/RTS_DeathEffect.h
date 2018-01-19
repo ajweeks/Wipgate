@@ -18,7 +18,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		int Intensity = 0;
 
-
+	UFUNCTION(BlueprintImplementableEvent)
+		void Activate();
 
 	
 	
