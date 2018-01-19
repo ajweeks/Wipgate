@@ -86,7 +86,7 @@ void ARTS_PlayerController::BeginPlay()
 		if (levelEnd)
 		{
 			m_LevelEndLocation = levelEnd->GetActorLocation();
-		}
+		}	
 	}
 
 	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
@@ -446,10 +446,25 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 	}
 
-	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
-	FHitResult hitResult;
-	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
-	AActor* actorUnderCursor = hitResult.Actor.Get();
+
+	if (isPrimaryClickButtonClicked)
+	{
+		static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
+		FHitResult visibilityHitResult;
+		GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
+		AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
+		if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
+		{
+			// Player clicked on a powerup, don't deselect anything
+			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+			return;
+		}
+	}
+
+	static ETraceTypeQuery pawnTraceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
+	FHitResult pawnHitResult;
+	GetHitResultUnderCursorByChannel(pawnTraceType, false, pawnHitResult);
+	AActor* actorUnderCursor = pawnHitResult.Actor.Get();
 	static ARTS_Entity* entityUnderCursor = nullptr;
 	ARTS_Entity* prevEntityUnderCursor = entityUnderCursor;
 	entityUnderCursor = nullptr;
@@ -668,7 +683,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 				{
 					UWorld* world = GetWorld();
 					FNavLocation navPoint;
-					if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
+					if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(pawnHitResult.Location, navPoint))
 					{
 						if (CursorRef->CurrentTexture == CursorRef->InvalidTexture)
 						{
