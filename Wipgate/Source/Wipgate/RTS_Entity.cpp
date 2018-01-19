@@ -521,6 +521,11 @@ void ARTS_Entity::Kill()
 						deathEffect->Intensity = amount;
 					}
 				}
+
+				if (deathEffect)
+				{
+					deathEffect->Activate();
+				}
 			}
 			else
 			{
