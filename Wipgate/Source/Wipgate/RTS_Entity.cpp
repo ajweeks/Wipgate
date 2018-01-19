@@ -429,7 +429,7 @@ bool ARTS_Entity::ApplyDamage(int damage, bool armor, ARTS_Entity* attacker)
 {
 	//GameState notification "under attack"
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(GetController());
-	if (aiController->GetCurrentTask() == EUNIT_TASK::IDLE && !aiController->IsAlert())
+	if (aiController && aiController->GetCurrentTask() == EUNIT_TASK::IDLE && !aiController->IsAlert())
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
 		gameState->UnderAttackDelegate.Broadcast(this, attacker);
