@@ -120,6 +120,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentLumaAmount();
 
+	UFUNCTION(BlueprintCallable)
+		void AddHealth(int32 healthAmount);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 		TSubclassOf<UUserWidget> MainHUD;
 

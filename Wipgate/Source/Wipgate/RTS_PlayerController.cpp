@@ -1446,6 +1446,28 @@ int32 ARTS_PlayerController::GetCurrentLumaAmount()
 	return m_CurrentLuma;
 }
 
+void ARTS_PlayerController::AddHealth(int32 healthAmount)
+{
+	if (!Team)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > No player team present!"))
+		return;
+	}
+
+	if (healthAmount < 0)
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("AddHealth > Health addition can not be smaller than 0"))
+		return;
+	}
+
+	for (auto entity : Team->Entities)
+	{
+		entity->Health += healthAmount;
+		entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
+	}
+	
+}
+
 float ARTS_PlayerController::CalculateMovementSpeedBasedOnCameraZoom()
 {
 	if (m_RTS_CameraPawnSpringArmComponent)
