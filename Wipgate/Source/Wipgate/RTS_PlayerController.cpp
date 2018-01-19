@@ -57,10 +57,8 @@ ARTS_PlayerController::ARTS_PlayerController()
 	bShowMouseCursor = true;
 }
 
-void ARTS_PlayerController::BeginPlay()
+void ARTS_PlayerController::Initialize()
 {
-	Super::BeginPlay();
-
 	// Get references to camera and its components
 	m_RTS_CameraPawn = GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
