@@ -63,6 +63,12 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->SetCastShadow(false);
 		MinimapIcon->CastShadow = 1;
 	}
+
+
+	if (SelectionHitBox == FVector::ZeroVector)
+	{
+		PrintStringToScreen(TEXT("Unit's selection hit box is (0, 0, 0)!"), FColor::Red, 100.0f);
+	}
 }
 
 // Called when the game starts
