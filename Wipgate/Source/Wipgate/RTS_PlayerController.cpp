@@ -1126,7 +1126,8 @@ void ARTS_PlayerController::ActionSecondaryClickReleased()
 
 void ARTS_PlayerController::ActionTertiaryClickPressed()
 {
-	if (!AlwaysCenterOnUnits)
+	if (!AlwaysCenterOnUnits &&
+		(!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd)))
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
