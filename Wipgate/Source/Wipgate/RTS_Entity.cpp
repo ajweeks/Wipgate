@@ -30,6 +30,7 @@
 #include "RTS_EntitySpawnerBase.h"
 #include "RTS_EntitySpawner.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "RTS_DeathEffect.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -489,21 +490,30 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP(); // notify to blueprint version to detach weapon and hat
 
-			//Spawn luma particle
-			auto transform = GetActorTransform();
-			if (DeathEffectClass)
-			{
-				world->SpawnActor(DeathEffectClass, &transform);
-			}
-
 			ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
 			if (playercontroller)
 			{
+				//Spawn luma particle
+				auto transform = GetActorTransform();
+				ARTS_DeathEffect* deathEffect;
+				if (DeathEffectClass)
+				{
+					auto deathActor = world->SpawnActor(DeathEffectClass, &transform);
+					if (deathActor)
+					{
+						deathEffect = Cast<ARTS_DeathEffect>(deathActor);
+					}
+				}
+
 				if (Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
 				{
 					//Add luma
 					int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
 					playercontroller->AddLuma(amount, true);
+					if (deathEffect)
+					{
+						deathEffect->Intensity = amount;
+					}
 				}
 			}
 			else
