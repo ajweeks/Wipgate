@@ -31,7 +31,7 @@ class WIPGATE_API ARTS_PlayerController : public APlayerController
 public:
 	ARTS_PlayerController();
 
-	virtual void BeginPlay() override;
+	void Initialize();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
 
@@ -257,14 +257,14 @@ private:
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_ZoomSpeed = 25.0f;
+		float m_ZoomSpeed = 14.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	// How far to zoom per mouse wheel turn
-		float m_ZoomDistance = 140.0f;
+		float m_ZoomDistance = 500.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MinArmDistance = 100.0f;
+		float m_MinArmDistance = 1000.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MaxArmDistance = 5000.0f;
+		float m_MaxArmDistance = 4000.0f;
 
 	// How quickly to move when the mouse is at the edge of the screen
 	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
@@ -275,13 +275,13 @@ private:
 
 	// Higher values = faster selection centering
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
-		float m_SelectionCenterMaxMoveSpeed = 25.0f;
+		float m_SelectionCenterMaxMoveSpeed = 9.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
 	UPROPERTY(EditAnywhere)
-		int m_StartingLumaAmount = 1000;
+		int m_StartingLumaAmount = 125;
 
 	bool m_ReturnedToStartAfterViewingEnd = false;
 
