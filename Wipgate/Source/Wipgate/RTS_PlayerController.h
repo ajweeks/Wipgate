@@ -177,6 +177,8 @@ private:
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelectionPressed();
 	void ActionCenterOnSelectionReleased();
+	void ActionAddToSelectionPressed();
+	void ActionAddToSelectionReleased();
 
 public:
 	// Helper function for selecting a selection group (index is 0-based)
