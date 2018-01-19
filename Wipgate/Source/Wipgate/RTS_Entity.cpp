@@ -552,12 +552,11 @@ void ARTS_Entity::Kill()
 
 				if (playerController && rtsPlayerController)
 				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
 					rtsPlayerController->UpdateSpecialistAbilityButtons();
 					URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
 					if (hud)
 					{
-						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
-
 						if (castedGameState->SelectionGroup1.Contains(this))
 						{
 							castedGameState->SelectionGroup1.Remove(this);
@@ -669,6 +668,15 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 			{
 				Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
 				m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
+
+				// We are no longer selectable - let player controller know
+				APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+				if (playerController && rtsPlayerController)
+				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
+				}
 
 				//Set team color
 				auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();

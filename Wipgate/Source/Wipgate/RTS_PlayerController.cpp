@@ -246,12 +246,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 		else
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-			// Sanity check (shouldn't be necessary but crashes without occasionally)
-			if (m_RTS_GameState->SelectedEntities.Contains(entity))
-			{
-				m_RTS_GameState->SelectedEntities.Remove(entity);
-			}
+			m_RTS_GameState->SelectedEntities.RemoveAt(i);
 		}
 	}
 
@@ -434,6 +429,16 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
 
 
+	if (isPrimaryClickButtonDown)
+	{
+		if (IsCursorOverPurchasableItem())
+		{
+			// Player clicked on a powerup, don't deselect anything
+			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+			return;
+		}
+	}
+
 	if (!isAddToSelectionKeyDown)
 	{
 		for (int i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
@@ -443,21 +448,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				entity->SetSelected(false);
 			}
-		}
-	}
-
-
-	if (isPrimaryClickButtonClicked)
-	{
-		static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
-		FHitResult visibilityHitResult;
-		GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
-		AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
-		if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
-		{
-			// Player clicked on a powerup, don't deselect anything
-			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-			return;
 		}
 	}
 
@@ -751,6 +741,13 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	if (IsPaused())
 	{
+		return;
+	}
+
+	if (IsCursorOverPurchasableItem())
+	{
+		// Player clicked on a powerup, don't deselect anything
+		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 		return;
 	}
 
@@ -1121,7 +1118,8 @@ void ARTS_PlayerController::ActionSecondaryClickReleased()
 
 void ARTS_PlayerController::ActionTertiaryClickPressed()
 {
-	if (!AlwaysCenterOnUnits)
+	if (!AlwaysCenterOnUnits &&
+		(!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd)))
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
@@ -1676,6 +1674,19 @@ FVector ARTS_PlayerController::ClampCamPosWithBounds(FVector camPos)
 	}
 
 	return camPos;
+}
+
+bool ARTS_PlayerController::IsCursorOverPurchasableItem()
+{
+	static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
+	FHitResult visibilityHitResult;
+	GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
+	AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
+	if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
+	{
+		return true;
+	}
+	return false;
 }
 
 FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)
