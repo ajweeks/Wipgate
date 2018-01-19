@@ -434,6 +434,17 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
 
 
+	if (isPrimaryClickButtonDown)
+	{
+		if (IsCursorOverPurchasableItem())
+		{
+			// Player clicked on a powerup, don't deselect anything
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out tick"));
+			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+			return;
+		}
+	}
+
 	if (!isAddToSelectionKeyDown)
 	{
 		for (int i = 0; i < m_RTS_GameState->Entities.Num(); ++i)
@@ -443,21 +454,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				entity->SetSelected(false);
 			}
-		}
-	}
-
-
-	if (isPrimaryClickButtonClicked)
-	{
-		static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
-		FHitResult visibilityHitResult;
-		GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
-		AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
-		if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
-		{
-			// Player clicked on a powerup, don't deselect anything
-			CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
-			return;
 		}
 	}
 
@@ -753,6 +749,15 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 	{
 		return;
 	}
+
+	if (IsCursorOverPurchasableItem())
+	{
+		// Player clicked on a powerup, don't deselect anything
+		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("early out release"));
+		return;
+	}
+	UE_LOG(RTS_PlayerController_Log, Error, TEXT("not early out release!"));
 
 	// Hide selection box when mouse isn't being held
 	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
@@ -1121,7 +1126,8 @@ void ARTS_PlayerController::ActionSecondaryClickReleased()
 
 void ARTS_PlayerController::ActionTertiaryClickPressed()
 {
-	if (!AlwaysCenterOnUnits)
+	if (!AlwaysCenterOnUnits &&
+		(!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd)))
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
@@ -1676,6 +1682,19 @@ FVector ARTS_PlayerController::ClampCamPosWithBounds(FVector camPos)
 	}
 
 	return camPos;
+}
+
+bool ARTS_PlayerController::IsCursorOverPurchasableItem()
+{
+	static ETraceTypeQuery visibilityTraceType = UEngineTypes::ConvertToTraceType(ECC_Visibility);
+	FHitResult visibilityHitResult;
+	GetHitResultUnderCursorByChannel(visibilityTraceType, false, visibilityHitResult);
+	AActor* otherActorUnderCursor = visibilityHitResult.GetActor();
+	if (otherActorUnderCursor && otherActorUnderCursor->ActorHasTag("Purchasable"))
+	{
+		return true;
+	}
+	return false;
 }
 
 FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)
