@@ -15,10 +15,4 @@ class WIPGATE_API AUpgradeShopBase : public AActor
 	
 public:	
 	AUpgradeShopBase();
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		//UStaticMeshComponent* OverlapCube;
-
-private:
-	ARTS_PlayerController* m_PlayerControllerRef;
 };

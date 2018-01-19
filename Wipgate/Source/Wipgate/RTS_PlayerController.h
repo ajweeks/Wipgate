@@ -31,7 +31,7 @@ class WIPGATE_API ARTS_PlayerController : public APlayerController
 public:
 	ARTS_PlayerController();
 
-	virtual void BeginPlay() override;
+	void Initialize();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
 

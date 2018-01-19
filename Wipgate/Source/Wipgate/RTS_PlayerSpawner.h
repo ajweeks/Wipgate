@@ -7,6 +7,8 @@
 #include "Helpers/EntityHelpers.h"
 #include "RTS_PlayerSpawner.generated.h"
 
+class AUpgradeShopBase;
+class ARTS_LevelEnd;
 /**
  * 
  */
@@ -21,4 +23,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		virtual void InitializeEntity(ARTS_Entity* entity, ETeamAlignment teamAlignment) override;
+
+	UPROPERTY(EditAnywhere)
+		AUpgradeShopBase* Shop;
+
+	UPROPERTY(EditAnywhere)
+		ARTS_LevelEnd* LevelEnd;
 };
