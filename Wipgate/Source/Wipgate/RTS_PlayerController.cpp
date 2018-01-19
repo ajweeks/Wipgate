@@ -491,22 +491,87 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		if (isPrimaryClickButtonDown)
 		{
 			// Check if this entity's min or max bounding box points lie within the selection box
-			FVector entityBoundsMinWS = entityLocation - entity->SelectionHitBox;
-			FVector2D entityBoundsMinSS;
-			ProjectWorldLocationToScreen(entityBoundsMinWS, entityBoundsMinSS, true);
+			/*
+			    
+			     ^
+			    / \
+			   /   \
+			  <     >
+			  |\   /|
+			  | \ / |
+			  |  v  |
+			  |  |  |
+			  |  |  |
+			  |  |  |
+			  \  |  /
+			   \ | /
+			     v
+			
+			*/
+			FVector entityBounds0 = entityLocation + FVector(
+				-entity->SelectionHitBox.X,
+				0.0f,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds1 = entityLocation + FVector(
+				0.0f,
+				-entity->SelectionHitBox.Y,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds2 = entityLocation + FVector(
+				entity->SelectionHitBox.X,
+				0.0f,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds3 = entityLocation + FVector(
+				0.0f,
+				entity->SelectionHitBox.Y,
+				-entity->SelectionHitBox.Z);
+			FVector entityBounds4 = entityLocation + FVector(
+				-entity->SelectionHitBox.X,
+				0.0f,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds5 = entityLocation + FVector(
+				0.0f,
+				-entity->SelectionHitBox.Y,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds6 = entityLocation + FVector(
+				entity->SelectionHitBox.X,
+				0.0f,
+				entity->SelectionHitBox.Z);
+			FVector entityBounds7 = entityLocation + FVector(
+				0.0f,
+				entity->SelectionHitBox.Y,
+				entity->SelectionHitBox.Z);
 
-			FVector entityBoundsMaxWS = entityLocation + entity->SelectionHitBox;
-			FVector2D entityBoundsMaxSS;
-			ProjectWorldLocationToScreen(entityBoundsMaxWS, entityBoundsMaxSS, true);
+			TArray<FVector2D> entityBoundsSS;
+			entityBoundsSS.AddUninitialized(8);
 
-			UGeneralFunctionLibrary_CPP::FVector2DMinMax(entityBoundsMinSS, entityBoundsMaxSS);
+			ProjectWorldLocationToScreen(entityBounds0, entityBoundsSS[0], true);
+			ProjectWorldLocationToScreen(entityBounds1, entityBoundsSS[1], true);
+			ProjectWorldLocationToScreen(entityBounds2, entityBoundsSS[2], true);
+			ProjectWorldLocationToScreen(entityBounds3, entityBoundsSS[3], true);
+			ProjectWorldLocationToScreen(entityBounds4, entityBoundsSS[4], true);
+			ProjectWorldLocationToScreen(entityBounds5, entityBoundsSS[5], true);
+			ProjectWorldLocationToScreen(entityBounds6, entityBoundsSS[6], true);
+			ProjectWorldLocationToScreen(entityBounds7, entityBoundsSS[7], true);
+
+			TArray<float> entityBoundsSSX;
+			TArray<float> entityBoundsSSY;
+			TArray<float> entityBoundsSSZ;
+
+			FVector2D entityBoundsMinSS = FVector2D(MAX_flt, MAX_flt);
+			FVector2D entityBoundsMaxSS = FVector2D(MIN_flt, MIN_flt);
+
+			for (int32 v = 0; v < 8; ++v)
+			{
+				entityBoundsMinSS.X = FMath::Min(entityBoundsSS[v].X, entityBoundsMinSS.X);
+				entityBoundsMinSS.Y = FMath::Min(entityBoundsSS[v].Y, entityBoundsMinSS.Y);
+				entityBoundsMaxSS.X = FMath::Max(entityBoundsSS[v].X, entityBoundsMaxSS.X);
+				entityBoundsMaxSS.Y = FMath::Max(entityBoundsSS[v].Y, entityBoundsMaxSS.Y);
+			}
 
 			entityBoundsMinSS /= viewportScale;
 			entityBoundsMaxSS /= viewportScale;
 
-			entityInSelectionBox =
-				UGeneralFunctionLibrary_CPP::PointInBounds2D(entityBoundsMinSS, selectionBoxMin, selectionBoxMax) ||
-				UGeneralFunctionLibrary_CPP::PointInBounds2D(entityBoundsMaxSS, selectionBoxMin, selectionBoxMax);
+			entityInSelectionBox = UGeneralFunctionLibrary_CPP::BoxesOverlap(entityBoundsMinSS, entityBoundsMaxSS, selectionBoxMin, selectionBoxMax);
 		}
 
 		// Check if entity is under mouse cursor (for single clicks)
@@ -523,7 +588,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityDeselected = isThisUnitUnderCursor && isAddToSelectionKeyDown && entityWasSelected && isPrimaryClickButtonClicked;
 		bool entityWasLikelyDeselectedLastFrame = isThisUnitUnderCursor && isAddToSelectionKeyDown && isPrimaryClickButtonDown && !isPrimaryClickButtonClicked && !entityWasSelected;
 
-		if (!SelectedAbility && entity->Team && 
+		if (!SelectedAbility && 
 			(entity->Alignment == ETeamAlignment::E_PLAYER ||
 				entity->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 		{
