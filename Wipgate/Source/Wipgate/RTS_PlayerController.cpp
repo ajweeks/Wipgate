@@ -246,12 +246,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 		else
 		{
 			m_RTS_GameState->SelectedEntities[i]->SetSelected(false);
-			ARTS_Entity* entity = m_RTS_GameState->SelectedEntities[i];
-			// Sanity check (shouldn't be necessary but crashes without occasionally)
-			if (m_RTS_GameState->SelectedEntities.Contains(entity))
-			{
-				m_RTS_GameState->SelectedEntities.Remove(entity);
-			}
+			m_RTS_GameState->SelectedEntities.RemoveAt(i);
 		}
 	}
 
