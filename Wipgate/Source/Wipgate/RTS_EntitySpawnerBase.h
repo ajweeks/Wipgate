@@ -31,7 +31,7 @@ public:
 	virtual bool ShouldTickIfViewportsOnly() const override;
 
 	/* PROPERTIES */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Radius = 250.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

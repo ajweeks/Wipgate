@@ -164,6 +164,11 @@ void URTS_Team::CalculateUpgradeEffects()
 				case EUpgradeStat::E_RANGE:
 					entity->CurrentAttackStats.Range += upgrade.Effect;
 					entity->CurrentAttackStats.Range = FMath::Clamp(entity->CurrentAttackStats.Range, 0.f, entity->CurrentAttackStats.Range);
+					if (entity->CurrentAttackStats.Range >= entity->CurrentVisionStats.InnerRange)
+					{
+						entity->CurrentVisionStats.InnerRange = entity->CurrentAttackStats.Range;
+						entity->CurrentVisionStats.OuterRange = entity->CurrentAttackStats.Range;
+					}
 					break;
 				case EUpgradeStat::E_RATEOFFIRE:
 					UE_LOG(RTS_TEAM_LOG, Warning, TEXT("CalculateUpgradeEffects > Flat upgrades don't work on rate of fire!"));
