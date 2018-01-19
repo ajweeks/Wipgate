@@ -50,6 +50,8 @@ void AWipgateGameModeBase::BeginPlay()
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
 		return;
 	}
+	SelectRandomLevelSetup();
+	playercontroller->Initialize();
 
 	// Get table rows
 	TArray<FTeamRow*> rows;
@@ -260,18 +262,6 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
 	}
-
-	TArray<AActor*> uncastedShops;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedShops);
-
-	for (auto uncastedShop : uncastedShops)
-	{
-		AUpgradeShopBase* castedShop = Cast<AUpgradeShopBase>(uncastedShop);
-		if (castedShop)
-		{
-			m_Shops.Push(castedShop);
-		}
-	}
 }
 
 URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
@@ -352,29 +342,74 @@ ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
 
 ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 {
-	if (m_LevelEnd)
+	return m_LevelEnd;
+}
+
+void AWipgateGameModeBase::SelectRandomLevelSetup()
+{
+	//Get all spawns
+	TArray<AActor*> uncastedSpawners;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), uncastedSpawners);
+
+	if (uncastedSpawners.Num() > 0)
 	{
-		return m_LevelEnd;
-	}
+		TArray<ARTS_PlayerSpawner*> spawners;
 
-	TArray<AActor*> levelEnds;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelEnds);
-
-	if (levelEnds.Num() > 0)
-	{
-		// Get potential end zone
-		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
-
-		// Destroy any endzone that wasn't selected
-		for (int i = levelEnds.Num() - 1; i >= 0; --i)
+		//Convert spawners that have an endgoal
+		for (auto uncastedSpawner : uncastedSpawners)
 		{
-			if (i == chosenEndZoneIndex)
+			ARTS_PlayerSpawner* castedSpawner = Cast<ARTS_PlayerSpawner>(uncastedSpawner);
+			if (!castedSpawner)
+				continue;
+
+			if (castedSpawner->LevelEnd)
 			{
-				m_LevelEnd = Cast<ARTS_LevelEnd>(levelEnds[i]);
+				spawners.Add(castedSpawner);
 			}
 			else
 			{
-				levelEnds[i]->Destroy();
+				UE_LOG(WipgateGameModeBase, Warning, TEXT("SelectRandomLevelSetup > %s does not have a levelend linked to it."), *castedSpawner->GetName());
+			}
+		}
+
+		if (spawners.Num() <= 0)
+		{
+			UE_LOG(WipgateGameModeBase, Error, TEXT("SelectRandomLevelSetup > No player spawners with levelends available. Returning..."));
+			return;
+		}
+
+		//Pick a random spawner
+		int chosenIndex = FMath::RandRange(0, spawners.Num() - 1);
+		m_LevelEnd = spawners[chosenIndex]->LevelEnd;
+		m_Shop = spawners[chosenIndex]->Shop;
+		m_PlayerSpawner = spawners[chosenIndex];
+
+		//Destroy all endzones that weren't selected
+		TArray<AActor*> uncastedDeletionObjects;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] != m_LevelEnd)
+			{
+				uncastedDeletionObjects[i]->Destroy();
+			}
+		}
+		//Destroy all shops that weren't selected
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] != m_Shop)
+			{
+				uncastedDeletionObjects[i]->Destroy();
+			}
+		}
+		//Destroy all shops that weren't selected
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] != m_PlayerSpawner)
+			{
+				uncastedDeletionObjects[i]->Destroy();
 			}
 		}
 	}
@@ -382,8 +417,6 @@ ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("No level end found in map!"));
 	}
-
-	return m_LevelEnd;
 }
 
 ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
@@ -406,9 +439,4 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	}
 
 	return m_LevelBounds;
-}
-
-const TArray<AUpgradeShopBase*>& AWipgateGameModeBase::GetShops()
-{
-	return m_Shops;
 }

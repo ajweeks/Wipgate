@@ -57,10 +57,8 @@ ARTS_PlayerController::ARTS_PlayerController()
 	bShowMouseCursor = true;
 }
 
-void ARTS_PlayerController::BeginPlay()
+void ARTS_PlayerController::Initialize()
 {
-	Super::BeginPlay();
-
 	// Get references to camera and its components
 	m_RTS_CameraPawn = GetPawn();
 	check(m_RTS_CameraPawn != nullptr);
@@ -291,7 +289,8 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
-	if (!m_RTS_GameState ||!m_RTSHUD)
+	// Verify required components are valid
+	if (!m_RTS_GameState ||!m_RTSHUD || !m_RTS_CameraPawnMeshComponent || !m_RTS_CameraPawn)
 	{
 		return;
 	}
@@ -340,13 +339,11 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	if (m_MovingToTarget)
 	{
 		MoveToTarget();
-		return;
 	}
 	else
 	{
 		if (realTimeSeconds > m_EdgeModeDisableDelaySec &&
-			!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd) &&
-			m_RTS_CameraPawnMeshComponent && m_RTS_CameraPawn)
+			!m_MoveToLevelEndAtStartup || (m_MoveToLevelEndAtStartup && m_ReturnedToStartAfterViewingEnd))
 		{
 			FVector rightVec = m_RTS_CameraPawnMeshComponent->GetRightVector();
 			FVector forwardVec = m_RTS_CameraPawnMeshComponent->GetForwardVector();
@@ -482,11 +479,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			UKismetSystemLibrary::DrawDebugBox(GetWorld(), entityLocation, entity->SelectionHitBox, FColor::White, FRotator::ZeroRotator, 2.0f, 4.0f);
 		}
 
-		if (entity->SelectionHitBox == FVector::ZeroVector)
-		{
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Unit's selection hit box is (0, 0, 0)!"));
-		}
-
 		bool entityInSelectionBox = false;
 		if (isPrimaryClickButtonDown)
 		{
@@ -596,6 +588,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				if (m_RTS_GameState->SelectedEntities.Contains(entity))
 				{
+					entity->SetSelected(false);
 					m_RTS_GameState->SelectedEntities.Remove(entity);
 					UpdateSelectedEntitiesBase();
 				}
@@ -616,7 +609,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 						if ((isAddToSelectionKeyDown && !isPrimaryClickButtonReleased))
 						{
 							m_RTS_GameState->SelectedEntities.AddUnique(entity);
-
 						}
 					}
 				}
@@ -683,21 +675,26 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 	shiftWasDown = shiftIsDown;
 
+
 	/* Cursor */
 	if (CursorRef)
 	{
 		if (SelectedAbility)
 		{
+			AActor* selectedAbilityCaster = SelectedAbility->GetCaster();
+			bool unitUnderCursorIsSelectedAbilityCaster = (actorUnderCursor && actorUnderCursor == selectedAbilityCaster);
+
 			switch (SelectedAbility->Type)
 			{
 			case EAbilityType::E_TARGET_ALLY:
 			{
 				if (entityUnderCursor &&
+					!unitUnderCursorIsSelectedAbilityCaster &&
 					(entityUnderCursor->Alignment == ETeamAlignment::E_PLAYER ||
 						entityUnderCursor->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 				{
 					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -707,11 +704,12 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			case EAbilityType::E_TARGET_ENEMY:
 			{
 				if (entityUnderCursor &&
+					!unitUnderCursorIsSelectedAbilityCaster &&
 					(entityUnderCursor->Alignment == ETeamAlignment::E_AGGRESSIVE_AI ||
 						entityUnderCursor->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
 				{
 					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -720,10 +718,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			} break;
 			case EAbilityType::E_TARGET_UNIT:
 			{
-				if (entityUnderCursor)
+				if (entityUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 				{
 					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -807,6 +805,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		return;
 	}
 
+	// Hide selection box when mouse isn't being held
+	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
+
 	if (IsPaused())
 	{
 		return;
@@ -818,9 +819,6 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		CursorRef->SetCursorTexture(CursorRef->DefaultTexture);
 		return;
 	}
-
-	// Hide selection box when mouse isn't being held
-	m_RTSHUD->UpdateSelectionBox(FVector2D::ZeroVector, FVector2D::ZeroVector);
 
 	static ETraceTypeQuery traceType = UEngineTypes::ConvertToTraceType(ECC_Pawn);
 	FHitResult hitResult;
@@ -843,6 +841,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	if (SelectedAbility)
 	{
+		AActor* selectedAbilityCaster = SelectedAbility->GetCaster();
+		bool unitUnderCursorIsSelectedAbilityCaster = (actorUnderCursor && actorUnderCursor == selectedAbilityCaster);
+
 		EAbilityType abilityType = SelectedAbility->Type;
 		const float abilityRange = SelectedAbility->CastRange;
 		if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
@@ -908,7 +909,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_UNIT:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				if (m_SpecialistShowingAbilities)
 				{
@@ -963,7 +964,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ALLY:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				ETeamAlignment entityAlignment = unitUnderCursor->Alignment;
 				if (entityAlignment == ETeamAlignment::E_PLAYER)
@@ -1026,7 +1027,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ENEMY:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				ETeamAlignment entityAlignment = unitUnderCursor->Alignment;
 				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI || entityAlignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
@@ -1485,6 +1486,7 @@ void ARTS_PlayerController::AddLuma(int32 LumaAmount, bool applyToEndScore)
 	if (LumaAmount > 0)
 	{
 		m_CurrentLuma += LumaAmount;
+		m_CurrentLuma = FMath::Min(9999, m_CurrentLuma);
 		if (m_RTSHUD)
 		{
 			m_RTSHUD->UpdateLumaAmount(m_CurrentLuma);
