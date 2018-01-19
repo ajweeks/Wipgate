@@ -683,21 +683,26 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	}
 	shiftWasDown = shiftIsDown;
 
+
 	/* Cursor */
 	if (CursorRef)
 	{
 		if (SelectedAbility)
 		{
+			AActor* selectedAbilityCaster = SelectedAbility->GetCaster();
+			bool unitUnderCursorIsSelectedAbilityCaster = (actorUnderCursor && actorUnderCursor == selectedAbilityCaster);
+
 			switch (SelectedAbility->Type)
 			{
 			case EAbilityType::E_TARGET_ALLY:
 			{
 				if (entityUnderCursor &&
+					!unitUnderCursorIsSelectedAbilityCaster &&
 					(entityUnderCursor->Alignment == ETeamAlignment::E_PLAYER ||
 						entityUnderCursor->Alignment == ETeamAlignment::E_NEUTRAL_AI))
 				{
 					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -707,11 +712,12 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			case EAbilityType::E_TARGET_ENEMY:
 			{
 				if (entityUnderCursor &&
+					!unitUnderCursorIsSelectedAbilityCaster &&
 					(entityUnderCursor->Alignment == ETeamAlignment::E_AGGRESSIVE_AI ||
 						entityUnderCursor->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI))
 				{
 					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -720,10 +726,10 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			} break;
 			case EAbilityType::E_TARGET_UNIT:
 			{
-				if (entityUnderCursor)
+				if (entityUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 				{
 					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
-					entityUnderCursor->SetSelected(true);
+					entityUnderCursor->SetHighlighted();
 				}
 				else
 				{
@@ -843,6 +849,9 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 
 	if (SelectedAbility)
 	{
+		AActor* selectedAbilityCaster = SelectedAbility->GetCaster();
+		bool unitUnderCursorIsSelectedAbilityCaster = (actorUnderCursor && actorUnderCursor == selectedAbilityCaster);
+
 		EAbilityType abilityType = SelectedAbility->Type;
 		const float abilityRange = SelectedAbility->CastRange;
 		if (abilityRange == 0.0f && abilityType != EAbilityType::E_SELF)
@@ -908,7 +917,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_UNIT:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				if (m_SpecialistShowingAbilities)
 				{
@@ -963,7 +972,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ALLY:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				ETeamAlignment entityAlignment = unitUnderCursor->Alignment;
 				if (entityAlignment == ETeamAlignment::E_PLAYER)
@@ -1026,7 +1035,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_ENEMY:
 		{
-			if (unitUnderCursor)
+			if (unitUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 			{
 				ETeamAlignment entityAlignment = unitUnderCursor->Alignment;
 				if (entityAlignment == ETeamAlignment::E_AGGRESSIVE_AI || entityAlignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)

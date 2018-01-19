@@ -15,6 +15,11 @@ void AAbility::SetTarget(AActor* Target)
 	m_Target = Target;
 }
 
+AActor* AAbility::GetCaster()
+{
+	return m_Caster;
+}
+
 UUnitEffect* AAbility::CreateUnitEffect(const EUnitEffectStat stat, const EUnitEffectType effectType, const float delay, const int magnitude, const int duration)
 {
 	UUnitEffect* unitEffect = NewObject<UUnitEffect>(this);
