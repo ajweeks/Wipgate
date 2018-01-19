@@ -6,6 +6,8 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "RTS_Entity.h"
 #include "DrawDebugHelpers.h"
+#include "CoreGlobals.h"
+#include "ConfigCacheIni.h"
 
 //ARTS_Entity* GetClosestEntity(ARTS_Entity* self, TArray<ARTS_Entity*> entities)
 //{
@@ -116,6 +118,16 @@ bool UGeneralFunctionLibrary_CPP::PointInBounds2D(FVector2D point, FVector2D bou
 {
 	bool result = ((point.X > boundsMin.X && point.X < boundsMax.X) &&
 		(point.Y > boundsMin.Y && point.Y < boundsMax.Y));
+	return result;
+}
+
+bool UGeneralFunctionLibrary_CPP::BoxesOverlap(FVector2D boxAMin, FVector2D boxAMax, FVector2D boxBMin, FVector2D boxBMax)
+{
+	bool result = !(
+		boxBMin.X > boxAMax.X ||
+		boxBMax.X < boxAMin.X ||
+		boxBMin.Y > boxAMax.Y ||
+		boxBMax.Y < boxAMin.Y);
 	return result;
 }
 
