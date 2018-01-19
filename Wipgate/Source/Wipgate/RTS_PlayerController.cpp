@@ -219,6 +219,9 @@ void ARTS_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Center On Selection", IE_Pressed, this, &ARTS_PlayerController::ActionCenterOnSelectionPressed);
 	InputComponent->BindAction("Center On Selection", IE_Released, this, &ARTS_PlayerController::ActionCenterOnSelectionReleased);
 
+	InputComponent->BindAction("Add To Selection", IE_Pressed, this, &ARTS_PlayerController::ActionAddToSelectionPressed);
+	InputComponent->BindAction("Add To Selection", IE_Released, this, &ARTS_PlayerController::ActionAddToSelectionReleased);
+
 	InputComponent->BindAction("Invert Selection", IE_Pressed, this, &ARTS_PlayerController::InvertSelection);
 
 	InputComponent->BindAxis("Zoom", this, &ARTS_PlayerController::AxisZoom);
@@ -1166,6 +1169,26 @@ void ARTS_PlayerController::ActionCenterOnSelectionPressed()
 
 void ARTS_PlayerController::ActionCenterOnSelectionReleased()
 {
+}
+
+void ARTS_PlayerController::ActionAddToSelectionPressed()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
+}
+
+void ARTS_PlayerController::ActionAddToSelectionReleased()
+{
+	if (m_Panning)
+	{
+		m_MovingToSelectionCenter = false;
+		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
+		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+	}
 }
 
 void ARTS_PlayerController::ActionSelectionGroup(int32 Index)
