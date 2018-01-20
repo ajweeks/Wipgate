@@ -28,7 +28,7 @@ float ARTS_GameState::GetPercentOfFriendlyUnitsInLevelGoal()
 	{
 		ARTS_Unit* unit = Cast<ARTS_Unit>(Entities[i]);
 		if (unit &&
-			unit->Team->Alignment == ETeamAlignment::E_PLAYER &&
+			unit->Alignment == ETeamAlignment::E_PLAYER &&
 			unit->Health > 0)
 		{
 			++countRequired;

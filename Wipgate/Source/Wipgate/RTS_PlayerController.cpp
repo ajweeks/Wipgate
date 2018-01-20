@@ -1160,22 +1160,22 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 	FHitResult hitResult;
 	GetHitResultUnderCursorByChannel(traceType, false, hitResult);
 	AActor* actorUnderCursor = hitResult.Actor.Get();
-	ARTS_Unit* unitUnderCursor = Cast<ARTS_Unit>(actorUnderCursor);
-	if (unitUnderCursor)
+	ARTS_Entity* entityUnderCursor = Cast<ARTS_Entity>(actorUnderCursor);
+	if (entityUnderCursor)
 	{
-		if (unitUnderCursor->Health <= 0)
+		if (entityUnderCursor->Health <= 0)
 		{
-			unitUnderCursor = nullptr; // Don't target dead people
+			entityUnderCursor = nullptr; // Don't target dead people
 		}
-		else if (unitUnderCursor->Immaterial)
+		else if (entityUnderCursor->Immaterial)
 		{
-			unitUnderCursor = nullptr; // Don't target immaterial people
+			entityUnderCursor = nullptr; // Don't target immaterial people
 		}
 
 		if (m_RTS_GameState->SelectedEntities.Num() > 0)
 		{
-			if (unitUnderCursor)
-				unitUnderCursor->SetHighlighted();
+			if (entityUnderCursor)
+				entityUnderCursor->SetHighlighted();
 		}
 	}
 }
