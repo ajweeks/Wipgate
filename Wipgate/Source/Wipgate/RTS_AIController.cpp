@@ -393,7 +393,7 @@ ERelativeAlignment ARTS_AIController::GetRelativeAlignment(const ARTS_Entity * a
 {
 	if (a->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI || b->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI) 
 		return ERelativeAlignment::E_ENEMY;
-	if (a->Team->Alignment == b->Team->Alignment || a->Alignment == ETeamAlignment::E_NEUTRAL_AI || b->Alignment == ETeamAlignment::E_NEUTRAL_AI) 
+	if (a->Alignment == b->Alignment || a->Alignment == ETeamAlignment::E_NEUTRAL_AI || b->Alignment == ETeamAlignment::E_NEUTRAL_AI) 
 		return ERelativeAlignment::E_FRIENDLY;
 	else
 		return ERelativeAlignment::E_ENEMY;

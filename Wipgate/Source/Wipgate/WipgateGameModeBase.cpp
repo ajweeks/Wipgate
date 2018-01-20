@@ -68,14 +68,14 @@ void AWipgateGameModeBase::BeginPlay()
 
 			// Create team
 			URTS_Team* team = NewObject<URTS_Team>();
-			team->Alignment = row->Alignment;
+			team->SetAlignment(row->Alignment);
 			team->Color = row->Color;
 			team->World = GetWorld();
 
 			gamestate->Teams.Add(team);
 
 			// Set playercontroller team if it's player
-			if (team->Alignment == ETeamAlignment::E_PLAYER)
+			if (team->GetAlignment() == ETeamAlignment::E_PLAYER)
 			{
 				playercontroller->Team = team;
 			}
@@ -83,7 +83,7 @@ void AWipgateGameModeBase::BeginPlay()
 			// Check users in that group
 			for (ARTS_Entity* entity : gamestate->Entities)
 			{
-				if (entity->Alignment == team->Alignment)
+				if (entity->Alignment == team->GetAlignment())
 				{
 					entity->Team = team;
 					team->Entities.Add(entity);
@@ -269,7 +269,7 @@ URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
 	for (URTS_Team* team : gamestate->Teams)
 	{
-		if (team->Alignment == alignment)
+		if (team->GetAlignment() == alignment)
 		{
 			return team;
 		}
