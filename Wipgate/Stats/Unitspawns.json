@@ -54,10 +54,6 @@
 			{
 				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
 				"Amount": 1
-			},
-			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Unit_Swordlord.Unit_Swordlord_C'",
-				"Amount": 3
 			}
 		]
 	}
