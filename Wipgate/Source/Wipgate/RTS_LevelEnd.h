@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "RTS_LevelEnd.generated.h"
 
+class ARTS_EntitySpawner;
+
 UCLASS()
 class WIPGATE_API ARTS_LevelEnd : public AActor
 {
@@ -15,4 +17,6 @@ public:
 	// Sets default values for this actor's properties
 	ARTS_LevelEnd();
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ARTS_EntitySpawner* EntitySpawner = nullptr;
 };
