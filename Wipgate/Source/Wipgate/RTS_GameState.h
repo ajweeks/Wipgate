@@ -7,7 +7,6 @@
 #include "RTS_GameState.generated.h"
 
 class ARTS_Entity;
-class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Gamestate_log, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityDelegate, ARTS_Entity*, entity);
@@ -51,9 +50,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
-
-	UPROPERTY()
-	TArray<URTS_Team*> Teams;
 
 	// Event Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")

@@ -44,6 +44,8 @@ void AWipgateGameModeBase::BeginPlay()
 	}
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!playercontroller)
 	{
@@ -58,38 +60,48 @@ void AWipgateGameModeBase::BeginPlay()
 	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
 	TArray<FName> rowNames = m_TeamTable->GetRowNames();
 
-	// Loop over all team rows and make team objects
-	for (int i = 0; i < rows.Num(); ++i)
+	if (m_TeamTable->GetRowNames().Num() <= 0)
 	{
-		FTeamRow* row = rows[i];
-		if (row)
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No teams in team datatable. Returning..."));
+		return;
+	}
+
+	// Loop over all team rows and make team objects if it's the first round
+	if (gameinstance->Teams.Num() == 0)
+	{
+		for (int i = 0; i < rows.Num(); ++i)
 		{
-			FName name = rowNames[i];
-
-			// Create team
-			URTS_Team* team = NewObject<URTS_Team>();
-			team->SetAlignment(row->Alignment);
-			team->Color = row->Color;
-			team->World = GetWorld();
-
-			gamestate->Teams.Add(team);
-
-			// Set playercontroller team if it's player
-			if (team->GetAlignment() == ETeamAlignment::E_PLAYER)
+			FTeamRow* row = rows[i];
+			if (row)
 			{
-				playercontroller->Team = team;
-			}
+				FName name = rowNames[i];
 
-			// Check users in that group
-			for (ARTS_Entity* entity : gamestate->Entities)
-			{
-				if (entity->Alignment == team->GetAlignment())
-				{
-					entity->Team = team;
-					team->Entities.Add(entity);
-				}
+				// Create team
+				URTS_Team* team = NewObject<URTS_Team>();
+				team->SetAlignment(row->Alignment);
+				team->Color = row->Color;
+				team->GameInstance = gameinstance;
+
+				gameinstance->Teams.Add(team);
 			}
 		}
+	}
+
+	// Set playercontroller team if it's player
+	playercontroller->Team = GetTeamWithAlignment(ETeamAlignment::E_PLAYER);
+
+	//Clear entities in team
+	for (auto team : gameinstance->Teams)
+	{
+		team->Entities.Empty();
+	}
+
+	// Check users in that group
+	for (ARTS_Entity* entity : gamestate->Entities)
+	{
+		entity->Team = GetTeamWithAlignment(entity->Alignment);
+		if(entity->Team)
+			entity->Team->Entities.Add(entity);
 	}
 
 	// Check if the playercontroller has a team
@@ -105,10 +117,10 @@ void AWipgateGameModeBase::BeginPlay()
 		if (entity->Team == nullptr)
 		{
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s does not have a team, attempting to assign default"), *entity->GetHumanReadableName());
-			if (gamestate->Teams.Num() > 0)
+			if (gameinstance->Teams.Num() > 0)
 			{
-				entity->Team = gamestate->Teams[0];
-				gamestate->Teams[0]->Entities.Add(entity);
+				entity->Team = gameinstance->Teams[0];
+				gameinstance->Teams[0]->Entities.Add(entity);
 			}
 			else
 			{
@@ -119,9 +131,6 @@ void AWipgateGameModeBase::BeginPlay()
 		entity->PostInitialize();
 	}
 
-	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
-	if (gameinstance)
-	{
 		// Spawn entities
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
@@ -219,7 +228,7 @@ void AWipgateGameModeBase::BeginPlay()
 		if (playerspawner)
 			playerspawner->SpawnEntities();
 
-		for (auto team : gamestate->Teams)
+		for (auto team : gameinstance->Teams)
 		{
 			// Empty all upgrades
 			team->Upgrades.Empty();
@@ -257,17 +266,12 @@ void AWipgateGameModeBase::BeginPlay()
 
 		// Update luma
 		playercontroller->AddLuma(gameinstance->CurrentLuma);
-	}
-	else
-	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
-	}
 }
 
 URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 {
-	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
-	for (URTS_Team* team : gamestate->Teams)
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	for (URTS_Team* team : gameinstance->Teams)
 	{
 		if (team->GetAlignment() == alignment)
 		{

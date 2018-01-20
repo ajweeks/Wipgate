@@ -11,7 +11,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(RTS_TEAM_LOG, Log, All);
 
 class ARTS_Entity;
-class UWorld;
+class URTS_GameInstance;
 
 UCLASS()
 class WIPGATE_API URTS_Team : public UObject
@@ -41,7 +41,7 @@ class WIPGATE_API URTS_Team : public UObject
 		//ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 		UPROPERTY(BlueprintReadOnly)
 		TArray<FUpgrade> Upgrades;
-		UWorld* World = nullptr;
+		URTS_GameInstance* GameInstance = nullptr;
 
 	private:
 		void CalculateUpgradeEffects();
