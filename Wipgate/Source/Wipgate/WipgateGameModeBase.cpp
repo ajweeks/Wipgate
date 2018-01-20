@@ -381,6 +381,11 @@ void AWipgateGameModeBase::SelectRandomLevelSetup()
 		//Pick a random spawner
 		int chosenIndex = FMath::RandRange(0, spawners.Num() - 1);
 		m_LevelEnd = spawners[chosenIndex]->LevelEnd;
+
+		//Entity spawner at the end should have 100% spawn rate
+		if (m_LevelEnd->EntitySpawner)
+			m_LevelEnd->EntitySpawner->SpawnModifier = 1.f;
+
 		m_Shop = spawners[chosenIndex]->Shop;
 		m_PlayerSpawner = spawners[chosenIndex];
 
@@ -389,9 +394,12 @@ void AWipgateGameModeBase::SelectRandomLevelSetup()
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), uncastedDeletionObjects);
 		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
 		{
-			if (uncastedDeletionObjects[i] != m_LevelEnd)
+			if (uncastedDeletionObjects[i] && uncastedDeletionObjects[i] != m_LevelEnd)
 			{
 				uncastedDeletionObjects[i]->Destroy();
+				auto end = Cast<ARTS_LevelEnd>(uncastedDeletionObjects[i]);
+				if(end && end->EntitySpawner)
+					end->EntitySpawner->Destroy();
 			}
 		}
 		//Destroy all shops that weren't selected

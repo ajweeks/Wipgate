@@ -1814,3 +1814,10 @@ FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)
 
 	return dCamPos;
 }
+
+void ARTS_PlayerController::SetCameraSensitivity(float multiplier)
+{
+	m_EdgeMoveSpeed = 1 + multiplier * 20;
+	m_PanSpeed = 1 + multiplier * 20;
+
+}

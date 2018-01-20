@@ -184,6 +184,9 @@ public:
 	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
 		void ActionSelectionGroup(int32 Index);
+	// Function to change camera sensitivity, called from settings widget BP.
+	UFUNCTION(BlueprintCallable)
+		void SetCameraSensitivity(float multiplier);
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
