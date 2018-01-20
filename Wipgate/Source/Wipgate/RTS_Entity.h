@@ -18,6 +18,7 @@ class USoundCue;
 class USoundConcurrency;
 class URTS_Team;
 class ARTS_EntitySpawner;
+class ARTS_DeathEffect;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -99,7 +100,7 @@ public:
 
 	//Class to spawn when unit dies
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AActor> DeathEffectClass;
+		TSubclassOf<ARTS_DeathEffect> DeathEffectClass;
 
 	bool IsSelectableByPlayer() const;
 

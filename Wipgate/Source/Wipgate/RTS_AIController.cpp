@@ -83,9 +83,14 @@ void ARTS_AIController::StoreNearbyEntities(const float radius)
 	m_NearbyEntities.Empty();
 	if (!m_Entity->IsAlive()) return; 
 
-	FVector offset (0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5);
 	if (m_Entity->RenderFlockingDebugInfo)
-		DrawDebugCircle(GetWorld(), m_FlockCenter - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
+	{
+		if (m_Entity->GetCapsuleComponent())
+		{
+			FVector offset (0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5);
+			DrawDebugCircle(GetWorld(), m_FlockCenter - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
+		}
+	}
 	
 	ARTS_GameState * gameState = GetWorld()->GetGameState<ARTS_GameState>();
 	TArray<ARTS_Entity*> entities = gameState->Entities;

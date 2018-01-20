@@ -89,6 +89,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundCue* AbilitySound;
 
+	AActor* GetCaster();
+
 protected:
 	/* protected non virtuals */
 	UFUNCTION(BlueprintCallable, Category = "Ability Creation Functions")
