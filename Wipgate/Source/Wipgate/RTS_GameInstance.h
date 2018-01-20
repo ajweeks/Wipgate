@@ -11,6 +11,7 @@
 /**
  * 
  */
+class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_GameInstance, Log, All);
 
@@ -29,6 +30,8 @@ public:
 	int CurrentLuma = 0;
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
+	UPROPERTY()
+		TArray<URTS_Team*> Teams;
 
 	/* FUNCTION */
 	UFUNCTION(BlueprintCallable)

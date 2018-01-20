@@ -9,13 +9,7 @@ DEFINE_LOG_CATEGORY(RTS_TEAM_LOG);
 
 void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 {
-	if (!World)
-	{
-		UE_LOG(RTS_TEAM_LOG, Warning, TEXT("AddUpgrades > No world found"));
-		return;
-	}
-	auto gameinstance = World->GetGameInstance<URTS_GameInstance>();
-	if (!gameinstance)
+	if (!GameInstance)
 	{
 		UE_LOG(RTS_TEAM_LOG, Warning, TEXT("AddUpgrades > No game instance found"));
 		return;
@@ -26,7 +20,7 @@ void URTS_Team::AddUpgrades(TArray<FUpgrade> upgrades)
 		Upgrades.Add(upgrade);
 
 		//Add to game instance
-		gameinstance->ActiveUpgrades.Add(upgrade);
+		GameInstance->ActiveUpgrades.Add(upgrade);
 	}
 	CalculateUpgradeEffects();
 }
