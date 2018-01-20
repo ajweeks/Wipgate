@@ -119,6 +119,8 @@ public:
 public:
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity * TargetEntity;
+	UPROPERTY(BlueprintReadOnly)
+		int m_FlockTick = 0;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)
