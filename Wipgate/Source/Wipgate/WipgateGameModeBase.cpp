@@ -402,6 +402,8 @@ void AWipgateGameModeBase::SelectRandomLevelSetup()
 					end->EntitySpawner->Destroy();
 			}
 		}
+		uncastedDeletionObjects.Empty();
+
 		//Destroy all shops that weren't selected
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedDeletionObjects);
 		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
@@ -411,8 +413,10 @@ void AWipgateGameModeBase::SelectRandomLevelSetup()
 				uncastedDeletionObjects[i]->Destroy();
 			}
 		}
-		//Destroy all shops that weren't selected
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedDeletionObjects);
+		uncastedDeletionObjects.Empty();
+
+		//Destroy all spawners that weren't selected
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), uncastedDeletionObjects);
 		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
 		{
 			if (uncastedDeletionObjects[i] != m_PlayerSpawner)
