@@ -38,7 +38,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool IsEdgeMovementEnabled() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Exec)
 		void SetEdgeMovementEnabled(bool enabled);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
