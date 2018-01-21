@@ -302,9 +302,9 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 
 bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
-	m_FlockTick++;
-	if (m_FlockTick % 3 == 0)
-		return false;
+	//m_FlockTick++;
+	//if (m_FlockTick % 3 == 0)
+	//	return false;
 
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingMoveRadius);
@@ -343,9 +343,9 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 
 bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
-	m_FlockTick++;
-	if (m_FlockTick % 3 == 0)
-		return false;
+	//m_FlockTick++;
+	//if (m_FlockTick % 3 == 0)
+	//	return false;
 
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
