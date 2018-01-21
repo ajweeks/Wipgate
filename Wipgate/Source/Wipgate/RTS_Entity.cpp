@@ -145,7 +145,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Apply effects */
-	for (size_t i = 0; i < UnitEffects.Num(); i++)
+	for (int32 i = 0; i < UnitEffects.Num(); i++)
 	{
 		UUnitEffect* e = UnitEffects[i];
 		if (!e)
@@ -175,7 +175,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 	/* Clean up effects */
 	int length = UnitEffects.Num();
-	for (size_t i = length - 1; i < length; i--)
+	for (int32 i = length - 1; i < length; i--)
 	{
 		if (UnitEffects[i]->IsFinished)
 			RemoveUnitEffect(UnitEffects[i]);
@@ -533,7 +533,7 @@ void ARTS_Entity::Kill()
 			}
 
 			int length = UnitEffects.Num();
-			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
+			for (int32 i = UnitEffects.Num() - 1; i < length; i--)
 			{
 				RemoveUnitEffect(UnitEffects[i]);
 			}

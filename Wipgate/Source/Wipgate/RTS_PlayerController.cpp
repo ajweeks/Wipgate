@@ -1120,7 +1120,7 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 			m_RTS_GameState->SelectedEntities.Empty();
 		}
 
-		for (size_t i = 0; i < m_RTS_GameState->Entities.Num(); i++)
+		for (int32 i = 0; i < m_RTS_GameState->Entities.Num(); i++)
 		{
 			ARTS_Entity* entity = m_RTS_GameState->Entities[i];
 
