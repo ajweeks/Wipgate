@@ -230,33 +230,26 @@ void AWipgateGameModeBase::BeginPlay()
 
 		for (auto team : gameinstance->Teams)
 		{
-			// Empty all upgrades
-			team->Upgrades.Empty();
+			//Recalculate upgrades
+			team->CalculateUpgradeEffects();
 		}
 
-		// Add upgrades to player
-		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
-
-		// Give random upgrades to enemy based on round amount
+		// Give random upgrade to enemy team
 		auto team = GetTeamWithAlignment(ETeamAlignment::E_AGGRESSIVE_AI);
 		if (team)
 		{
-			auto round = gameinstance->CurrentRound;
-			for (int i = 0; i < round; ++i)
+			// Add random upgrade
+			TArray<FEnemyUpgradeRow*> rows;
+			m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
+			if (rows.Num() > 0)
 			{
-				// Add random upgrade
-				TArray<FEnemyUpgradeRow*> rows;
-				m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
-				if (rows.Num() > 0)
-				{
-					int randomUpgradeIndex = FMath::RandRange(0, rows.Num() - 1);
-					auto row = rows[randomUpgradeIndex];
-					team->AddUpgrades(row->Upgrades);
-				}
-				else
-				{
-					UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrades in enemy upgrade datatable!"));
-				}
+				int randomUpgradeIndex = FMath::RandRange(0, rows.Num() - 1);
+				auto row = rows[randomUpgradeIndex];
+				team->AddUpgrades(row->Upgrades);
+			}
+			else
+			{
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrades in enemy upgrade datatable!"));
 			}
 		}
 		else
