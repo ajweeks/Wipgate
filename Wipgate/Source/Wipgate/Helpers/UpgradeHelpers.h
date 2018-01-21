@@ -50,6 +50,7 @@ struct FUpgrade
 	//Unit it affects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EEntityType AffectedType;
+
 };
 
 USTRUCT(BlueprintType)

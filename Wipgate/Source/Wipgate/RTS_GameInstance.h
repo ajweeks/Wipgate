@@ -33,6 +33,7 @@ public:
 	UPROPERTY()
 		TArray<URTS_Team*> Teams;
 
+
 	/* FUNCTION */
 	UFUNCTION(BlueprintCallable)
 		void EndRound();
