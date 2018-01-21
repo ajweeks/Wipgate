@@ -28,6 +28,8 @@ class WIPGATE_API URTS_Team : public UObject
 		//This function should only be used to set the initial teams
 		UFUNCTION()
 			void SetAlignment(ETeamAlignment alignment) { m_Alignment = alignment; }
+		UFUNCTION()
+			void CalculateUpgradeEffects();
 
 
 		FAttackStat GetUpgradedAttackStats(ARTS_Entity* entity);
@@ -37,14 +39,9 @@ class WIPGATE_API URTS_Team : public UObject
 		TArray<ARTS_Entity*> Entities;
 		UPROPERTY(BlueprintReadOnly)
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
-		//UPROPERTY(BlueprintReadOnly)
-		//ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
 		UPROPERTY(BlueprintReadOnly)
 		TArray<FUpgrade> Upgrades;
 		URTS_GameInstance* GameInstance = nullptr;
-
 	private:
-		void CalculateUpgradeEffects();
-
 		ETeamAlignment m_Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };

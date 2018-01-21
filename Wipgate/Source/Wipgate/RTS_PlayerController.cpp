@@ -60,8 +60,8 @@ ARTS_PlayerController::ARTS_PlayerController()
 void ARTS_PlayerController::Initialize()
 {
 	// Get references to camera and its components
-	m_RTS_CameraPawn = GetPawn();
-	check(m_RTS_CameraPawn != nullptr);
+	RTS_CameraPawn = GetPawn();
+	check(RTS_CameraPawn != nullptr);
 	
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
 	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
@@ -101,7 +101,7 @@ void ARTS_PlayerController::Initialize()
 	}
 
 	TArray<UCameraComponent*> cameraComponents;
-	m_RTS_CameraPawn->GetComponents(cameraComponents);
+	RTS_CameraPawn->GetComponents(cameraComponents);
 	if (cameraComponents.Num() > 0)
 	{
 		m_RTS_CameraPawnCameraComponent = cameraComponents[0];
@@ -113,7 +113,7 @@ void ARTS_PlayerController::Initialize()
 	check(m_RTS_CameraPawnCameraComponent != nullptr);
 
 	TArray<UStaticMeshComponent*> meshComponents;
-	m_RTS_CameraPawn->GetComponents(meshComponents);
+	RTS_CameraPawn->GetComponents(meshComponents);
 	if (meshComponents.Num() > 0)
 	{
 		m_RTS_CameraPawnMeshComponent = meshComponents[0];
@@ -125,7 +125,7 @@ void ARTS_PlayerController::Initialize()
 	check(m_RTS_CameraPawnMeshComponent != nullptr);
 
 	TArray<USpringArmComponent*> springArmComponents;
-	m_RTS_CameraPawn->GetComponents(springArmComponents);
+	RTS_CameraPawn->GetComponents(springArmComponents);
 	if (springArmComponents.Num() > 0)
 	{
 		m_RTS_CameraPawnSpringArmComponent = springArmComponents[0];
@@ -140,8 +140,8 @@ void ARTS_PlayerController::Initialize()
 	GetRTS_HUDBase();
 
 	// Setup camera's starting transform
-	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
-	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
+	RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
+	RTS_CameraPawn->SetActorRotation(m_StartingRotation);
 	if (m_TargetZoomArmLength != 0.0f)
 	{
 		m_RTS_CameraPawnSpringArmComponent->TargetArmLength = m_TargetZoomArmLength;
@@ -283,7 +283,7 @@ void ARTS_PlayerController::UpdateSelectedEntitiesBase()
 void ARTS_PlayerController::Tick(float DeltaSeconds)
 {
 	// Verify required components are valid
-	if (!m_RTS_GameState ||!m_RTSHUD || !m_RTS_CameraPawnMeshComponent || !m_RTS_CameraPawn)
+	if (!m_RTS_GameState ||!m_RTSHUD || !m_RTS_CameraPawnMeshComponent || !RTS_CameraPawn)
 	{
 		return;
 	}
@@ -298,7 +298,19 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 		return;
 	}
-	
+
+	static const auto mainClickKeys = PlayerInput->GetKeysForAction("Primary Click");
+	static const FKey mainClickButton = mainClickKeys[0].Key;
+	const bool isPrimaryClickButtonDown = IsInputKeyDown(mainClickButton);
+	const bool isPrimaryClickButtonClicked = WasInputKeyJustPressed(mainClickButton);
+	const bool isPrimaryClickButtonReleased = WasInputKeyJustReleased(mainClickButton);
+
+	static const auto addToSelectionKeys = PlayerInput->GetKeysForAction("Add To Selection");
+	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
+	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
+	const bool isAddToSelectionKeyPressed = WasInputKeyJustPressed(addToSelectionKey);
+	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
+
 	
 	if (!SelectedAbility && IsInputKeyDown(EKeys::LeftMouseButton))
 	{
@@ -353,7 +365,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				UE_LOG(RTS_PlayerController_Log, Error, TEXT("World not found!"));
 			}
-			FVector pCamLocation = m_RTS_CameraPawn->GetActorLocation();
+			FVector pCamLocation = RTS_CameraPawn->GetActorLocation();
 
 			if (m_Panning)
 			{
@@ -368,7 +380,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 				targetCamLocation = ClampCamPosWithBounds(targetCamLocation);
 
-				m_RTS_CameraPawn->SetActorLocation(targetCamLocation);
+				RTS_CameraPawn->SetActorLocation(targetCamLocation);
 			}
 			else if (m_EdgeMovementEnabled)
 			{
@@ -399,7 +411,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 
 				targetDCamLocation = ClampDCamPosWithBounds(targetDCamLocation);
 
-				m_RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
+				RTS_CameraPawn->AddActorWorldOffset(targetDCamLocation);
 			}
 
 			if (m_MovingToSelectionCenter || AlwaysCenterOnUnits)
@@ -408,18 +420,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			}
 		}
 	}
-
-	static const auto mainClickKeys = PlayerInput->GetKeysForAction("Primary Click");
-	static const FKey mainClickButton = mainClickKeys[0].Key;
-	const bool isPrimaryClickButtonDown = IsInputKeyDown(mainClickButton);
-	const bool isPrimaryClickButtonClicked = WasInputKeyJustPressed(mainClickButton);
-	const bool isPrimaryClickButtonReleased = WasInputKeyJustReleased(mainClickButton);
-
-	static const auto addToSelectionKeys = PlayerInput->GetKeysForAction("Add To Selection");
-	static const FKey addToSelectionKey = addToSelectionKeys[0].Key;
-	const bool isAddToSelectionKeyDown = IsInputKeyDown(addToSelectionKey);
-	const bool isAddToSelectionKeyPressed = WasInputKeyJustPressed(addToSelectionKey);
-	const bool isAddToSelectionKeyReleased = WasInputKeyJustReleased(addToSelectionKey);
 
 
 	if (isPrimaryClickButtonDown)
@@ -651,9 +651,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		m_RTSHUD->HideSelectedEntityStats();
 	}
 
-	static bool shiftWasDown = IsInputKeyDown(FKey("LeftShift"));
-	bool shiftIsDown = IsInputKeyDown(FKey("LeftShift"));
-	if (shiftWasDown && !shiftIsDown)
+	if (isAddToSelectionKeyReleased)
 	{
 		if (m_AbilityOnShift)
 		{
@@ -666,7 +664,6 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			SelectedAbility = nullptr;
 		}
 	}
-	shiftWasDown = shiftIsDown;
 
 
 	/* Cursor */
@@ -1196,7 +1193,7 @@ void ARTS_PlayerController::ActionTertiaryClickPressed()
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
-		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+		m_PanCamStartLocation = RTS_CameraPawn->GetActorLocation();
 		m_Panning = true;
 	}
 }
@@ -1247,7 +1244,7 @@ void ARTS_PlayerController::ActionAddToSelectionPressed()
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
-		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+		m_PanCamStartLocation = RTS_CameraPawn->GetActorLocation();
 	}
 }
 
@@ -1257,7 +1254,7 @@ void ARTS_PlayerController::ActionAddToSelectionReleased()
 	{
 		m_MovingToSelectionCenter = false;
 		m_PanMouseStartLocationSSNorm = UGeneralFunctionLibrary_CPP::GetNormalizedMousePosition(this);
-		m_PanCamStartLocation = m_RTS_CameraPawn->GetActorLocation();
+		m_PanCamStartLocation = RTS_CameraPawn->GetActorLocation();
 	}
 }
 
@@ -1685,7 +1682,7 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	// Shift the target position up to account for the HUD at the bottom of the screen
 	
 	float yOffset = m_RTS_CameraPawnSpringArmComponent->TargetArmLength * m_CenterOffsetY;
-	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
+	FVector oldCameraLocation = RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(
 		averageEntityLocation.X, 
 		averageEntityLocation.Y, 
@@ -1726,14 +1723,14 @@ void ARTS_PlayerController::MoveToCenterOfUnits(bool FocusOnSelectedUnits)
 	
 	newCamLocation = ClampCamPosWithBounds(newCamLocation);
 
-	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
+	RTS_CameraPawn->SetActorLocation(newCamLocation);
 }
 
 void ARTS_PlayerController::MoveToTarget()
 {
 	const float DeltaSeconds = GetWorld()->GetDeltaSeconds();
 
-	FVector oldCameraLocation = m_RTS_CameraPawn->GetActorLocation();
+	FVector oldCameraLocation = RTS_CameraPawn->GetActorLocation();
 	m_TargetLocation = FVector(m_TargetLocation.X, m_TargetLocation.Y,
 		oldCameraLocation.Z); // NOTE: Don't change the height of the camera here (handled with zooming)
 	FVector dCamLocation = m_TargetLocation - oldCameraLocation;
@@ -1762,7 +1759,7 @@ void ARTS_PlayerController::MoveToTarget()
 
 	newCamLocation = ClampCamPosWithBounds(newCamLocation);
 
-	m_RTS_CameraPawn->SetActorLocation(newCamLocation);
+	RTS_CameraPawn->SetActorLocation(newCamLocation);
 
 	float locationTolerance = 300.0f;
 	if (m_TargetLocation.Equals(oldCameraLocation, locationTolerance))
@@ -1835,7 +1832,7 @@ FVector ARTS_PlayerController::ClampDCamPosWithBounds(FVector dCamPos)
 {
 	if (m_LevelBounds)
 	{
-		FVector pCamPos = m_RTS_CameraPawn->GetActorLocation();
+		FVector pCamPos = RTS_CameraPawn->GetActorLocation();
 		FVector newCamPos = pCamPos + dCamPos;
 		newCamPos = ClampCamPosWithBounds(newCamPos);
 

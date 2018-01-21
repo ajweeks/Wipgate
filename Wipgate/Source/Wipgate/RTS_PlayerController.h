@@ -228,7 +228,8 @@ private:
 
 public:
 	UPROPERTY(BlueprintReadWrite)
-		APawn* m_RTS_CameraPawn = nullptr;
+		APawn* RTS_CameraPawn = nullptr;
+
 
 private:
 
@@ -350,7 +351,6 @@ private:
 	// How fast to shift the center in direction of average entity facing direction (0=never, 1=instantly)
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		float m_CenterOffsetEntitySpeed = 0.015f;
-
 
 	TArray<URTS_Squad*> m_Squads;
 };
