@@ -473,7 +473,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 
 		bool entityInSelectionBox = false;
-		if (isPrimaryClickButtonDown)
+		if (isPrimaryClickButtonDown && !selectionBoxMax.Equals(selectionBoxMin))
 		{
 			// Check if this entity's screen-space bounding box overlaps the selection box
 			/*
@@ -713,7 +713,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				if (entityUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 				{
-					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
 					entityUnderCursor->SetHighlighted();
 				}
 				else
@@ -852,15 +852,17 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_GROUND:
 		{
-			if (hitResult.bBlockingHit)
+			UWorld* world = GetWorld();
+			FNavLocation navPoint;
+			if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
 			{
 				if (m_SpecialistShowingAbilities)
 				{
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
-						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, true);
+						controller->AddCommand_CastGround(SelectedAbility, navPoint, true, true);
 					else
-						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, false);
+						controller->AddCommand_CastGround(SelectedAbility, navPoint, true, false);
 
 					if (shiftIsDown)
 					{
@@ -1165,10 +1167,19 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 			entityUnderCursor = nullptr; // Don't target immaterial people
 		}
 
-		if (m_RTS_GameState->SelectedEntities.Num() > 0)
+		if (m_RTS_GameState->SelectedEntities.Num() == 1)
+		{
+			if (entityUnderCursor && m_RTS_GameState->SelectedEntities[0] != entityUnderCursor)
+			{
+				entityUnderCursor->SetHighlighted();
+			}
+		}
+		else if (m_RTS_GameState->SelectedEntities.Num() > 0)
 		{
 			if (entityUnderCursor)
+			{
 				entityUnderCursor->SetHighlighted();
+			}
 		}
 	}
 }
