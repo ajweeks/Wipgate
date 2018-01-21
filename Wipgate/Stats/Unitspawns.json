@@ -48,13 +48,23 @@
     ]
   },
   {
-		"Name": "Round1",
-		"Round": 1,
-		"Spawns": [
-			{
-				"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
-				"Amount": 1
-			}
-		]
-	}
+    "Name": "Round1",
+    "Round": 1,
+    "Spawns": [
+      {
+        "Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Commander.Spec_Commander_C'",
+        "Amount": 1
+      }
+    ]
+  },
+  {
+	"Name": "Round5",
+	"Round": 5,
+	"Spawns": [
+		{
+			"Entity": "BlueprintGeneratedClass'/Game/Code/Entities/Spec_Morph.Spec_Morph_C'",
+			"Amount": 1
+		}
+	]
+}
 ]
