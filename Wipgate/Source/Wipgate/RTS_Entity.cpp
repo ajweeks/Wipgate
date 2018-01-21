@@ -145,8 +145,9 @@ void ARTS_Entity::Tick(float DeltaTime)
 	movement->MaxWalkSpeed = CurrentMovementStats.Speed;
 
 	/* Apply effects */
-	for (int32 i = 0; i < UnitEffects.Num(); i++)
+	for (size_t i = 0; i < UnitEffects.Num(); i++)
 	{
+
 		UUnitEffect* e = UnitEffects[i];
 		if (!e)
 			continue;
@@ -175,7 +176,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 	/* Clean up effects */
 	int length = UnitEffects.Num();
-	for (int32 i = length - 1; i < length; i--)
+	for (size_t i = length - 1; i < length; i--)
 	{
 		if (UnitEffects[i]->IsFinished)
 			RemoveUnitEffect(UnitEffects[i]);
@@ -502,7 +503,7 @@ void ARTS_Entity::Kill()
 				//Spawn luma particle
 				auto transform = GetActorTransform();
 				ARTS_DeathEffect* deathEffect = nullptr;
-				if (DeathEffectClass)
+				if (DeathEffectClass && Alignment != ETeamAlignment::E_PLAYER)
 				{
 					auto deathActor = world->SpawnActor(DeathEffectClass, &transform);
 					if (deathActor)
@@ -533,7 +534,7 @@ void ARTS_Entity::Kill()
 			}
 
 			int length = UnitEffects.Num();
-			for (int32 i = UnitEffects.Num() - 1; i < length; i--)
+			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
 			{
 				RemoveUnitEffect(UnitEffects[i]);
 			}
