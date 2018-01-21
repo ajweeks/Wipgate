@@ -152,8 +152,12 @@ void URTS_Team::CalculateUpgradeEffects()
 					break;
 				case EUpgradeStat::E_HEALTH:
 					entity->CurrentDefenceStats.MaxHealth += upgrade.Effect;
+					entity->CurrentDefenceStats.MaxHealth = FMath::Clamp(entity->CurrentDefenceStats.MaxHealth, 0, entity->CurrentDefenceStats.MaxHealth);
 					entity->Health += upgrade.Effect;
-					entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
+					if (entity->CurrentDefenceStats.MaxHealth <= 0)
+						entity->Health = 0;
+					else
+						entity->Health = FMath::Clamp(entity->Health, 1, entity->CurrentDefenceStats.MaxHealth);
 					break;
 				case EUpgradeStat::E_RANGE:
 					entity->CurrentAttackStats.Range += upgrade.Effect;
