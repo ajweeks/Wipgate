@@ -241,7 +241,7 @@ private:
 
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
-		bool Selected;
+		bool m_Selected;
 
 	/* HIGHLIGHTED */
 	UPROPERTY(EditAnywhere)
