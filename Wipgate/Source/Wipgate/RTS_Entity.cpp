@@ -147,6 +147,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Apply effects */
 	for (size_t i = 0; i < UnitEffects.Num(); i++)
 	{
+
 		UUnitEffect* e = UnitEffects[i];
 		if (!e)
 			continue;
