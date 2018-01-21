@@ -125,7 +125,7 @@ public:
 		UStaticMeshComponent* MinimapIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-		FName MinimapColorParameterName = "None";
+		FName MinimapColorParameterName = "Color";
 
 	FRotator BarRotation;
 
@@ -241,7 +241,7 @@ private:
 
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
-		bool Selected;
+		bool m_Selected;
 
 	/* HIGHLIGHTED */
 	UPROPERTY(EditAnywhere)

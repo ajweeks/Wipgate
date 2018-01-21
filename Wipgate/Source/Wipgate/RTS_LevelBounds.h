@@ -16,6 +16,13 @@ class WIPGATE_API ARTS_LevelBounds : public AActor
 public:	
 	ARTS_LevelBounds();
 
-	UBoxComponent * BoxComponent;
+	UBoxComponent* BoxComponent;
+
+	// How much to offset the camera from the player spawner at the start of the level
+	UPROPERTY(EditAnywhere)
+		FVector2D CameraStartingOffset = FVector2D::ZeroVector;
+
+	UPROPERTY(EditAnywhere)
+		float CameraStartingZoom = 0.0f;
 
 };

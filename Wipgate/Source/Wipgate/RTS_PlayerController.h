@@ -111,7 +111,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		URTS_HUDBase* GetRTS_HUDBase();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Exec)
 		void AddLuma(int32 LumaAmount, bool applyToEndScore = false);
 
 	UFUNCTION(BlueprintCallable)
@@ -120,7 +120,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentLumaAmount();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Exec)
 		void AddHealth(int32 healthAmount);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
