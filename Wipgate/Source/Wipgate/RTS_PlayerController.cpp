@@ -66,6 +66,7 @@ void ARTS_PlayerController::Initialize()
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
 	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
 	m_LevelStartLocation = FVector::ZeroVector;
+	m_TargetZoomArmLength = 0.0f;
 	if (castedGameMode)
 	{
 		ARTS_PlayerSpawner* playerSpawner = castedGameMode->GetPlayerSpawner();
@@ -79,6 +80,11 @@ void ARTS_PlayerController::Initialize()
 		{
 			PrintStringToScreen("Level bounds not set!", FColor::Red, 10.0f);
 		}
+		else
+		{
+			m_LevelStartLocation += FVector(m_LevelBounds->CameraStartingOffset.X, m_LevelBounds->CameraStartingOffset.Y, 0.0f);
+			m_TargetZoomArmLength = m_LevelBounds->CameraStartingZoom;
+		}
 
 		ARTS_LevelEnd* levelEnd = castedGameMode->GetLevelEnd();
 		if (levelEnd)
@@ -86,9 +92,6 @@ void ARTS_PlayerController::Initialize()
 			m_LevelEndLocation = levelEnd->GetActorLocation();
 		}	
 	}
-
-	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
-	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
 
 	// Move to level end after delay (to let world load in)
 	if (m_MoveToLevelEndAtStartup)
@@ -133,25 +136,15 @@ void ARTS_PlayerController::Initialize()
 	}
 	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
-	// Create and add HUD to viewport
-	if (MainHUD)
-	{
-		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
+	// Ensure hud is created
+	GetRTS_HUDBase();
 
-		if (MainHUDInstance)
-		{
-			MainHUDInstance->AddToViewport();
-			m_RTSHUD = Cast<URTS_HUDBase>(MainHUDInstance);
-			m_RTSHUD->PlayerController = this;
-		}
-		else
-		{
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
-		}
-	}
-	else
+	// Setup camera's starting transform
+	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
+	m_RTS_CameraPawn->SetActorRotation(m_StartingRotation);
+	if (m_TargetZoomArmLength != 0.0f)
 	{
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
+		m_RTS_CameraPawnSpringArmComponent->TargetArmLength = m_TargetZoomArmLength;
 	}
 
 	AGameStateBase* baseGameState = GetWorld()->GetGameState();
@@ -482,22 +475,22 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		bool entityInSelectionBox = false;
 		if (isPrimaryClickButtonDown)
 		{
-			// Check if this entity's min or max bounding box points lie within the selection box
+			// Check if this entity's screen-space bounding box overlaps the selection box
 			/*
-			    
-			     ^
-			    / \
-			   /   \
-			  <     >
-			  |\   /|
-			  | \ / |
-			  |  v  |
-			  |  |  |
-			  |  |  |
-			  |  |  |
-			  \  |  /
-			   \ | /
-			     v
+				 WS					   SS
+			     ^					+-------+
+			    / \					|		|
+			   /   \				|		|
+			  <     >				|		|
+			  |\   /|				|		|
+			  | \ / |				|		|
+			  |  v  |		-->		|		|
+			  |  |  |				|		|
+			  |  |  |				|		|
+			  |  |  |				|		|
+			  \  |  /				|		|
+			   \ | /				|		|
+			     v					+-------+
 			
 			*/
 			FVector entityBounds0 = entityLocation + FVector(
@@ -682,7 +675,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		if (SelectedAbility)
 		{
 			AActor* selectedAbilityCaster = SelectedAbility->GetCaster();
-			bool unitUnderCursorIsSelectedAbilityCaster = (actorUnderCursor && actorUnderCursor == selectedAbilityCaster);
+			bool unitUnderCursorIsSelectedAbilityCaster = (selectedAbilityCaster && actorUnderCursor == selectedAbilityCaster);
 
 			switch (SelectedAbility->Type)
 			{
@@ -1478,6 +1471,32 @@ void ARTS_PlayerController::InvertSelection()
 
 URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 {
+	if (m_RTSHUD)
+	{
+		return m_RTSHUD;
+	}
+
+	// Create and add HUD to viewport
+	if (MainHUD)
+	{
+		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
+
+		if (MainHUDInstance)
+		{
+			MainHUDInstance->AddToViewport();
+			m_RTSHUD = Cast<URTS_HUDBase>(MainHUDInstance);
+			m_RTSHUD->PlayerController = this;
+		}
+		else
+		{
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
+		}
+	}
+	else
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
+	}
+
 	return m_RTSHUD;
 }
 
