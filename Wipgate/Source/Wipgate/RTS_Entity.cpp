@@ -80,7 +80,7 @@ void ARTS_Entity::BeginPlay()
 
 void ARTS_Entity::SetSelected(bool selected)
 {
-	Selected = selected;
+	m_Selected = selected;
 
 	if (EntityType != EEntityType::E_STRUCTURE)
 	{
@@ -184,7 +184,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 bool ARTS_Entity::IsSelected() const
 {
-	return Selected;
+	return m_Selected;
 }
 
 FVector ARTS_Entity::GetGroundLocation()
