@@ -125,7 +125,7 @@ public:
 		UStaticMeshComponent* MinimapIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-		FName MinimapColorParameterName = "None";
+		FName MinimapColorParameterName = "Color";
 
 	FRotator BarRotation;
 
