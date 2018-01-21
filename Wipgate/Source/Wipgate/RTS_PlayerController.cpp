@@ -713,7 +713,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 			{
 				if (entityUnderCursor && !unitUnderCursorIsSelectedAbilityCaster)
 				{
-					CursorRef->SetCursorTexture(CursorRef->MoveTexture);
+					CursorRef->SetCursorTexture(CursorRef->AttackMoveTexture);
 					entityUnderCursor->SetHighlighted();
 				}
 				else
@@ -1165,10 +1165,19 @@ void ARTS_PlayerController::ActionSecondaryClickPressed()
 			entityUnderCursor = nullptr; // Don't target immaterial people
 		}
 
-		if (m_RTS_GameState->SelectedEntities.Num() > 0)
+		if (m_RTS_GameState->SelectedEntities.Num() == 1)
+		{
+			if (entityUnderCursor && m_RTS_GameState->SelectedEntities[0] != entityUnderCursor)
+			{
+				entityUnderCursor->SetHighlighted();
+			}
+		}
+		else if (m_RTS_GameState->SelectedEntities.Num() > 0)
 		{
 			if (entityUnderCursor)
+			{
 				entityUnderCursor->SetHighlighted();
+			}
 		}
 	}
 }
