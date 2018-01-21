@@ -852,15 +852,17 @@ void ARTS_PlayerController::ActionPrimaryClickReleased()
 		} break;
 		case EAbilityType::E_TARGET_GROUND:
 		{
-			if (hitResult.bBlockingHit)
+			UWorld* world = GetWorld();
+			FNavLocation navPoint;
+			if (world->GetNavigationSystem()->UNavigationSystem::ProjectPointToNavigation(hitResult.Location, navPoint))
 			{
 				if (m_SpecialistShowingAbilities)
 				{
 					ARTS_AIController* controller = Cast<ARTS_AIController>(m_SpecialistShowingAbilities->GetController());
 					if (IsInputKeyDown(FKey("LeftShift")))
-						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, true);
+						controller->AddCommand_CastGround(SelectedAbility, navPoint, true, true);
 					else
-						controller->AddCommand_CastGround(SelectedAbility, hitResult.Location, true, false);
+						controller->AddCommand_CastGround(SelectedAbility, navPoint, true, false);
 
 					if (shiftIsDown)
 					{
