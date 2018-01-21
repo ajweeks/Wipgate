@@ -208,6 +208,9 @@ public:
 		USoundCue* AttackSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundCue* CommandSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundAttenuation* SoundAttenuation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
