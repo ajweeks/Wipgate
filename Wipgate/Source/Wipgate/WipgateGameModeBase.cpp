@@ -312,7 +312,10 @@ void AWipgateGameModeBase::NextLevel()
 	SaveResources();
 
 	// Open same level
-	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_02")
+		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_04");
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_04")
+		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_02");
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()

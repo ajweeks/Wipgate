@@ -147,6 +147,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Apply effects */
 	for (size_t i = 0; i < UnitEffects.Num(); i++)
 	{
+
 		UUnitEffect* e = UnitEffects[i];
 		if (!e)
 			continue;
@@ -502,7 +503,7 @@ void ARTS_Entity::Kill()
 				//Spawn luma particle
 				auto transform = GetActorTransform();
 				ARTS_DeathEffect* deathEffect = nullptr;
-				if (DeathEffectClass)
+				if (DeathEffectClass && Alignment != ETeamAlignment::E_PLAYER)
 				{
 					auto deathActor = world->SpawnActor(DeathEffectClass, &transform);
 					if (deathActor)
