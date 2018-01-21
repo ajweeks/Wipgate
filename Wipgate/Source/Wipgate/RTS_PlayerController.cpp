@@ -473,7 +473,7 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 		}
 
 		bool entityInSelectionBox = false;
-		if (isPrimaryClickButtonDown)
+		if (isPrimaryClickButtonDown && !selectionBoxMax.Equals(selectionBoxMin))
 		{
 			// Check if this entity's screen-space bounding box overlaps the selection box
 			/*
