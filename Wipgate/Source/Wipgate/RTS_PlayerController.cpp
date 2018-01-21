@@ -136,26 +136,8 @@ void ARTS_PlayerController::Initialize()
 	}
 	check(m_RTS_CameraPawnSpringArmComponent != nullptr);
 
-	// Create and add HUD to viewport
-	if (MainHUD)
-	{
-		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
-
-		if (MainHUDInstance)
-		{
-			MainHUDInstance->AddToViewport();
-			m_RTSHUD = Cast<URTS_HUDBase>(MainHUDInstance);
-			m_RTSHUD->PlayerController = this;
-		}
-		else
-		{
-			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
-		}
-	}
-	else
-	{
-		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
-	}
+	// Ensure hud is created
+	GetRTS_HUDBase();
 
 	// Setup camera's starting transform
 	m_RTS_CameraPawn->SetActorLocation(m_LevelStartLocation);
@@ -1489,6 +1471,32 @@ void ARTS_PlayerController::InvertSelection()
 
 URTS_HUDBase* ARTS_PlayerController::GetRTS_HUDBase()
 {
+	if (m_RTSHUD)
+	{
+		return m_RTSHUD;
+	}
+
+	// Create and add HUD to viewport
+	if (MainHUD)
+	{
+		MainHUDInstance = CreateWidget<UUserWidget>(this, MainHUD);
+
+		if (MainHUDInstance)
+		{
+			MainHUDInstance->AddToViewport();
+			m_RTSHUD = Cast<URTS_HUDBase>(MainHUDInstance);
+			m_RTSHUD->PlayerController = this;
+		}
+		else
+		{
+			UE_LOG(RTS_PlayerController_Log, Error, TEXT("Failed to create main HUD widget!"));
+		}
+	}
+	else
+	{
+		UE_LOG(RTS_PlayerController_Log, Error, TEXT("Main HUD template was not set in player controller BP!"));
+	}
+
 	return m_RTSHUD;
 }
 
