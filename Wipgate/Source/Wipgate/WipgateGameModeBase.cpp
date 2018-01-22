@@ -344,7 +344,7 @@ void AWipgateGameModeBase::NextLevel()
 	else if (currentLevelName.Equals("TutorialMap_01") ||
 		currentLevelName.Equals("TutorialMap_02"))
 	{
-		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+		UGameplayStatics::OpenLevel(world, "MainMenu");
 	}
 	else
 	{
