@@ -15,7 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	ARTS_DeathEffect();
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 		int Intensity = 0;
 
 	UFUNCTION(BlueprintImplementableEvent)
