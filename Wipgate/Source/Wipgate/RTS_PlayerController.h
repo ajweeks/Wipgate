@@ -353,4 +353,11 @@ private:
 		float m_CenterOffsetEntitySpeed = 0.015f;
 
 	TArray<URTS_Squad*> m_Squads;
+
+protected:
+		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+			float m_MaxSoundTimer = 1.f;
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			float m_SoundTimer = 0.f;
 };
