@@ -71,6 +71,18 @@ void AWipgateGameModeBase::BeginPlay()
 	{
 		for (int i = 0; i < rows.Num(); ++i)
 		{
+			//Take random json
+			if (m_UseJSON && UnitToSpawnPath.Num() > 0)
+			{
+				gameinstance->RoundAdditionIndex = FMath::RandRange(0, UnitToSpawnPath.Num() - 1);
+			}
+			else if (m_UseJSON)
+			{
+				gameinstance->RoundAdditionIndex = -1;
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No JSON files linked!"));
+			}
+
+			//Make teams
 			FTeamRow* row = rows[i];
 			if (row)
 			{
@@ -152,8 +164,15 @@ void AWipgateGameModeBase::BeginPlay()
 			// Add entities to player's team
 			TArray<FEntityRow*> playerRows;
 			FString json;
-			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + UnitToSpawnPath;
+			FString spawnPath = "";
+
+			if (gameinstance->RoundAdditionIndex >= 0)
+			{
+				spawnPath = UnitToSpawnPath[gameinstance->RoundAdditionIndex];
+			}
+			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + spawnPath;
 			auto success = FFileHelper::LoadFileToString(json, *path, FFileHelper::EHashOptions::EnableVerify);
+
 
 			//TODO: Add check for development build
 			if (m_UseJSON && success)
@@ -311,11 +330,27 @@ void AWipgateGameModeBase::NextLevel()
 	}
 	SaveResources();
 
+	UWorld* world = GetWorld();
+	FString currentLevelName = UGameplayStatics::GetCurrentLevelName(world);
 	// Open same level
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_02")
-		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_04");
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_04")
-		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_02");
+	if (currentLevelName.Equals("Gameplay_Layout_Deco_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_04");
+	}
+	else if (currentLevelName.Equals("Gameplay_Layout_Deco_04"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+	}
+	else if (currentLevelName.Equals("TutorialMap_01") ||
+		currentLevelName.Equals("TutorialMap_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+	}
+	else
+	{
+		UGameplayStatics::OpenLevel(world, *UGameplayStatics::GetCurrentLevelName(world));
+	}
+
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
