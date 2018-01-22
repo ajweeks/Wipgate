@@ -311,13 +311,22 @@ void AWipgateGameModeBase::NextLevel()
 	}
 	SaveResources();
 
+	UWorld* world = GetWorld();
+	FString currentLevelName = UGameplayStatics::GetCurrentLevelName(world);
 	// Open same level
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_02")
-		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_04");
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_04")
-		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_02");
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "TutorialMap_01")
-		UGameplayStatics::OpenLevel(GetWorld(), "MainMenu");
+	if (currentLevelName.Equals("Gameplay_Layout_Deco_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_04");
+	}
+	if (currentLevelName.Equals("Gameplay_Layout_Deco_04"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+	}
+	if (currentLevelName.Equals("TutorialMap_01") ||
+		currentLevelName.Equals("TutorialMap_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+	}
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
