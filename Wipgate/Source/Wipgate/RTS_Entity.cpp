@@ -322,9 +322,7 @@ bool ARTS_Entity::HasEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-		{
 			return true;
-		}
 	}
 	return false;
 }
@@ -533,11 +531,12 @@ void ARTS_Entity::Kill()
 				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Kill > No playercontroller present!"));
 			}
 
-			int length = UnitEffects.Num();
-			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
-			{
-				RemoveUnitEffect(UnitEffects[i]);
-			}
+			// COMMENTED BECAUSE IT BROKE PLAGUE SPREAD!
+			//int length = UnitEffects.Num();
+			//for (size_t i = UnitEffects.Num() - 1; i < length; i--)
+			//{
+			//	RemoveUnitEffect(UnitEffects[i]);
+			//}
 
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
