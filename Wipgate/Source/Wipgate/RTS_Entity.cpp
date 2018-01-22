@@ -503,7 +503,7 @@ void ARTS_Entity::Kill()
 				//Spawn luma particle
 				auto transform = GetActorTransform();
 				ARTS_DeathEffect* deathEffect = nullptr;
-				if (DeathEffectClass && Alignment != ETeamAlignment::E_PLAYER)
+				if (DeathEffectClass)
 				{
 					auto deathActor = world->SpawnActor(DeathEffectClass, &transform);
 					if (deathActor)
