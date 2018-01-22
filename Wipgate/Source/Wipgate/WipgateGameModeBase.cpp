@@ -318,15 +318,20 @@ void AWipgateGameModeBase::NextLevel()
 	{
 		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_04");
 	}
-	if (currentLevelName.Equals("Gameplay_Layout_Deco_04"))
+	else if (currentLevelName.Equals("Gameplay_Layout_Deco_04"))
 	{
 		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
 	}
-	if (currentLevelName.Equals("TutorialMap_01") ||
+	else if (currentLevelName.Equals("TutorialMap_01") ||
 		currentLevelName.Equals("TutorialMap_02"))
 	{
 		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
 	}
+	else
+	{
+		UGameplayStatics::OpenLevel(world, *UGameplayStatics::GetCurrentLevelName(world));
+	}
+
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()

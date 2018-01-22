@@ -50,7 +50,7 @@ public:
 
 	//Path to json file that sets the unit spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString UnitToSpawnPath = "Stats/Unitspawns.json";
+		TArray<FString> UnitToSpawnPath;
 
 private:
 
