@@ -30,7 +30,7 @@ public:
 	int CurrentLuma = 0;
 	UPROPERTY(BlueprintReadWrite)
 		TArray<FEntitySave> SavedEntities;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		TArray<URTS_Team*> Teams;
 
 
