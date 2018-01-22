@@ -32,7 +32,8 @@ public:
 		TArray<FEntitySave> SavedEntities;
 	UPROPERTY(BlueprintReadWrite)
 		TArray<URTS_Team*> Teams;
-
+	UPROPERTY()
+		int RoundAdditionIndex = 0;
 
 	/* FUNCTION */
 	UFUNCTION(BlueprintCallable)

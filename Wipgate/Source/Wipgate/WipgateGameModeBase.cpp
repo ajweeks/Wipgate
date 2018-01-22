@@ -69,6 +69,18 @@ void AWipgateGameModeBase::BeginPlay()
 	// Loop over all team rows and make team objects if it's the first round
 	if (gameinstance->Teams.Num() == 0)
 	{
+		//Take random json
+		if(m_UseJSON && UnitToSpawnPath.Num() > 0)
+		{ 
+			gameinstance->RoundAdditionIndex = FMath::RandRange(0, UnitToSpawnPath.Num() - 1);
+		}
+		else if(m_UseJSON)
+		{
+			gameinstance->RoundAdditionIndex = -1;
+			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No JSON files linked!"));
+		}
+
+		//Make teams
 		for (int i = 0; i < rows.Num(); ++i)
 		{
 			FTeamRow* row = rows[i];
@@ -152,7 +164,13 @@ void AWipgateGameModeBase::BeginPlay()
 			// Add entities to player's team
 			TArray<FEntityRow*> playerRows;
 			FString json;
-			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + UnitToSpawnPath;
+			FString spawnPath = "";
+
+			if (gameinstance->RoundAdditionIndex >= 0)
+			{
+				spawnPath = UnitToSpawnPath[gameinstance->RoundAdditionIndex];
+			}
+			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + spawnPath;
 			auto success = FFileHelper::LoadFileToString(json, *path, FFileHelper::EHashOptions::EnableVerify);
 
 			//TODO: Add check for development build
@@ -314,10 +332,12 @@ void AWipgateGameModeBase::NextLevel()
 	// Open same level
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_02")
 		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_04");
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_04")
+	else if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "Gameplay_Layout_Deco_04")
 		UGameplayStatics::OpenLevel(GetWorld(), "Gameplay_Layout_Deco_02");
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "TutorialMap_01")
+	else if (UGameplayStatics::GetCurrentLevelName(GetWorld()) == "TutorialMap_01")
 		UGameplayStatics::OpenLevel(GetWorld(), "MainMenu");
+	else
+		UGameplayStatics::OpenLevel(GetWorld(), *UGameplayStatics::GetCurrentLevelName(GetWorld()));
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
