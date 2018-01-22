@@ -63,6 +63,7 @@ void ARTS_PlayerController::Initialize()
 	RTS_CameraPawn = GetPawn();
 	check(RTS_CameraPawn != nullptr);
 	
+	m_SoundTimer = m_MaxSoundTimer;
 	auto baseGameMode = GetWorld()->GetAuthGameMode();
 	AWipgateGameModeBase* castedGameMode = Cast<AWipgateGameModeBase>(baseGameMode);
 	m_LevelStartLocation = FVector::ZeroVector;
@@ -287,6 +288,8 @@ void ARTS_PlayerController::Tick(float DeltaSeconds)
 	{
 		return;
 	}
+
+	m_SoundTimer += DeltaSeconds;
 
 	if (IsPaused())
 	{
