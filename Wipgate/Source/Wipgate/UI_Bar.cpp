@@ -38,7 +38,7 @@ float UUI_Bar::GetHealthBarPercent()
 	float percent = 0.0f;
 	if (EntityRef && EntityRef->BaseDefenceStats.MaxHealth > 0)
 	{
-		percent = (float)(EntityRef->Health) / (float)(EntityRef->BaseDefenceStats.MaxHealth);
+		percent = (float)(EntityRef->Health) / (float)(EntityRef->CurrentDefenceStats.MaxHealth);
 	}
 
 	m_LastHealthBarPercent = percent;

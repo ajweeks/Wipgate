@@ -29,9 +29,9 @@ public:
 	//Alignment of the team that the spawned entities will belong to
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ETeamAlignment Alignment = ETeamAlignment::E_AGGRESSIVE_AI;
-	//Set piece
+	//Set pieces
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ARTS_SetPiece> SetPiece;
+	TArray<TSubclassOf<ARTS_SetPiece>> SetPieceArr;
 
 	/* FUNCTIONS */
 	UFUNCTION(BlueprintCallable)

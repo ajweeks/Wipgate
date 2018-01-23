@@ -11,7 +11,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(RTS_TEAM_LOG, Log, All);
 
 class ARTS_Entity;
-class UWorld;
+class URTS_GameInstance;
 
 UCLASS()
 class WIPGATE_API URTS_Team : public UObject
@@ -21,9 +21,16 @@ class WIPGATE_API URTS_Team : public UObject
 	public:
 		/* Functions */
 		UFUNCTION(BlueprintCallable)
-		void AddUpgrade(FUpgrade upgrade);
-		UFUNCTION(BlueprintCallable)
 		void AddUpgrades(TArray<FUpgrade> upgrades);
+		//This function should only be used to set the initial teams, use the unit's own alignment for alignment checks
+		UFUNCTION()
+		ETeamAlignment GetAlignment() const { return m_Alignment; }
+		//This function should only be used to set the initial teams
+		UFUNCTION()
+			void SetAlignment(ETeamAlignment alignment) { m_Alignment = alignment; }
+		UFUNCTION()
+			void CalculateUpgradeEffects();
+
 
 		FAttackStat GetUpgradedAttackStats(ARTS_Entity* entity);
 
@@ -33,11 +40,8 @@ class WIPGATE_API URTS_Team : public UObject
 		UPROPERTY(BlueprintReadOnly)
 		FLinearColor Color = FLinearColor(1, 1, 1, 1);
 		UPROPERTY(BlueprintReadOnly)
-		ETeamAlignment Alignment = ETeamAlignment::E_NEUTRAL_AI;
-		UPROPERTY(BlueprintReadOnly)
 		TArray<FUpgrade> Upgrades;
-		UWorld* World = nullptr;
-
+		URTS_GameInstance* GameInstance = nullptr;
 	private:
-		void CalculateUpgradeEffects();
+		ETeamAlignment m_Alignment = ETeamAlignment::E_NEUTRAL_AI;
 };

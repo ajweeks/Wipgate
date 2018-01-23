@@ -44,50 +44,76 @@ void AWipgateGameModeBase::BeginPlay()
 	}
 
 	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+
 	ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (!playercontroller)
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No playercontroller. Returning..."));
 		return;
 	}
+	SelectRandomLevelSetup();
+	playercontroller->Initialize();
 
 	// Get table rows
 	TArray<FTeamRow*> rows;
 	m_TeamTable->GetAllRows("BeginPlay > Team table not found!", rows);
 	TArray<FName> rowNames = m_TeamTable->GetRowNames();
 
-	// Loop over all team rows and make team objects
-	for (int i = 0; i < rows.Num(); ++i)
+	if (m_TeamTable->GetRowNames().Num() <= 0)
 	{
-		FTeamRow* row = rows[i];
-		if (row)
+		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No teams in team datatable. Returning..."));
+		return;
+	}
+
+	// Loop over all team rows and make team objects if it's the first round
+	if (gameinstance->Teams.Num() == 0)
+	{
+		for (int i = 0; i < rows.Num(); ++i)
 		{
-			FName name = rowNames[i];
-
-			// Create team
-			URTS_Team* team = NewObject<URTS_Team>();
-			team->Alignment = row->Alignment;
-			team->Color = row->Color;
-			team->World = GetWorld();
-
-			gamestate->Teams.Add(team);
-
-			// Set playercontroller team if it's player
-			if (team->Alignment == ETeamAlignment::E_PLAYER)
+			//Take random json
+			if (m_UseJSON && UnitToSpawnPath.Num() > 0)
 			{
-				playercontroller->Team = team;
+				gameinstance->RoundAdditionIndex = FMath::RandRange(0, UnitToSpawnPath.Num() - 1);
+			}
+			else if (m_UseJSON)
+			{
+				gameinstance->RoundAdditionIndex = -1;
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No JSON files linked!"));
 			}
 
-			// Check users in that group
-			for (ARTS_Entity* entity : gamestate->Entities)
+			//Make teams
+			FTeamRow* row = rows[i];
+			if (row)
 			{
-				if (entity->Alignment == team->Alignment)
-				{
-					entity->Team = team;
-					team->Entities.Add(entity);
-				}
+				FName name = rowNames[i];
+
+				// Create team
+				URTS_Team* team = NewObject<URTS_Team>();
+				team->SetAlignment(row->Alignment);
+				team->Color = row->Color;
+				team->GameInstance = gameinstance;
+
+				gameinstance->Teams.Add(team);
 			}
 		}
+	}
+
+	// Set playercontroller team if it's player
+	playercontroller->Team = GetTeamWithAlignment(ETeamAlignment::E_PLAYER);
+
+	//Clear entities in team
+	for (auto team : gameinstance->Teams)
+	{
+		team->Entities.Empty();
+	}
+
+	// Check users in that group
+	for (ARTS_Entity* entity : gamestate->Entities)
+	{
+		entity->Team = GetTeamWithAlignment(entity->Alignment);
+		if(entity->Team)
+			entity->Team->Entities.Add(entity);
 	}
 
 	// Check if the playercontroller has a team
@@ -103,10 +129,10 @@ void AWipgateGameModeBase::BeginPlay()
 		if (entity->Team == nullptr)
 		{
 			UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > %s does not have a team, attempting to assign default"), *entity->GetHumanReadableName());
-			if (gamestate->Teams.Num() > 0)
+			if (gameinstance->Teams.Num() > 0)
 			{
-				entity->Team = gamestate->Teams[0];
-				gamestate->Teams[0]->Entities.Add(entity);
+				entity->Team = gameinstance->Teams[0];
+				gameinstance->Teams[0]->Entities.Add(entity);
 			}
 			else
 			{
@@ -117,9 +143,6 @@ void AWipgateGameModeBase::BeginPlay()
 		entity->PostInitialize();
 	}
 
-	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
-	if (gameinstance)
-	{
 		// Spawn entities
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_EntitySpawner::StaticClass(), actors);
@@ -141,8 +164,15 @@ void AWipgateGameModeBase::BeginPlay()
 			// Add entities to player's team
 			TArray<FEntityRow*> playerRows;
 			FString json;
-			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + UnitToSpawnPath;
+			FString spawnPath = "";
+
+			if (gameinstance->RoundAdditionIndex >= 0)
+			{
+				spawnPath = UnitToSpawnPath[gameinstance->RoundAdditionIndex];
+			}
+			FString path = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()) + spawnPath;
 			auto success = FFileHelper::LoadFileToString(json, *path, FFileHelper::EHashOptions::EnableVerify);
+
 
 			//TODO: Add check for development build
 			if (m_UseJSON && success)
@@ -217,35 +247,28 @@ void AWipgateGameModeBase::BeginPlay()
 		if (playerspawner)
 			playerspawner->SpawnEntities();
 
-		for (auto team : gamestate->Teams)
+		for (auto team : gameinstance->Teams)
 		{
-			// Empty all upgrades
-			team->Upgrades.Empty();
+			//Recalculate upgrades
+			team->CalculateUpgradeEffects();
 		}
 
-		// Add upgrades to player
-		playercontroller->Team->AddUpgrades(gameinstance->ActiveUpgrades);
-
-		// Give random upgrades to enemy based on round amount
+		// Give random upgrade to enemy team
 		auto team = GetTeamWithAlignment(ETeamAlignment::E_AGGRESSIVE_AI);
 		if (team)
 		{
-			auto round = gameinstance->CurrentRound;
-			for (int i = 0; i < round; ++i)
+			// Add random upgrade
+			TArray<FEnemyUpgradeRow*> rows;
+			m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
+			if (rows.Num() > 0)
 			{
-				// Add random upgrade
-				TArray<FEnemyUpgradeRow*> rows;
-				m_EnemyUpgradeTable->GetAllRows("BeginPlay > Enemy upgrade table not found!", rows);
-				if (rows.Num() > 0)
-				{
-					int randomUpgradeIndex = FMath::RandRange(0, rows.Num() - 1);
-					auto row = rows[randomUpgradeIndex];
-					team->AddUpgrades(row->Upgrades);
-				}
-				else
-				{
-					UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrades in enemy upgrade datatable!"));
-				}
+				int randomUpgradeIndex = FMath::RandRange(0, rows.Num() - 1);
+				auto row = rows[randomUpgradeIndex];
+				team->AddUpgrades(row->Upgrades);
+			}
+			else
+			{
+				UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No enemy upgrades in enemy upgrade datatable!"));
 			}
 		}
 		else
@@ -255,31 +278,14 @@ void AWipgateGameModeBase::BeginPlay()
 
 		// Update luma
 		playercontroller->AddLuma(gameinstance->CurrentLuma);
-	}
-	else
-	{
-		UE_LOG(WipgateGameModeBase, Error, TEXT("BeginPlay > No game instance found!"));
-	}
-
-	TArray<AActor*> uncastedShops;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedShops);
-
-	for (auto uncastedShop : uncastedShops)
-	{
-		AUpgradeShopBase* castedShop = Cast<AUpgradeShopBase>(uncastedShop);
-		if (castedShop)
-		{
-			m_Shops.Push(castedShop);
-		}
-	}
 }
 
 URTS_Team* AWipgateGameModeBase::GetTeamWithAlignment(ETeamAlignment alignment)
 {
-	ARTS_GameState* gamestate = GetGameState<ARTS_GameState>();
-	for (URTS_Team* team : gamestate->Teams)
+	URTS_GameInstance* gameinstance = Cast<URTS_GameInstance>(GetGameInstance());
+	for (URTS_Team* team : gameinstance->Teams)
 	{
-		if (team->Alignment == alignment)
+		if (team->GetAlignment() == alignment)
 		{
 			return team;
 		}
@@ -324,8 +330,27 @@ void AWipgateGameModeBase::NextLevel()
 	}
 	SaveResources();
 
+	UWorld* world = GetWorld();
+	FString currentLevelName = UGameplayStatics::GetCurrentLevelName(world);
 	// Open same level
-	UGameplayStatics::OpenLevel(GetWorld(), FName(*UGameplayStatics::GetCurrentLevelName(GetWorld())));
+	if (currentLevelName.Equals("Gameplay_Layout_Deco_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_04");
+	}
+	else if (currentLevelName.Equals("Gameplay_Layout_Deco_04"))
+	{
+		UGameplayStatics::OpenLevel(world, "Gameplay_Layout_Deco_02");
+	}
+	else if (currentLevelName.Equals("TutorialMap_01") ||
+		currentLevelName.Equals("TutorialMap_02"))
+	{
+		UGameplayStatics::OpenLevel(world, "MainMenu");
+	}
+	else
+	{
+		UGameplayStatics::OpenLevel(world, *UGameplayStatics::GetCurrentLevelName(world));
+	}
+
 }
 
 ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
@@ -352,29 +377,86 @@ ARTS_PlayerSpawner* AWipgateGameModeBase::GetPlayerSpawner()
 
 ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 {
-	if (m_LevelEnd)
+	return m_LevelEnd;
+}
+
+void AWipgateGameModeBase::SelectRandomLevelSetup()
+{
+	//Get all spawns
+	TArray<AActor*> uncastedSpawners;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), uncastedSpawners);
+
+	if (uncastedSpawners.Num() > 0)
 	{
-		return m_LevelEnd;
-	}
+		TArray<ARTS_PlayerSpawner*> spawners;
 
-	TArray<AActor*> levelEnds;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), levelEnds);
-
-	if (levelEnds.Num() > 0)
-	{
-		// Get potential end zone
-		int chosenEndZoneIndex = FMath::RandRange(0, levelEnds.Num() - 1);
-
-		// Destroy any endzone that wasn't selected
-		for (int i = levelEnds.Num() - 1; i >= 0; --i)
+		//Convert spawners that have an endgoal
+		for (auto uncastedSpawner : uncastedSpawners)
 		{
-			if (i == chosenEndZoneIndex)
+			ARTS_PlayerSpawner* castedSpawner = Cast<ARTS_PlayerSpawner>(uncastedSpawner);
+			if (!castedSpawner)
+				continue;
+
+			if (castedSpawner->LevelEnd)
 			{
-				m_LevelEnd = Cast<ARTS_LevelEnd>(levelEnds[i]);
+				spawners.Add(castedSpawner);
 			}
 			else
 			{
-				levelEnds[i]->Destroy();
+				UE_LOG(WipgateGameModeBase, Warning, TEXT("SelectRandomLevelSetup > %s does not have a levelend linked to it."), *castedSpawner->GetName());
+			}
+		}
+
+		if (spawners.Num() <= 0)
+		{
+			UE_LOG(WipgateGameModeBase, Error, TEXT("SelectRandomLevelSetup > No player spawners with levelends available. Returning..."));
+			return;
+		}
+
+		//Pick a random spawner
+		int chosenIndex = FMath::RandRange(0, spawners.Num() - 1);
+		m_LevelEnd = spawners[chosenIndex]->LevelEnd;
+
+		//Entity spawner at the end should have 100% spawn rate
+		if (m_LevelEnd->EntitySpawner)
+			m_LevelEnd->EntitySpawner->SpawnModifier = 1.f;
+
+		m_Shop = spawners[chosenIndex]->Shop;
+		m_PlayerSpawner = spawners[chosenIndex];
+
+		//Destroy all endzones that weren't selected
+		TArray<AActor*> uncastedDeletionObjects;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_LevelEnd::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] && uncastedDeletionObjects[i] != m_LevelEnd)
+			{
+				uncastedDeletionObjects[i]->Destroy();
+				auto end = Cast<ARTS_LevelEnd>(uncastedDeletionObjects[i]);
+				if(end && end->EntitySpawner)
+					end->EntitySpawner->Destroy();
+			}
+		}
+		uncastedDeletionObjects.Empty();
+
+		//Destroy all shops that weren't selected
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUpgradeShopBase::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] != m_Shop)
+			{
+				uncastedDeletionObjects[i]->Destroy();
+			}
+		}
+		uncastedDeletionObjects.Empty();
+
+		//Destroy all spawners that weren't selected
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARTS_PlayerSpawner::StaticClass(), uncastedDeletionObjects);
+		for (int32 i = uncastedDeletionObjects.Num() - 1; i >= 0; --i)
+		{
+			if (uncastedDeletionObjects[i] != m_PlayerSpawner)
+			{
+				uncastedDeletionObjects[i]->Destroy();
 			}
 		}
 	}
@@ -382,8 +464,6 @@ ARTS_LevelEnd* AWipgateGameModeBase::GetLevelEnd()
 	{
 		UE_LOG(WipgateGameModeBase, Error, TEXT("No level end found in map!"));
 	}
-
-	return m_LevelEnd;
 }
 
 ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
@@ -406,9 +486,4 @@ ARTS_LevelBounds* AWipgateGameModeBase::GetLevelBounds()
 	}
 
 	return m_LevelBounds;
-}
-
-const TArray<AUpgradeShopBase*>& AWipgateGameModeBase::GetShops()
-{
-	return m_Shops;
 }

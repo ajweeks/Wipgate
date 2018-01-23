@@ -7,10 +7,10 @@
 #include "RTS_GameState.generated.h"
 
 class ARTS_Entity;
-class URTS_Team;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_Gamestate_log, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityDelegate, ARTS_Entity*, entity);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDoubleEntityDelegate, ARTS_Entity*, current, ARTS_Entity*, other);
 
 UCLASS()
 class WIPGATE_API ARTS_GameState : public AGameState
@@ -51,14 +51,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Units")
 		TArray<ARTS_Entity*> SelectionGroup5;
 
-	UPROPERTY()
-	TArray<URTS_Team*> Teams;
-
 	// Event Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")
 		FEntityDelegate OnDeathDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")
-		FEntityDelegate UnderAttackDelegate;
+		FDoubleEntityDelegate UnderAttackDelegate;
 
 	//End screen stats
 	UPROPERTY(BlueprintReadOnly, Category = "End screen")

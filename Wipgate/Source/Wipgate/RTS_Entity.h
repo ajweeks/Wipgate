@@ -18,6 +18,7 @@ class USoundCue;
 class USoundConcurrency;
 class URTS_Team;
 class ARTS_EntitySpawner;
+class ARTS_DeathEffect;
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_ENTITY_LOG, Log, All);
 
@@ -61,7 +62,7 @@ public:
 		void RemoveUnitEffect(UUnitEffect* effect);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
-		bool ApplyDamage(int damage, bool armor);
+		bool ApplyDamage(int damage, bool armor, ARTS_Entity* attacker);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		void ApplyHealing(int healing);
 	UFUNCTION(BlueprintCallable, Category = "Health")
@@ -89,6 +90,18 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool Immaterial = false;
 
+	//Minimum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MinimumLumaDrop = 3;
+
+	//Maximum amount of luma this unit can drop
+	UPROPERTY(EditAnywhere)
+		int MaximumLumaDrop = 10;
+
+	//Class to spawn when unit dies
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<ARTS_DeathEffect> DeathEffectClass;
+
 	bool IsSelectableByPlayer() const;
 
 public:
@@ -112,7 +125,7 @@ public:
 		UStaticMeshComponent* MinimapIcon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-		FName MinimapColorParameterName = "None";
+		FName MinimapColorParameterName = "Color";
 
 	FRotator BarRotation;
 
@@ -195,6 +208,9 @@ public:
 		USoundCue* AttackSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
+		USoundCue* CommandSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
 		USoundAttenuation* SoundAttenuation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sound")
@@ -228,7 +244,7 @@ private:
 
 	/* private members */
 	UPROPERTY(VisibleAnywhere, Category = "Selection")
-		bool Selected;
+		bool m_Selected;
 
 	/* HIGHLIGHTED */
 	UPROPERTY(EditAnywhere)

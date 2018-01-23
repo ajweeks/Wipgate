@@ -83,9 +83,14 @@ void ARTS_AIController::StoreNearbyEntities(const float radius)
 	m_NearbyEntities.Empty();
 	if (!m_Entity->IsAlive()) return; 
 
-	FVector offset (0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5);
 	if (m_Entity->RenderFlockingDebugInfo)
-		DrawDebugCircle(GetWorld(), m_FlockCenter - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
+	{
+		if (m_Entity->GetCapsuleComponent())
+		{
+			FVector offset (0, 0, m_Entity->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - 5);
+			DrawDebugCircle(GetWorld(), m_FlockCenter - offset, radius, 32, FColor::White, false, 0, (uint8)'\000', 1, FVector(1, 0, 0), FVector(0,1,0), false);
+		}
+	}
 	
 	ARTS_GameState * gameState = GetWorld()->GetGameState<ARTS_GameState>();
 	TArray<ARTS_Entity*> entities = gameState->Entities;
@@ -297,6 +302,10 @@ void ARTS_AIController::RenderFlockingDebug(const FVector separation, const FVec
 
 bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
+	//m_FlockTick++;
+	//if (m_FlockTick % 3 == 0)
+	//	return false;
+
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingMoveRadius);
 
@@ -334,6 +343,10 @@ bool ARTS_AIController::FlockMoveToLocation(const FVector target, const float se
 
 bool ARTS_AIController::FlockChaseToLocation(const FVector target, float separationWeight, const float cohesionweight, const float seekWeight, const float avoidanceWeight, const float stepLength, const float acceptanceRadius)
 {
+	//m_FlockTick++;
+	//if (m_FlockTick % 3 == 0)
+	//	return false;
+
 	m_FlockCenter = m_Entity->GetActorLocation();
 	StoreNearbyEntities(m_FlockingChaseRadius);
 
@@ -380,7 +393,7 @@ ERelativeAlignment ARTS_AIController::GetRelativeAlignment(const ARTS_Entity * a
 {
 	if (a->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI || b->Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI) 
 		return ERelativeAlignment::E_ENEMY;
-	if (a->Team->Alignment == b->Team->Alignment || a->Alignment == ETeamAlignment::E_NEUTRAL_AI || b->Alignment == ETeamAlignment::E_NEUTRAL_AI) 
+	if (a->Alignment == b->Alignment || a->Alignment == ETeamAlignment::E_NEUTRAL_AI || b->Alignment == ETeamAlignment::E_NEUTRAL_AI) 
 		return ERelativeAlignment::E_FRIENDLY;
 	else
 		return ERelativeAlignment::E_ENEMY;
@@ -435,7 +448,7 @@ TArray<ARTS_Entity*> ARTS_AIController::GetEnemiesInVisionRange()
 	if (enemiesInRange.Num() > 0 && GetController(m_Entity)->m_CurrentTask == EUNIT_TASK::IDLE && !m_IsAlert)
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-		gameState->UnderAttackDelegate.Broadcast(m_Entity);
+		gameState->UnderAttackDelegate.Broadcast(m_Entity, GetClosestEntity(enemiesInRange));
 	}
 
 	return enemiesInRange;

@@ -30,6 +30,7 @@
 #include "RTS_EntitySpawnerBase.h"
 #include "RTS_EntitySpawner.h"
 #include "GeneralFunctionLibrary_CPP.h"
+#include "RTS_DeathEffect.h"
 
 DEFINE_LOG_CATEGORY(RTS_ENTITY_LOG);
 
@@ -63,6 +64,12 @@ ARTS_Entity::ARTS_Entity()
 		MinimapIcon->SetCastShadow(false);
 		MinimapIcon->CastShadow = 1;
 	}
+
+
+	if (SelectionHitBox == FVector::ZeroVector)
+	{
+		PrintStringToScreen(TEXT("Unit's selection hit box is (0, 0, 0)!"), FColor::Red, 100.0f);
+	}
 }
 
 // Called when the game starts
@@ -73,7 +80,7 @@ void ARTS_Entity::BeginPlay()
 
 void ARTS_Entity::SetSelected(bool selected)
 {
-	Selected = selected;
+	m_Selected = selected;
 
 	if (EntityType != EEntityType::E_STRUCTURE)
 	{
@@ -140,6 +147,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 	/* Apply effects */
 	for (size_t i = 0; i < UnitEffects.Num(); i++)
 	{
+
 		UUnitEffect* e = UnitEffects[i];
 		if (!e)
 			continue;
@@ -177,7 +185,7 @@ void ARTS_Entity::Tick(float DeltaTime)
 
 bool ARTS_Entity::IsSelected() const
 {
-	return Selected;
+	return m_Selected;
 }
 
 FVector ARTS_Entity::GetGroundLocation()
@@ -314,9 +322,7 @@ bool ARTS_Entity::HasEffectWithTag(FName tag)
 	for (auto e : UnitEffects)
 	{
 		if (e->Tag == tag)
-		{
 			return true;
-		}
 	}
 	return false;
 }
@@ -425,14 +431,14 @@ void ARTS_Entity::RemoveUnitEffect(UUnitEffect * effect)
 	UnitEffects.Remove(effect);
 }
 
-bool ARTS_Entity::ApplyDamage(int damage, bool armor)
+bool ARTS_Entity::ApplyDamage(int damage, bool armor, ARTS_Entity* attacker)
 {
 	//GameState notification "under attack"
 	ARTS_AIController* aiController = Cast<ARTS_AIController>(GetController());
-	if (aiController->GetCurrentTask() == EUNIT_TASK::IDLE)
+	if (aiController && aiController->GetCurrentTask() == EUNIT_TASK::IDLE && !aiController->IsAlert())
 	{
 		ARTS_GameState* gameState = Cast<ARTS_GameState>(GetWorld()->GetGameState());
-		gameState->UnderAttackDelegate.Broadcast(this);
+		gameState->UnderAttackDelegate.Broadcast(this, attacker);
 	}
 
 	if (Health <= 0)
@@ -489,11 +495,48 @@ void ARTS_Entity::Kill()
 		{
 			Kill_NotifyBP(); // notify to blueprint version to detach weapon and hat
 
-			int length = UnitEffects.Num();
-			for (size_t i = UnitEffects.Num() - 1; i < length; i--)
+			ARTS_PlayerController* playercontroller = Cast<ARTS_PlayerController>(world->GetFirstPlayerController());
+			if (playercontroller)
 			{
-				RemoveUnitEffect(UnitEffects[i]);
+				//Spawn luma particle
+				auto transform = GetActorTransform();
+				ARTS_DeathEffect* deathEffect = nullptr;
+				if (DeathEffectClass)
+				{
+					auto deathActor = world->SpawnActor(DeathEffectClass, &transform);
+					if (deathActor)
+					{
+						deathEffect = Cast<ARTS_DeathEffect>(deathActor);
+					}
+				}
+
+				if (Alignment == ETeamAlignment::E_AGGRESSIVE_AI || Alignment == ETeamAlignment::E_ATTACKEVERYTHING_AI)
+				{
+					//Add luma
+					int32 amount = FMath::RandRange(MinimumLumaDrop, MaximumLumaDrop);
+					playercontroller->AddLuma(amount, true);
+					if (deathEffect)
+					{
+						deathEffect->Intensity = amount;
+					}
+				}
+
+				if (deathEffect)
+				{
+					deathEffect->Activate();
+				}
 			}
+			else
+			{
+				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Kill > No playercontroller present!"));
+			}
+
+			// COMMENTED BECAUSE IT BROKE PLAGUE SPREAD!
+			//int length = UnitEffects.Num();
+			//for (size_t i = UnitEffects.Num() - 1; i < length; i--)
+			//{
+			//	RemoveUnitEffect(UnitEffects[i]);
+			//}
 
 			LocationOfDeath = GetActorLocation();
 			ForwardOnDeath = capsuleComponent->GetForwardVector();
@@ -540,83 +583,79 @@ void ARTS_Entity::Kill()
 				UE_LOG(RTS_ENTITY_LOG, Error, TEXT("Kill > No gamestate present!"));
 			}
 
-			AGameStateBase* baseGameState = world->GetGameState();
-			ARTS_GameState* castedGameState = Cast<ARTS_GameState>(baseGameState);
-			if (baseGameState && castedGameState)
+			if (gameState)
 			{
-				castedGameState->SelectedEntities.Remove(this);
-				castedGameState->Entities.Remove(this);
+				gameState->SelectedEntities.Remove(this);
+				gameState->Entities.Remove(this);
 				
-				APlayerController* playerController = UGameplayStatics::GetPlayerController(world, 0);
-				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playercontroller);
 
-				if (playerController && rtsPlayerController)
+				if (playercontroller && rtsPlayerController)
 				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
 					rtsPlayerController->UpdateSpecialistAbilityButtons();
 					URTS_HUDBase* hud = rtsPlayerController->GetRTS_HUDBase();
 					if (hud)
 					{
-						hud->UpdateSelectedEntities(castedGameState->SelectedEntities);
-
-						if (castedGameState->SelectionGroup1.Contains(this))
+						if (gameState->SelectionGroup1.Contains(this))
 						{
-							castedGameState->SelectionGroup1.Remove(this);
+							gameState->SelectionGroup1.Remove(this);
 
-							if (castedGameState->SelectionGroup1.Num() > 0)
+							if (gameState->SelectionGroup1.Num() > 0)
 							{
-								hud->ShowSelectionGroupIcon(0, castedGameState->SelectionGroup1.Num());
+								hud->ShowSelectionGroupIcon(0, gameState->SelectionGroup1.Num());
 							}
 							else
 							{
 								hud->HideSelectionGroupIcon(0);
 							}
 						}
-						if (castedGameState->SelectionGroup2.Contains(this))
+						if (gameState->SelectionGroup2.Contains(this))
 						{
-							castedGameState->SelectionGroup2.Remove(this);
+							gameState->SelectionGroup2.Remove(this);
 
-							if (castedGameState->SelectionGroup2.Num() > 0)
+							if (gameState->SelectionGroup2.Num() > 0)
 							{
-								hud->ShowSelectionGroupIcon(1, castedGameState->SelectionGroup2.Num());
+								hud->ShowSelectionGroupIcon(1, gameState->SelectionGroup2.Num());
 							}
 							else
 							{
 								hud->HideSelectionGroupIcon(1);
 							}
 						}
-						if (castedGameState->SelectionGroup3.Contains(this))
+						if (gameState->SelectionGroup3.Contains(this))
 						{
-							castedGameState->SelectionGroup3.Remove(this);
+							gameState->SelectionGroup3.Remove(this);
 
-							if (castedGameState->SelectionGroup3.Num() > 0)
+							if (gameState->SelectionGroup3.Num() > 0)
 							{
-								hud->ShowSelectionGroupIcon(2, castedGameState->SelectionGroup3.Num());
+								hud->ShowSelectionGroupIcon(2, gameState->SelectionGroup3.Num());
 							}
 							else
 							{
 								hud->HideSelectionGroupIcon(2);
 							}
 						}
-						if (castedGameState->SelectionGroup4.Contains(this))
+						if (gameState->SelectionGroup4.Contains(this))
 						{
-							castedGameState->SelectionGroup4.Remove(this);
+							gameState->SelectionGroup4.Remove(this);
 
-							if (castedGameState->SelectionGroup4.Num() > 0)
+							if (gameState->SelectionGroup4.Num() > 0)
 							{
-								hud->ShowSelectionGroupIcon(3, castedGameState->SelectionGroup4.Num());
+								hud->ShowSelectionGroupIcon(3, gameState->SelectionGroup4.Num());
 							}
 							else
 							{
 								hud->HideSelectionGroupIcon(3);
 							}
 						}
-						if (castedGameState->SelectionGroup5.Contains(this))
+						if (gameState->SelectionGroup5.Contains(this))
 						{
-							castedGameState->SelectionGroup5.Remove(this);
+							gameState->SelectionGroup5.Remove(this);
 
-							if (castedGameState->SelectionGroup5.Num() > 0)
+							if (gameState->SelectionGroup5.Num() > 0)
 							{
-								hud->ShowSelectionGroupIcon(4, castedGameState->SelectionGroup5.Num());
+								hud->ShowSelectionGroupIcon(4, gameState->SelectionGroup5.Num());
 							}
 							else
 							{
@@ -669,6 +708,15 @@ void ARTS_Entity::AddToLumaSaturation(int32 LumaToAdd)
 			{
 				Alignment = ETeamAlignment::E_ATTACKEVERYTHING_AI;
 				m_SecondsLeftOfOverdose = m_SecondsToLiveWhenOverdosed;
+
+				// We are no longer selectable - let player controller know
+				APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+				ARTS_PlayerController* rtsPlayerController = Cast<ARTS_PlayerController>(playerController);
+
+				if (playerController && rtsPlayerController)
+				{
+					rtsPlayerController->UpdateSelectedEntitiesBase();
+				}
 
 				//Set team color
 				auto gamemode = GetWorld()->GetAuthGameMode<AWipgateGameModeBase>();
@@ -765,7 +813,7 @@ void ARTS_Entity::ApplyEffectLinear(UUnitEffect* effect)
 			CurrentAttackStats.Damage += magnitudeTick;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(magnitudeTick, false);
+			ApplyDamage(magnitudeTick, false, this);
 			break;
 		case EUnitEffectStat::HEALING:
 			ApplyHealing(magnitudeTick);
@@ -811,7 +859,7 @@ void ARTS_Entity::ApplyEffectOnce(UUnitEffect* effect)
 			CurrentAttackStats.Damage += effect->Magnitude;
 			break;
 		case EUnitEffectStat::DAMAGE:
-			ApplyDamage(effect->Magnitude, false);
+			ApplyDamage(effect->Magnitude, false, this);
 			break;
 
 		case EUnitEffectStat::HEALING:

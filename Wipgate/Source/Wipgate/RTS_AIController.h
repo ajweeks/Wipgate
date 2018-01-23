@@ -119,6 +119,8 @@ public:
 public:
 	UPROPERTY(BlueprintReadWrite)
 		ARTS_Entity * TargetEntity;
+	UPROPERTY(BlueprintReadOnly)
+		int m_FlockTick = 0;
 
 protected:
 	UPROPERTY(BlueprintReadWrite)
@@ -145,7 +147,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 		bool m_IsAlert;
 	UPROPERTY(BlueprintReadWrite)
-		ARTS_Entity* m_AlertingEntity;
+		ARTS_Entity* m_AlertTarget;
 
 	/* --- Flocking variables --- */
 	UPROPERTY(BlueprintReadWrite)

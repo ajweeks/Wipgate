@@ -39,11 +39,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		ARTS_LevelEnd* GetLevelEnd();
 
-	UFUNCTION(BlueprintCallable)
-		ARTS_LevelBounds* GetLevelBounds();
+	void SelectRandomLevelSetup();
 
 	UFUNCTION(BlueprintCallable)
-		const TArray<AUpgradeShopBase*>& GetShops();
+		ARTS_LevelBounds* GetLevelBounds();
 
 	// Disable to spawn custom squads
 	UPROPERTY(BlueprintReadWrite)
@@ -51,7 +50,7 @@ public:
 
 	//Path to json file that sets the unit spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString UnitToSpawnPath = "Stats/Unitspawns.json";
+		TArray<FString> UnitToSpawnPath;
 
 private:
 
@@ -81,7 +80,7 @@ private:
 
 	ARTS_LevelEnd* m_LevelEnd;
 	ARTS_PlayerSpawner* m_PlayerSpawner;
+	AUpgradeShopBase* m_Shop;
 	ARTS_LevelBounds* m_LevelBounds;
-	TArray<AUpgradeShopBase*> m_Shops;
 
 };

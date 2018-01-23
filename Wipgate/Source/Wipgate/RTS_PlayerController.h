@@ -31,14 +31,14 @@ class WIPGATE_API ARTS_PlayerController : public APlayerController
 public:
 	ARTS_PlayerController();
 
-	virtual void BeginPlay() override;
+	void Initialize();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupInputComponent() override;
 
 	UFUNCTION(BlueprintCallable)
 		bool IsEdgeMovementEnabled() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Exec)
 		void SetEdgeMovementEnabled(bool enabled);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
@@ -111,7 +111,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		URTS_HUDBase* GetRTS_HUDBase();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Exec)
 		void AddLuma(int32 LumaAmount, bool applyToEndScore = false);
 
 	UFUNCTION(BlueprintCallable)
@@ -119,6 +119,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		int32 GetCurrentLumaAmount();
+
+	UFUNCTION(BlueprintCallable, Exec)
+		void AddHealth(int32 healthAmount);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 		TSubclassOf<UUserWidget> MainHUD;
@@ -174,11 +177,16 @@ private:
 	void ActionMoveFastReleased();
 	void ActionCenterOnSelectionPressed();
 	void ActionCenterOnSelectionReleased();
+	void ActionAddToSelectionPressed();
+	void ActionAddToSelectionReleased();
 
 public:
 	// Helper function for selecting a selection group (index is 0-based)
 	UFUNCTION(BlueprintCallable)
 		void ActionSelectionGroup(int32 Index);
+	// Function to change camera sensitivity, called from settings widget BP.
+	UFUNCTION(BlueprintCallable)
+		void SetCameraSensitivity(float multiplier);
 
 private:
 	static const int32 SELECTION_GROUP_COUNT = 5;
@@ -216,7 +224,15 @@ private:
 	FVector ClampDCamPosWithBounds(FVector dCamPos);
 	FVector ClampCamPosWithBounds(FVector camPos);
 
-	APawn* m_RTS_CameraPawn = nullptr;
+	bool IsCursorOverPurchasableItem();
+
+public:
+	UPROPERTY(BlueprintReadWrite)
+		APawn* RTS_CameraPawn = nullptr;
+
+
+private:
+
 	UCameraComponent* m_RTS_CameraPawnCameraComponent = nullptr;
 	UStaticMeshComponent* m_RTS_CameraPawnMeshComponent = nullptr;
 	USpringArmComponent* m_RTS_CameraPawnSpringArmComponent = nullptr;
@@ -245,14 +261,14 @@ private:
 
 	// How quickly to zoom in/out when scrolling
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_ZoomSpeed = 25.0f;
+		float m_ZoomSpeed = 14.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	// How far to zoom per mouse wheel turn
-		float m_ZoomDistance = 140.0f;
+		float m_ZoomDistance = 500.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MinArmDistance = 100.0f;
+		float m_MinArmDistance = 1000.0f;
 	UPROPERTY(EditAnywhere, Category = "Movement")
-		float m_MaxArmDistance = 5000.0f;
+		float m_MaxArmDistance = 4000.0f;
 
 	// How quickly to move when the mouse is at the edge of the screen
 	UPROPERTY(EditAnywhere, meta = (UIMin = "1.0", UIMax = "20.0"), Category = "Movement")
@@ -263,13 +279,13 @@ private:
 
 	// Higher values = faster selection centering
 	UPROPERTY(EditAnywhere, meta = (UIMin = "10.0", UIMax = "50.0"), Category = "Movement")
-		float m_SelectionCenterMaxMoveSpeed = 25.0f;
+		float m_SelectionCenterMaxMoveSpeed = 9.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		bool m_MoveToLevelEndAtStartup = true;
 
 	UPROPERTY(EditAnywhere)
-		int m_StartingLumaAmount = 1000;
+		int m_StartingLumaAmount = 125;
 
 	bool m_ReturnedToStartAfterViewingEnd = false;
 
@@ -328,6 +344,20 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Movement")
 		float m_CenterOffsetY = 0.1f;
 
+	// How far to shift the center in direction of average entity facing direction
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		float m_CenterOffsetEntityDirection = 0.25f;
+
+	// How fast to shift the center in direction of average entity facing direction (0=never, 1=instantly)
+	UPROPERTY(EditAnywhere, Category = "Movement")
+		float m_CenterOffsetEntitySpeed = 0.015f;
 
 	TArray<URTS_Squad*> m_Squads;
+
+protected:
+		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+			float m_MaxSoundTimer = 1.f;
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+			float m_SoundTimer = 0.f;
 };
