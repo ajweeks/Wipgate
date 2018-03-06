@@ -1,6 +1,6 @@
 ## Wipgate
 
-Wipgate (name-pending) is an RTS-roguelite mix being developed by the following:
+Wipgate is the project name for "New Atlas": an RTS-roguelite mix developed by the following people:
 
 ### Developers:
 - [Brian Van Hyfte](http://brianvanhyfte.com/)
@@ -12,14 +12,14 @@ Wipgate (name-pending) is an RTS-roguelite mix being developed by the following:
 - [Aidan Vangrysperre](http://aidanv.com/)
 - [Michelle Naessens](https://michellenaessens.artstation.com/)
 
-Stay up to date on our progress here on our [blog](https://baggedmilkstudios.wordpress.com/)
- and our twitter [`@bagged_____milk`](https://twitter.com/bagged_____milk).
+You can download the game for free right here on [GameJolt](https://gamejolt.com/games/new-atlas/313898)
+ and follow our twitter right here: [`@bagged_____milk`](https://twitter.com/bagged_____milk).
 
-Here's some a few of our artist's WIP models in the mean time:
+Here's some screenshots:
 
-![](https://i.imgur.com/DHSnQpT.png)
+![](http://www.aidanv.com/wp-content/uploads/2018/01/NewAtlasSiteThumbnail.png)
 
-![](https://i.imgur.com/E2A47GS.jpg)
+![](http://www.aidanv.com/wp-content/uploads/2018/01/Images06.jpg)
 
 ---
 
